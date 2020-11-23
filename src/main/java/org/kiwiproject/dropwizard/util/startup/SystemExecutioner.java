@@ -12,8 +12,6 @@ public class SystemExecutioner {
 
     void exit() {
         LOG.warn("Terminating the VM!");
-        // TODO: Should we wait some number of seconds as a daemon thread before shutting ourselves down to see if we actually
-        //       die?  How to do that??
         System.exit(1);
     }
 }
