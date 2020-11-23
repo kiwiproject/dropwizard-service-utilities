@@ -30,6 +30,7 @@
   <properties>
     <!-- Versions for required dependencies -->
     <dropwizard.version>2.0.15</dropwizard.version>
+    <dropwizard-config-providers.version>0.6.0</dropwizard-config-providers.version>
     <kiwi.version>0.15.0</kiwi.version>
 
     <!-- Versions for provided dependencies -->
@@ -58,6 +59,12 @@
 
   <dependencies>
     <!-- Required dependencies -->
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>dropwizard-config-providers</artifactId>
+      <version>${dropwizard-config-providers.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
