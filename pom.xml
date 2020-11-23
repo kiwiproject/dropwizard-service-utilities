@@ -15,7 +15,7 @@
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>
-    Set of utilities to aide in setting up Dropwizard services
+    Set of utilities to aid in setting up Dropwizard services
   </description>
   <url>https://github.com/kiwiproject/dropwizard-service-utilities</url>
   <inceptionYear>2020</inceptionYear>
