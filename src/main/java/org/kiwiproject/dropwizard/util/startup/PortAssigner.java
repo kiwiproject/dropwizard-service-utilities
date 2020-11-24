@@ -22,7 +22,6 @@ import org.kiwiproject.net.LocalPortChecker;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntSupplier;
@@ -69,7 +68,7 @@ public class PortAssigner {
         this.tlsConfiguration = this.portSecurity == PortSecurity.SECURE ? requireNotNull(tlsConfiguration) : null;
         this.portAssignment = Optional.ofNullable(portAssignment).orElse(PortAssignment.DYNAMIC);
         this.allowablePortRange = allowablePortRange;
-        this.serverFactory = requireDefaultServerFactory(requireNotNull(serverFactory));
+        this.serverFactory = requireDefaultServerFactory(serverFactory);
     }
 
     /**
@@ -122,9 +121,9 @@ public class PortAssigner {
 
         var usedPorts = new HashSet<Integer>();
 
-        int connectorPort = findFreePort(usedPorts);
+        int applicationPort = findFreePort(usedPorts);
         var app = (HttpConnectorFactory) first(serverFactory.getApplicationConnectors());
-        app.setPort(connectorPort);
+        app.setPort(applicationPort);
 
         int adminPort = findFreePort(usedPorts);
         var admin = (HttpConnectorFactory) first(serverFactory.getAdminConnectors());
@@ -142,7 +141,7 @@ public class PortAssigner {
         }
 
         IntSupplier portSupplier = () -> allowablePortRange.minPortNumber + ThreadLocalRandom.current().nextInt(allowablePortRange.numPortsInRange);
-        OptionalInt assignedPort = IntStream.generate(portSupplier)
+        var assignedPort = IntStream.generate(portSupplier)
                 .limit(allowablePortRange.maxPortCheckAttempts)
                 .filter(port -> availableAndUnused(port, usedPorts))
                 .findFirst();

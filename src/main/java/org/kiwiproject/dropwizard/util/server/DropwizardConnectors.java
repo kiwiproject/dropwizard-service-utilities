@@ -2,6 +2,7 @@ package org.kiwiproject.dropwizard.util.server;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
+import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -46,8 +47,11 @@ public class DropwizardConnectors {
      * @param serverFactory {@link ServerFactory} to check to make sure it is a {@link DefaultServerFactory}
      * @return the given server factory if it is an instance of {@link DefaultServerFactory}
      * @throws IllegalStateException if serverFactory is not a {@link DefaultServerFactory}
+     * @throws IllegalArgumentException if serverFactory is null
      */
     public static DefaultServerFactory requireDefaultServerFactory(ServerFactory serverFactory) {
+        checkArgumentNotNull(serverFactory, "ServerFactory is required");
+
         if (serverFactory instanceof DefaultServerFactory) {
             return (DefaultServerFactory) serverFactory;
         }
