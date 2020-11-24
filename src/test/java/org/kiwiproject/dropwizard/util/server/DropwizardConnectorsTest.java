@@ -126,4 +126,22 @@ class DropwizardConnectorsTest {
             assertThat(port).isEmpty();
         }
     }
+
+    @Nested
+    class ConnectorType {
+
+        @Test
+        void forClass_ShouldThrowIllegalArgumentException_WhenTheClassDoesNotMatch() {
+            class MyConnector implements ConnectorFactory {
+                @Override
+                public Connector build(Server server, MetricRegistry metricRegistry, String s, ThreadPool threadPool) {
+                    return null;
+                }
+            }
+
+            assertThatThrownBy(() -> DropwizardConnectors.ConnectorType.forClass(MyConnector.class))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Unable to find ConnectorType for " + MyConnector.class.getName());
+        }
+    }
 }
