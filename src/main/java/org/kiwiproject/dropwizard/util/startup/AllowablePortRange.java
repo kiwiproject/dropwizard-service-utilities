@@ -6,7 +6,7 @@ import static org.kiwiproject.base.KiwiPreconditions.requireValidPort;
 import lombok.Getter;
 
 /**
- * Model to track the allowable port range for a service to bind to
+ * Defines the allowable port range for a service to bind to, in situations where there is a restriction.
  */
 @Getter
 public class AllowablePortRange {
