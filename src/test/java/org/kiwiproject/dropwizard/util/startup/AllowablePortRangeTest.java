@@ -9,33 +9,33 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("PortRangeInfo")
-class PortRangeInfoTest {
+class AllowablePortRangeTest {
 
     @ParameterizedTest
     @ValueSource(ints = {-1, 65_536})
     void shouldThrowIllegalStateException_WhenMinPortIsNotValid(int port) {
-        assertThatThrownBy(() -> new PortRangeInfo(port, port + 1))
+        assertThatThrownBy(() -> new AllowablePortRange(port, port + 1))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("port must be between 0 and 65535");
     }
 
     @Test
     void shouldThrowIllegalStateException_WhenMaxPortIsNotValid() {
-        assertThatThrownBy(() -> new PortRangeInfo(9_000, 65_536))
+        assertThatThrownBy(() -> new AllowablePortRange(9_000, 65_536))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("port must be between 0 and 65535");
     }
 
     @Test
     void shouldThrowIllegalStateException_WhenMinPortIsGreaterThanMaxPort() {
-        assertThatThrownBy(() -> new PortRangeInfo(9_000, 8_000))
+        assertThatThrownBy(() -> new AllowablePortRange(9_000, 8_000))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("minPortNumber must be less than maxPortNumber");
     }
 
     @Test
     void shouldCreateNewPortRangeInfo_WhenValidPortsGiven() {
-        var info = new PortRangeInfo(8_000, 9_000);
+        var info = new AllowablePortRange(8_000, 9_000);
 
         assertThat(info.getMinPortNumber()).isEqualTo(8_000);
         assertThat(info.getMaxPortNumber()).isEqualTo(9_000);

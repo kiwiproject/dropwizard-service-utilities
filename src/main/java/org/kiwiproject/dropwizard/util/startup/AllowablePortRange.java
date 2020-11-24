@@ -5,8 +5,11 @@ import static org.kiwiproject.base.KiwiPreconditions.requireValidPort;
 
 import lombok.Getter;
 
+/**
+ * Model to track the allowable port range for a service to bind to
+ */
 @Getter
-public class PortRangeInfo {
+public class AllowablePortRange {
 
     private static final int RANGE_MULTIPLIER = 3;
 
@@ -15,7 +18,14 @@ public class PortRangeInfo {
     int numPortsInRange;
     int maxPortCheckAttempts;
 
-    public PortRangeInfo(int minPortNumber, int maxPortNumber) {
+    /**
+     * Creates a new AllowablePortRange
+     *
+     * @param minPortNumber The minimum port allowed in the range
+     * @param maxPortNumber The maximum port allowed in the range
+     * @throws IllegalStateException if the minPortNumber is greater than or equal to the maxPortNumber or if either port is not valid
+     */
+    public AllowablePortRange(int minPortNumber, int maxPortNumber) {
         checkState(minPortNumber < maxPortNumber, "minPortNumber must be less than maxPortNumber");
 
         this.minPortNumber = requireValidPort(minPortNumber);
