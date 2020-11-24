@@ -1,105 +1,129 @@
 package org.kiwiproject.dropwizard.util.startup;
 
+import static java.util.Objects.isNull;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+import static org.kiwiproject.base.KiwiStrings.format;
 import static org.kiwiproject.collect.KiwiLists.first;
+import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.requireDefaultServerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.Configuration;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.ServerFactory;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.config.provider.TlsConfigProvider;
+import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntSupplier;
 import java.util.stream.IntStream;
 
+/**
+ * Finds open ports and sets up the application and admin connectors with those ports. There are a couple of opinionated decisions here:
+ * <ul>
+ *     <li>{@link TlsConfigProvider} is required if secure connectors are wanted</li>
+ *     <li>The default {@link PortAssignment} is {@code DYNAMIC}</li>
+ *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the container</li>
+ *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
+ * </ul>
+ */
 @Slf4j
-public class PortAssigner<T extends Configuration> {
+@Getter(AccessLevel.PACKAGE) // For testing
+public class PortAssigner {
+
+    public enum PortAssignment {
+        STATIC, DYNAMIC
+    }
+
+    public enum PortSecurity {
+        SECURE, NON_SECURE
+    }
+
     private final LocalPortChecker localPortChecker;
-    private final TlsConfigProvider tlsProvider;
+    private final TlsContextConfiguration tlsConfiguration;
+    private final PortAssignment portAssignment;
+    private final AllowablePortRange allowablePortRange;
+    private final DefaultServerFactory serverFactory;
+    private final PortSecurity portSecurity;
 
-    PortAssigner(TlsConfigProvider tlsConfigProvider) {
-        this(new LocalPortChecker(), tlsConfigProvider);
+    @Builder
+    private PortAssigner(LocalPortChecker localPortChecker,
+                         TlsContextConfiguration tlsConfiguration,
+                         PortAssignment portAssignment,
+                         AllowablePortRange allowablePortRange,
+                         ServerFactory serverFactory,
+                         PortSecurity portSecurity) {
+
+        this.localPortChecker = Optional.ofNullable(localPortChecker).orElse(new LocalPortChecker());
+        this.portSecurity = Optional.ofNullable(portSecurity).orElse(PortSecurity.SECURE);
+        this.tlsConfiguration = this.portSecurity == PortSecurity.SECURE ? requireNotNull(tlsConfiguration) : null;
+        this.portAssignment = Optional.ofNullable(portAssignment).orElse(PortAssignment.DYNAMIC);
+        this.allowablePortRange = allowablePortRange;
+        this.serverFactory = requireDefaultServerFactory(requireNotNull(serverFactory));
     }
 
-    @VisibleForTesting
-    PortAssigner(LocalPortChecker portChecker, TlsConfigProvider t1sPropertyProvider) {
-        this.localPortChecker = portChecker;
-        this.tlsProvider = t1sPropertyProvider;
-    }
-
-    void assignDynamicPorts(T config) {
-        if (!config.isUseDynamicPorts()) {
+    public void assignDynamicPorts() {
+        if (portAssignment == PortAssignment.STATIC) {
+            LOG.info("Static port assignment is being used, will rely on Dropwizard configuration for the connector setup");
             return;
         }
 
-        var portRange = new PortRangeInfo(config);
-        var usedPorts = new HashSet<Integer>();
-
-        DefaultServerFactory serverFactory = getServerFactory(config);
-        if (config.isUseSecureDynamicPorts()) {
-            assignSecureDynamicPorts(portRange, usedPorts, serverFactory);
+        if (portSecurity == PortSecurity.SECURE) {
+            assignSecureDynamicPorts();
         } else {
-            assignNonSecureDynamicPorts(portRange, usedPorts, serverFactory);
+            assignNonSecureDynamicPorts();
         }
     }
 
-    private DefaultServerFactory getServerFactory(T configuration) {
-        return DropwizardConnectors.getDefaultServerFactory(configuration.getServerFactory());
-    }
-
-    private void assignSecureDynamicPorts(PortRangeInfo portRange, Set<Integer> usedPorts, DefaultServerFactory serverFactory) {
+    private void assignSecureDynamicPorts() {
         LOG.debug("Secure (https): replace Dropwizard HTTP app/admin connectors with HTTPS ones using dynamic ports");
 
-        assertCoconutCanProvideTlsProperties();
+        var usedPorts = new HashSet<Integer>();
 
-        var tlsConfig = tlsProvider.getTlsContextConfiguration();
-
-        int appPort = findFreePort(portRange, usedPorts);
-        var secureApp = newHttpsConnectorFactory(appPort, tlsConfig);
+        int appPort = findFreePort(usedPorts);
+        var secureApp = newHttpsConnectorFactory(appPort);
 
         serverFactory.setApplicationConnectors(List.of(secureApp));
 
-        int adminPort = findFreePort(portRange, usedPorts);
-        var secureAdmin = newHttpsConnectorFactory(adminPort, tlsConfig);
+        int adminPort = findFreePort(usedPorts);
+        var secureAdmin = newHttpsConnectorFactory(adminPort);
 
         serverFactory.setAdminConnectors(List.of(secureAdmin));
     }
 
-    private void assertCoconutCanProvideTlsProperties() {
-        if (tlsProvider.canNotProvide()) {
-            throw new IllegalStateException("TlsConfigProvider cannot provide TLS properties, so cannot assign keystore!");
-        }
-    }
-
-    private static HttpsConnectorFactory newHttpsConnectorFactory(int port, TlsContextConfiguration tlsConfig) {
+    private HttpsConnectorFactory newHttpsConnectorFactory(int port) {
         var https = new HttpsConnectorFactory();
 
         https.setPort(port);
-        https.setKeyStorePath(tlsConfig.getKeyStorePath());
-        https.setKeyStorePassword(tlsConfig.getKeyStorePassword());
-        https.setTrustStorePath(tlsConfig.getTrustStorePath());
-        https.setTrustStorePassword(tlsConfig.getTrustStorePassword());
-        https.setSupportedProtocols(tlsConfig.getSupportedProtocols());
+        https.setKeyStorePath(tlsConfiguration.getKeyStorePath());
+        https.setKeyStorePassword(tlsConfiguration.getKeyStorePassword());
+        https.setTrustStorePath(tlsConfiguration.getTrustStorePath());
+        https.setTrustStorePassword(tlsConfiguration.getTrustStorePassword());
+        https.setSupportedProtocols(tlsConfiguration.getSupportedProtocols());
 
         return https;
     }
 
-    private void assignNonSecureDynamicPorts(PortRangeInfo portRange, Set<Integer> usedPorts, DefaultServerFactory serverFactory) {
+    private void assignNonSecureDynamicPorts() {
         LOG.debug("Insecure (http): modify Dropwizard HTTP app/admin connectors using dynamic ports");
 
-        int connectorPort = findFreePort(portRange, usedPorts);
+        var usedPorts = new HashSet<Integer>();
+
+        int connectorPort = findFreePort(usedPorts);
         var app = (HttpConnectorFactory) first(serverFactory.getApplicationConnectors());
         app.setPort(connectorPort);
 
-        int adminPort = findFreePort(portRange, usedPorts);
+        int adminPort = findFreePort(usedPorts);
         var admin = (HttpConnectorFactory) first(serverFactory.getAdminConnectors());
         admin.setPort(adminPort);
 
@@ -109,10 +133,14 @@ public class PortAssigner<T extends Configuration> {
     /**
      * @implNote Mutates {@code usedPorts} for each used port it finds
      */
-    private int findFreePort(PortRangeInfo portRange, Set<Integer> usedPorts) {
-        IntSupplier portSupplier = () -> portRange.minPortNumber + ThreadLocalRandom.current().nextInt(portRange.numPortsInRange);
+    private int findFreePort(Set<Integer> usedPorts) {
+        if (isNull(allowablePortRange)) {
+            return 0;
+        }
+
+        IntSupplier portSupplier = () -> allowablePortRange.minPortNumber + ThreadLocalRandom.current().nextInt(allowablePortRange.numPortsInRange);
         OptionalInt assignedPort = IntStream.generate(portSupplier)
-                .limit(portRange.maxPortCheckAttempts)
+                .limit(allowablePortRange.maxPortCheckAttempts)
                 .filter(port -> availableAndUnused(port, usedPorts))
                 .findFirst();
 
@@ -121,8 +149,8 @@ public class PortAssigner<T extends Configuration> {
             return assignedPort.getAsInt();
         }
 
-        throw new NoAvailablePortException(format("Could not find an available port between %s and %s after %s attempts. I give up.",
-                portRange.minPortNumber, portRange.maxPortNumber, portRange.maxPortCheckAttempts));
+        throw new NoAvailablePortException(format("Could not find an available port between {} and {} after {} attempts. I give up.",
+                allowablePortRange.minPortNumber, allowablePortRange.maxPortNumber, allowablePortRange.maxPortCheckAttempts));
     }
 
     private boolean availableAndUnused(int port, Set<Integer> usedPorts) {
