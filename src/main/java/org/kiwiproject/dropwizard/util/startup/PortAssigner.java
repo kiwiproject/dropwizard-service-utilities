@@ -33,7 +33,7 @@ import java.util.stream.IntStream;
  * <ul>
  *     <li>{@link TlsConfigProvider} is required if secure connectors are wanted</li>
  *     <li>The default {@link PortAssignment} is {@code DYNAMIC}</li>
- *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the container</li>
+ *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the server</li>
  *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
  * </ul>
  */
