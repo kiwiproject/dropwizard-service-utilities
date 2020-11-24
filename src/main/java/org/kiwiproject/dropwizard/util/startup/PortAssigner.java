@@ -66,7 +66,7 @@ public class PortAssigner {
 
         this.localPortChecker = Optional.ofNullable(localPortChecker).orElse(new LocalPortChecker());
         this.portSecurity = Optional.ofNullable(portSecurity).orElse(PortSecurity.SECURE);
-        this.tlsConfiguration = this.portSecurity == PortSecurity.SECURE ? requireNotNull(tlsConfiguration) : null;
+        this.tlsConfiguration = (this.portSecurity == PortSecurity.SECURE) ? requireNotNull(tlsConfiguration) : null;
         this.portAssignment = Optional.ofNullable(portAssignment).orElse(PortAssignment.DYNAMIC);
         this.allowablePortRange = allowablePortRange;
         this.serverFactory = requireDefaultServerFactory(requireNotNull(serverFactory));
