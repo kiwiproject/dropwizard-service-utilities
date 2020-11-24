@@ -72,6 +72,9 @@ public class PortAssigner {
         this.serverFactory = requireDefaultServerFactory(requireNotNull(serverFactory));
     }
 
+    /**
+     * Sets up the connectors with a dynamic available port if {@link PortAssigner} is configured for dynamic ports.
+     */
     public void assignDynamicPorts() {
         if (portAssignment == PortAssignment.STATIC) {
             LOG.info("Static port assignment is being used, will rely on Dropwizard configuration for the connector setup");
