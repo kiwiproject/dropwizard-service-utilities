@@ -35,6 +35,7 @@ import java.util.stream.IntStream;
  *     <li>The default {@link PortAssignment} is {@code DYNAMIC}</li>
  *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the server</li>
  *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
+ *     <li>This class will setup at MOST one application port and one admin port. Currently you can NOT use this and have both secure and non-secure ports.</li>
  * </ul>
  */
 @Slf4j
