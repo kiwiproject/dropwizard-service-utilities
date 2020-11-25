@@ -34,6 +34,13 @@ class DropwizardConnectorsTest {
         }
 
         @Test
+        void throwsIllegalArgumentException_WhenServerFactory_IsNull() {
+            assertThatThrownBy(() -> DropwizardConnectors.requireDefaultServerFactory(null))
+                    .isExactlyInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("ServerFactory is required");
+        }
+
+        @Test
         void shouldReturnGivenServerFactory_WhenInstanceOfDefaultServerFactory() {
             var factory = new DefaultServerFactory();
 
