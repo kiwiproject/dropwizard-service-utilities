@@ -16,7 +16,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.config.TlsContextConfiguration;
-import org.kiwiproject.config.provider.TlsConfigProvider;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
 
@@ -31,7 +30,7 @@ import java.util.stream.IntStream;
 /**
  * Finds open ports and sets up the application and admin connectors with those ports. There are a couple of opinionated decisions here:
  * <ul>
- *     <li>{@link TlsConfigProvider} is required if secure connectors are wanted</li>
+ *     <li>{@link TlsContextConfiguration} is required if secure connectors are wanted</li>
  *     <li>The default {@link PortAssignment} is {@code DYNAMIC}</li>
  *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the server</li>
  *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
