@@ -6,6 +6,7 @@ import static org.kiwiproject.base.KiwiStrings.format;
 import static org.kiwiproject.collect.KiwiLists.first;
 import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.requireDefaultServerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
@@ -135,7 +136,8 @@ public class PortAssigner {
     /**
      * @implNote Mutates {@code usedPorts} for each used port it finds
      */
-    private int findFreePort(Set<Integer> usedPorts) {
+    @VisibleForTesting
+    int findFreePort(Set<Integer> usedPorts) {
         if (isNull(allowablePortRange)) {
             return 0;
         }

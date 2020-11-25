@@ -9,6 +9,8 @@ import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.SECURE;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -21,6 +23,9 @@ import org.junit.jupiter.api.Test;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @DisplayName("PortAssigner")
 class PortAssignerTest {
@@ -333,6 +338,111 @@ class PortAssignerTest {
             assertThatThrownBy(assigner::assignDynamicPorts)
                     .isInstanceOf(NoAvailablePortException.class)
                     .hasMessage("Could not find an available port between 9000 and 9100 after 303 attempts. I give up.");
+        }
+    }
+
+    @Nested
+    class FindFreePort {
+
+        @Test
+        void shouldReturnZero_WhenAllowablePortRangeIsNull() {
+            var assigner = PortAssigner.builder()
+                    .portSecurity(NON_SECURE)
+                    .serverFactory(new DefaultServerFactory())
+                    .build();
+
+            var port = assigner.findFreePort(Set.of());
+
+            assertThat(port).isZero();
+        }
+
+        @Test
+        void shouldFindFirstPortAvailableAndNotUsed() {
+            var range = new AllowablePortRange(9_000, 9_010);
+            var checker = mock(LocalPortChecker.class);
+            when(checker.isPortAvailable(anyInt())).thenReturn(true);
+
+            var assigner = PortAssigner.builder()
+                    .portSecurity(NON_SECURE)
+                    .serverFactory(new DefaultServerFactory())
+                    .allowablePortRange(range)
+                    .localPortChecker(checker)
+                    .build();
+
+            var usedPorts = new HashSet<Integer>();
+            var port = assigner.findFreePort(usedPorts);
+
+            assertThat(port).isBetween(9_000, 9_010);
+            verify(checker).isPortAvailable(anyInt());
+        }
+
+        @Test
+        void shouldFindPortAvailableAndNotUsed_AfterCheckingOneFirst() {
+            var range = new AllowablePortRange(9_000, 9_001);
+            var checker = mock(LocalPortChecker.class);
+            when(checker.isPortAvailable(anyInt()))
+                    .thenReturn(false)
+                    .thenReturn(true);
+
+            var assigner = PortAssigner.builder()
+                    .portSecurity(NON_SECURE)
+                    .serverFactory(new DefaultServerFactory())
+                    .allowablePortRange(range)
+                    .localPortChecker(checker)
+                    .build();
+
+            var usedPorts = new HashSet<Integer>();
+            var port = assigner.findFreePort(usedPorts);
+
+            assertThat(port).isBetween(9_000, 9_001);
+            verify(checker, times(2)).isPortAvailable(anyInt());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        void shouldFindPortAvailableAndNotUsed_AfterFindingUsedOneFirst() {
+            var range = new AllowablePortRange(9_000, 9_001);
+            var checker = mock(LocalPortChecker.class);
+            when(checker.isPortAvailable(anyInt())).thenReturn(true);
+
+            var assigner = PortAssigner.builder()
+                    .portSecurity(NON_SECURE)
+                    .serverFactory(new DefaultServerFactory())
+                    .allowablePortRange(range)
+                    .localPortChecker(checker)
+                    .build();
+
+            var usedPorts = mock(HashSet.class);
+            when(usedPorts.contains(anyInt()))
+                    .thenReturn(true)
+                    .thenReturn(false);
+
+            var port = assigner.findFreePort(usedPorts);
+
+            assertThat(port).isBetween(9_000, 9_001);
+            verify(checker, times(2)).isPortAvailable(anyInt());
+            verify(usedPorts, times(2)).contains(anyInt());
+            verify(usedPorts).add(anyInt());
+        }
+
+        @Test
+        void shouldThrowNoAvailablePortException_WhenNoPortsCanBeFound() {
+            var range = new AllowablePortRange(9_000, 9_001);
+            var checker = mock(LocalPortChecker.class);
+            when(checker.isPortAvailable(anyInt())).thenReturn(false);
+
+            var assigner = PortAssigner.builder()
+                    .portSecurity(NON_SECURE)
+                    .serverFactory(new DefaultServerFactory())
+                    .allowablePortRange(range)
+                    .localPortChecker(checker)
+                    .build();
+
+            var usedPorts = new HashSet<Integer>();
+
+            assertThatThrownBy(() -> assigner.findFreePort(usedPorts))
+                    .isInstanceOf(NoAvailablePortException.class)
+                    .hasMessage("Could not find an available port between 9000 and 9001 after 6 attempts. I give up.");
         }
     }
 }
