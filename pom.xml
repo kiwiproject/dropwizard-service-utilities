@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.kiwiproject</groupId>
     <artifactId>kiwi-parent</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
   </parent>
 
   <artifactId>dropwizard-service-utilities</artifactId>
@@ -30,7 +30,9 @@
   <properties>
     <!-- Versions for required dependencies -->
     <dropwizard.version>2.0.15</dropwizard.version>
-    <kiwi.version>0.15.0</kiwi.version>
+    <dropwizard-curator.version>0.13.0</dropwizard-curator.version>
+    <kiwi.version>0.16.0</kiwi.version>
+    <zookeeper.version>3.4.14</zookeeper.version>
 
     <!-- Versions for provided dependencies -->
     <hibernate-validator.version>6.1.6.Final</hibernate-validator.version>
@@ -42,8 +44,9 @@
     <!-- Versions for optional dependencies -->
 
     <!-- Versions for test dependencies -->
+    <curator.version>2.13.0</curator.version>
     <jackson.version>2.10.5</jackson.version>
-    <kiwi-test.version>0.10.0</kiwi-test.version>
+    <kiwi-test.version>0.11.0</kiwi-test.version>
 
     <!-- Versions for plugins -->
 
@@ -71,6 +74,18 @@
     </dependency>
 
     <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>dropwizard-curator</artifactId>
+      <version>${dropwizard-curator.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-jackson</artifactId>
       <version>${dropwizard.version}</version>
@@ -90,6 +105,23 @@
       <groupId>org.kiwiproject</groupId>
       <artifactId>kiwi</artifactId>
       <version>${kiwi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+      <version>${zookeeper.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Provided dependencies -->
@@ -160,6 +192,31 @@
     </dependency>
 
     <!-- Test dependencies -->
+
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-test</artifactId>
+      <version>${curator.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.javassist</groupId>
+          <artifactId>javassist</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <dependency>
       <groupId>io.dropwizard</groupId>
