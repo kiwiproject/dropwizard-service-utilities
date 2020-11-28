@@ -1,7 +1,6 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.DYNAMIC;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.STATIC;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +24,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.kiwiproject.curator.CuratorFrameworkHelper;
 import org.kiwiproject.curator.CuratorLockHelper;
 import org.kiwiproject.curator.config.CuratorConfig;
@@ -49,37 +50,25 @@ class StartupLockerTest {
     class Builder {
 
         @Test
-        void shouldRequireSystemExecutioner() {
-            var builder = StartupLocker.builder();
-
-            assertThatThrownBy(builder::build)
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("SystemExecutioner is required");
+        void shouldDefaultSystemExecutioner() {
+            var builder = StartupLocker.builder().build();
+            assertThat(builder.getExecutioner()).isNotNull();
         }
 
         @Test
         void shouldDefaultZooKeeperAvailabilityChecker() {
-            var builder = StartupLocker.builder()
-                    .executioner(new SystemExecutioner())
-                    .build();
-
+            var builder = StartupLocker.builder().build();
             assertThat(builder.getZkAvailabilityChecker()).isNotNull();
         }
 
         @Test
         void shouldDefaultCuratorFrameworkHelper() {
-            var builder = StartupLocker.builder()
-                    .executioner(new SystemExecutioner())
-                    .build();
-
+            var builder = StartupLocker.builder().build();
             assertThat(builder.getCuratorFrameworkHelper()).isNotNull();
         }
         @Test
         void shouldDefaultCuratorLockHelper() {
-            var builder = StartupLocker.builder()
-                    .executioner(new SystemExecutioner())
-                    .build();
-
+            var builder = StartupLocker.builder().build();
             assertThat(builder.getCuratorLockHelper()).isNotNull();
         }
 
@@ -87,6 +76,7 @@ class StartupLockerTest {
     @Nested
     class AcquireStartupLock {
 
+        // NOTE: This is not static because there isn't a way to reset the lifecycle listeners for each test
         final DropwizardClientExtension CLIENT_EXTENSION = new DropwizardClientExtension();
 
         private StartupLocker.StartupLockerBuilder startupLockerBuilder;
@@ -107,7 +97,12 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100),
                     STATIC, new CuratorConfig(), mock(Environment.class));
 
-            assertThat(lockInfo).isNull();
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.NOT_ATTEMPTED);
+            assertThat(lockInfo.getInfoMessage()).isEqualTo("Using static port assignment. Lock not needed.");
+            assertThat(lockInfo.getLock()).isNull();
+            assertThat(lockInfo.getLockPath()).isBlank();
+            assertThat(lockInfo.getException()).isNull();
+            assertThat(lockInfo.getClient()).isNull();
         }
 
         @Test
@@ -117,22 +112,34 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC,
                     new CuratorConfig(), mock(Environment.class));
 
-            assertThat(lockInfo).isNull();
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.NOT_ATTEMPTED);
+            assertThat(lockInfo.getInfoMessage()).startsWith("No ZooKeepers are available from connect string ");
+            assertThat(lockInfo.getLock()).isNull();
+            assertThat(lockInfo.getLockPath()).isBlank();
+            assertThat(lockInfo.getException()).isNull();
+            assertThat(lockInfo.getClient()).isNull();
         }
 
         @Test
-        void shouldAttemptToAcquireLock_AndReturnNull_WhenLockIsNotAcquired() {
+        void shouldAttemptToAcquireLock_AndReturnFailStatus_WhenLockIsNotAcquired() {
             var curatorLockHelper = mock(CuratorLockHelper.class);
             var locker = startupLockerBuilder.curatorLockHelper(curatorLockHelper).build();
 
             var lock = mock(InterProcessMutex.class);
             when(curatorLockHelper.createInterProcessMutex(any(CuratorFramework.class), eq(LOCK_PATH))).thenReturn(lock);
-            doThrow(new LockAcquisitionException("Oops")).when(curatorLockHelper).acquire(any(InterProcessMutex.class), eq(100L), eq(TimeUnit.MILLISECONDS));
+
+            var exception = new LockAcquisitionException("Oops");
+            doThrow(exception).when(curatorLockHelper).acquire(any(InterProcessMutex.class), eq(100L), eq(TimeUnit.MILLISECONDS));
 
             var curatorConfig = CuratorConfig.copyOfWithZkConnectString(new CuratorConfig(), ZK_TEST_SERVER.getConnectString());
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC, curatorConfig, mock(Environment.class));
 
-            assertThat(lockInfo).isNull();
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.ACQUIRE_FAIL);
+            assertThat(lockInfo.getInfoMessage()).isEqualTo("Failed to obtain startup lock");
+            assertThat(lockInfo.getLock()).isNull();
+            assertThat(lockInfo.getLockPath()).isBlank();
+            assertThat(lockInfo.getException()).isSameAs(exception);
+            assertThat(lockInfo.getClient()).isNull();
         }
 
         @Test
@@ -142,8 +149,12 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC,
                     curatorConfig, CLIENT_EXTENSION.getEnvironment());
 
-            assertThat(lockInfo).isNotNull();
-            assertThat(lockInfo.lockPath).isEqualTo(LOCK_PATH);
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.ACQUIRED);
+            assertThat(lockInfo.getInfoMessage()).isEqualTo("Lock acquired");
+            assertThat(lockInfo.getLock()).isNotNull();
+            assertThat(lockInfo.getLockPath()).isEqualTo(LOCK_PATH);
+            assertThat(lockInfo.getException()).isNull();
+            assertThat(lockInfo.getClient()).isNotNull();
 
             var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
             assertThat(listeners).hasAtLeastOneElementOfType(StartupWithLockJettyLifeCycleListener.class);
@@ -153,26 +164,38 @@ class StartupLockerTest {
     @Nested
     class AddFallbackJettyStartupLifeCycleListener {
 
+        // NOTE: This is not static because there isn't a way to reset the lifecycle listeners for each test
         final DropwizardClientExtension CLIENT_EXTENSION = new DropwizardClientExtension();
 
         @Test
-        void shouldNotAddListener_WhenLockInfoIsNotNull() {
+        void shouldNotAddListener_WhenLockInfoIsAcquired() {
             var locker = StartupLocker.builder().executioner(mock(SystemExecutioner.class)).build();
 
             var curatorClient = mock(CuratorFramework.class);
             var lock = mock(InterProcessLock.class);
-            var lockInfo = new StartupLocker.StartupLockInfo(curatorClient, lock, LOCK_PATH);
+            var lockInfo = StartupLocker.StartupLockInfo.builder()
+                    .client(curatorClient)
+                    .lock(lock)
+                    .lockPath(LOCK_PATH)
+                    .lockState(StartupLocker.StartupLockInfo.LockState.ACQUIRED)
+                    .build();
+
             locker.addFallbackJettyStartupLifeCycleListener(lockInfo, CLIENT_EXTENSION.getEnvironment());
 
             var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
             assertThat(listeners).doesNotHaveAnyElementsOfTypes(StartupJettyLifeCycleListener.class);
         }
 
-        @Test
-        void shouldAddListener_WhenLockInfoIsNull() {
+        @ParameterizedTest
+        @ValueSource(strings = { "NOT_ATTEMPTED", "ACQUIRE_FAIL" })
+        void shouldAddListener_WhenLockInfoNotAcquired(String state) {
             var locker = StartupLocker.builder().executioner(mock(SystemExecutioner.class)).build();
 
-            locker.addFallbackJettyStartupLifeCycleListener(null, CLIENT_EXTENSION.getEnvironment());
+            var info = StartupLocker.StartupLockInfo.builder()
+                    .lockState(StartupLocker.StartupLockInfo.LockState.valueOf(state))
+                    .build();
+
+            locker.addFallbackJettyStartupLifeCycleListener(info, CLIENT_EXTENSION.getEnvironment());
 
             var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
             assertThat(listeners).hasAtLeastOneElementOfType(StartupJettyLifeCycleListener.class);
@@ -198,10 +221,15 @@ class StartupLockerTest {
         }
 
         @Test
-        void shouldCleanupLock_WhenInfoIsNotNull() {
+        void shouldCleanupLock_WhenLockIsAcquired() {
             var curatorClient = mock(CuratorFramework.class);
             var lock = mock(InterProcessLock.class);
-            var lockInfo = new StartupLocker.StartupLockInfo(curatorClient, lock, LOCK_PATH);
+            var lockInfo = StartupLocker.StartupLockInfo.builder()
+                    .client(curatorClient)
+                    .lock(lock)
+                    .lockPath(LOCK_PATH)
+                    .lockState(StartupLocker.StartupLockInfo.LockState.ACQUIRED)
+                    .build();
 
             locker.releaseStartupLockIfPresent(lockInfo);
 
@@ -209,9 +237,14 @@ class StartupLockerTest {
             verify(curatorFrameworkHelper).closeIfStarted(curatorClient);
         }
 
-        @Test
-        void shouldNotDoAnything_WhenInfoIsNull() {
-            locker.releaseStartupLockIfPresent(null);
+        @ParameterizedTest
+        @ValueSource(strings = { "NOT_ATTEMPTED", "ACQUIRE_FAIL" })
+        void shouldNotDoAnything_WhenLockIsNotAcquired(String state) {
+            var info = StartupLocker.StartupLockInfo.builder()
+                    .lockState(StartupLocker.StartupLockInfo.LockState.valueOf(state))
+                    .build();
+
+            locker.releaseStartupLockIfPresent(info);
 
             verifyNoInteractions(curatorLockHelper, curatorFrameworkHelper);
         }

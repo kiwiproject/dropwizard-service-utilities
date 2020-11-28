@@ -1,5 +1,8 @@
 package org.kiwiproject.dropwizard.util.startup.listener;
 
+import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessLock;
@@ -24,10 +27,10 @@ public class StartupWithLockJettyLifeCycleListener extends AbstractLifeCycle.Abs
     private final SystemExecutioner executioner;
 
     public StartupWithLockJettyLifeCycleListener(CuratorFramework curatorFramework, InterProcessLock lock, String lockPath, SystemExecutioner executioner) {
-        this.curatorFramework = curatorFramework;
-        this.lock = lock;
-        this.lockPath = lockPath;
-        this.executioner = executioner;
+        this.curatorFramework = requireNotNull(curatorFramework);
+        this.lock = requireNotNull(lock);
+        this.lockPath = requireNotBlank(lockPath);
+        this.executioner = requireNotNull(executioner);
     }
 
     @Override

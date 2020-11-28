@@ -1,5 +1,7 @@
 package org.kiwiproject.dropwizard.util.startup.listener;
 
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
@@ -15,7 +17,7 @@ public class StartupJettyLifeCycleListener extends AbstractLifeCycle.AbstractLif
     private final SystemExecutioner executioner;
 
     public StartupJettyLifeCycleListener(SystemExecutioner executioner) {
-        this.executioner = executioner;
+        this.executioner = requireNotNull(executioner);
     }
 
     @Override
