@@ -1,17 +1,12 @@
 package org.kiwiproject.dropwizard.util.lifecycle;
 
-import static org.kiwiproject.base.KiwiStrings.format;
-
-import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.registry.config.ServiceInfo;
 import org.kiwiproject.registry.management.RegistrationManager;
 import org.kiwiproject.registry.management.dropwizard.RegistrationLifecycleListener;
-import org.kiwiproject.registry.model.Port;
 import org.kiwiproject.registry.server.RegistryService;
-import org.kiwiproject.registry.util.Ports;
 
 import java.time.Instant;
 
@@ -83,16 +78,6 @@ public class StandardLifecycles {
      * @param environment   the Dropwizard environment
      */
     public static void addServiceRunningLifecycleListener(ServiceInfo serviceInfo, Environment environment) {
-        ServerLifecycleListener listener = server -> {
-            var appPort = Ports.findFirstPortPreferSecure(serviceInfo.getPorts(), Port.PortType.APPLICATION);
-            var adminPort = Ports.findFirstPortPreferSecure(serviceInfo.getPorts(), Port.PortType.ADMIN);
-            var status = format("RUNNING (port: {}/{}, admin port: {}/{})",
-                    appPort.getNumber(), appPort.getSecure().getScheme(), adminPort.getNumber(),
-                    adminPort.getSecure().getScheme());
-
-            logServiceStatusWarningWithStatus(status);
-        };
-
-        environment.lifecycle().addServerLifecycleListener(listener);
+        environment.lifecycle().addServerLifecycleListener(new ServerStatusServerLifecycleListener(serviceInfo));
     }
 }

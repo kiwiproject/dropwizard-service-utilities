@@ -25,7 +25,7 @@ class StandardLifecyclesTest {
 
             StandardLifecycles.addServiceRunningLifecycleListener(serviceInfo, environment);
 
-            verify(environment.lifecycle()).addServerLifecycleListener(any());
+            verify(environment.lifecycle()).addServerLifecycleListener(any(ServerStatusServerLifecycleListener.class));
         }
 
     }

@@ -9,7 +9,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import java.util.Arrays;
 
 @Slf4j
-public class ConnectorLoggingServerLifecycleListener implements ServerLifecycleListener {
+class ConnectorLoggingServerLifecycleListener implements ServerLifecycleListener {
 
     @Override
     public void serverStarted(Server server) {
