@@ -55,7 +55,8 @@ class StandardLifecyclesTest {
 
             StandardLifecycles.addServerConnectorLoggingLifecycleListener(environment);
 
-            verify(environment.lifecycle()).addServerLifecycleListener(any(ConnectorLoggingServerLifecycleListener.class));
+            verify(environment.lifecycle())
+                    .addServerLifecycleListener(any(ConnectorLoggingServerLifecycleListener.class));
         }
 
     }
@@ -67,9 +68,10 @@ class StandardLifecyclesTest {
         void shouldAddProcessIdLoggingLifecycleListener() {
             var environment = DropwizardMockitoMocks.mockEnvironment();
 
-            StandardLifecycles.addProcessIdLoggingLifecycleListener(10_000, environment);
+            StandardLifecycles.addProcessIdLoggingLifecycleListener(10_000L, environment);
 
-            verify(environment.lifecycle()).addServerLifecycleListener(any(ProcessIdLoggingServerLifecycleListener.class));
+            verify(environment.lifecycle())
+                    .addServerLifecycleListener(any(ProcessIdLoggingServerLifecycleListener.class));
         }
 
     }

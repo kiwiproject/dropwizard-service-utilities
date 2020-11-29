@@ -8,9 +8,9 @@ import org.eclipse.jetty.server.Server;
 
 @Slf4j
 class ProcessIdLoggingServerLifecycleListener implements ServerLifecycleListener {
-    private final Integer processId;
+    private final Long processId;
 
-    ProcessIdLoggingServerLifecycleListener(Integer processId) {
+    ProcessIdLoggingServerLifecycleListener(Long processId) {
         this.processId = processId;
     }
 

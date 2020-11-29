@@ -16,7 +16,8 @@ public class ConnectorLoggingServerLifecycleListener implements ServerLifecycleL
         Arrays.stream(server.getConnectors())
                 .filter(connector -> connector instanceof ServerConnector)
                 .forEach(connector ->
-                        LOG.info("Server connector [{}] is on port [{}]", connector.getName(), getLocalPort(connector)));
+                        LOG.info("Server connector [{}] is on port [{}]", connector.getName(),
+                                getLocalPort(connector)));
     }
 
     private static int getLocalPort(Connector connector) {

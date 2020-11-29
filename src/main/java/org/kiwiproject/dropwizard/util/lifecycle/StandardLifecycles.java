@@ -42,7 +42,10 @@ public class StandardLifecycles {
      * @param serviceInfo       the metadata about the service (i.e. name, version, etc)
      * @param environment       the Dropwizard environment
      */
-    public static void addRegistryLifecycleListeners(RegistryService registryService, ServiceInfo serviceInfo, Environment environment) {
+    public static void addRegistryLifecycleListeners(RegistryService registryService,
+                                                     ServiceInfo serviceInfo,
+                                                     Environment environment) {
+
         var registrationManager = new RegistrationManager(serviceInfo, registryService);
 
         var listener = new RegistrationLifecycleListener(registrationManager);
@@ -54,6 +57,11 @@ public class StandardLifecycles {
         environment.lifecycle().addLifeCycleListener(listener);
     }
 
+    /**
+     * Adds a server lifecycle listener that logs the server connector information on startup.
+     *
+     * @param environment the Dropwizard environment
+     */
     public static void addServerConnectorLoggingLifecycleListener(Environment environment) {
         environment.lifecycle().addServerLifecycleListener(new ConnectorLoggingServerLifecycleListener());
     }
@@ -64,7 +72,7 @@ public class StandardLifecycles {
      * @param processId     the process id or null if unable to find it
      * @param environment   the Dropwizard environment
      */
-    public static void addProcessIdLoggingLifecycleListener(Integer processId, Environment environment) {
+    public static void addProcessIdLoggingLifecycleListener(Long processId, Environment environment) {
         environment.lifecycle().addServerLifecycleListener(new ProcessIdLoggingServerLifecycleListener(processId));
     }
 
@@ -79,7 +87,9 @@ public class StandardLifecycles {
             var appPort = Ports.findFirstPortPreferSecure(serviceInfo.getPorts(), Port.PortType.APPLICATION);
             var adminPort = Ports.findFirstPortPreferSecure(serviceInfo.getPorts(), Port.PortType.ADMIN);
             var status = format("RUNNING (port: {}/{}, admin port: {}/{})",
-                    appPort.getNumber(), appPort.getSecure().getScheme(), adminPort.getNumber(), adminPort.getSecure().getScheme());
+                    appPort.getNumber(), appPort.getSecure().getScheme(), adminPort.getNumber(),
+                    adminPort.getSecure().getScheme());
+
             logServiceStatusWarningWithStatus(status);
         };
 
