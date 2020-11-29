@@ -46,7 +46,8 @@ public class StartupLocker {
     }
 
     /**
-     * Model object containing information on the state of the acquired lock and necessary objects needed to release the lock.
+     * A value class that contains information about a startup lock, such as whether a lock was successfully
+     * acquired, the lock path, the lock itself, as well as information when any exception occurs. 
      */
     @Getter
     @Builder
