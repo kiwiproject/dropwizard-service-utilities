@@ -77,7 +77,8 @@ public class StartupLocker {
      * @param lockTimeout   the amount of time to wait for the lock to be acquired
      * @param curatorConfig the Curator configuration
      * @param environment   the Dropwizard environment
-     * @return information about the acquired lock or {@link Optional#empty()} if lock could not be acquired
+     * @return information about the attempted lock, whether it was obtained, etc. Clients are expected check the
+     * lock state contained in this object, and take appropriate actions.
      */
     public StartupLockInfo acquireStartupLock(String lockPath,
                                               Duration lockTimeout,
