@@ -97,7 +97,7 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100),
                     STATIC, new CuratorConfig(), mock(Environment.class));
 
-            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.NOT_ATTEMPTED);
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLockInfo.LockState.NOT_ATTEMPTED);
             assertThat(lockInfo.getInfoMessage()).isEqualTo("Using static port assignment. Lock not needed.");
             assertThat(lockInfo.getLock()).isNull();
             assertThat(lockInfo.getLockPath()).isBlank();
@@ -112,7 +112,7 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC,
                     new CuratorConfig(), mock(Environment.class));
 
-            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.NOT_ATTEMPTED);
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLockInfo.LockState.NOT_ATTEMPTED);
             assertThat(lockInfo.getInfoMessage()).startsWith("No ZooKeepers are available from connect string ");
             assertThat(lockInfo.getLock()).isNull();
             assertThat(lockInfo.getLockPath()).isBlank();
@@ -134,7 +134,7 @@ class StartupLockerTest {
             var curatorConfig = CuratorConfig.copyOfWithZkConnectString(new CuratorConfig(), ZK_TEST_SERVER.getConnectString());
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC, curatorConfig, mock(Environment.class));
 
-            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.ACQUIRE_FAIL);
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLockInfo.LockState.ACQUIRE_FAIL);
             assertThat(lockInfo.getInfoMessage()).isEqualTo("Failed to obtain startup lock");
             assertThat(lockInfo.getLock()).isNull();
             assertThat(lockInfo.getLockPath()).isBlank();
@@ -149,7 +149,7 @@ class StartupLockerTest {
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC,
                     curatorConfig, CLIENT_EXTENSION.getEnvironment());
 
-            assertThat(lockInfo.getLockState()).isEqualTo(StartupLocker.StartupLockInfo.LockState.ACQUIRED);
+            assertThat(lockInfo.getLockState()).isEqualTo(StartupLockInfo.LockState.ACQUIRED);
             assertThat(lockInfo.getInfoMessage()).isEqualTo("Lock acquired");
             assertThat(lockInfo.getLock()).isNotNull();
             assertThat(lockInfo.getLockPath()).isEqualTo(LOCK_PATH);
@@ -173,11 +173,12 @@ class StartupLockerTest {
 
             var curatorClient = mock(CuratorFramework.class);
             var lock = mock(InterProcessLock.class);
-            var lockInfo = StartupLocker.StartupLockInfo.builder()
+            var lockInfo = StartupLockInfo.builder()
                     .client(curatorClient)
                     .lock(lock)
                     .lockPath(LOCK_PATH)
-                    .lockState(StartupLocker.StartupLockInfo.LockState.ACQUIRED)
+                    .lockState(StartupLockInfo.LockState.ACQUIRED)
+                    .infoMessage("Lock acquired")
                     .build();
 
             locker.addFallbackJettyStartupLifeCycleListener(lockInfo, CLIENT_EXTENSION.getEnvironment());
@@ -191,8 +192,10 @@ class StartupLockerTest {
         void shouldAddListener_WhenLockInfoNotAcquired(String state) {
             var locker = StartupLocker.builder().executioner(mock(SystemExecutioner.class)).build();
 
-            var info = StartupLocker.StartupLockInfo.builder()
-                    .lockState(StartupLocker.StartupLockInfo.LockState.valueOf(state))
+            var info = StartupLockInfo.builder()
+                    .lockState(StartupLockInfo.LockState.valueOf(state))
+                    .infoMessage("Info about why lock not acquired")
+                    .exception(new RuntimeException("Oops"))
                     .build();
 
             locker.addFallbackJettyStartupLifeCycleListener(info, CLIENT_EXTENSION.getEnvironment());
@@ -224,11 +227,12 @@ class StartupLockerTest {
         void shouldCleanupLock_WhenLockIsAcquired() {
             var curatorClient = mock(CuratorFramework.class);
             var lock = mock(InterProcessLock.class);
-            var lockInfo = StartupLocker.StartupLockInfo.builder()
+            var lockInfo = StartupLockInfo.builder()
                     .client(curatorClient)
                     .lock(lock)
                     .lockPath(LOCK_PATH)
-                    .lockState(StartupLocker.StartupLockInfo.LockState.ACQUIRED)
+                    .lockState(StartupLockInfo.LockState.ACQUIRED)
+                    .infoMessage("Lock Acquired")
                     .build();
 
             locker.releaseStartupLockIfPresent(lockInfo);
@@ -240,8 +244,10 @@ class StartupLockerTest {
         @ParameterizedTest
         @ValueSource(strings = { "NOT_ATTEMPTED", "ACQUIRE_FAIL" })
         void shouldNotDoAnything_WhenLockIsNotAcquired(String state) {
-            var info = StartupLocker.StartupLockInfo.builder()
-                    .lockState(StartupLocker.StartupLockInfo.LockState.valueOf(state))
+            var info = StartupLockInfo.builder()
+                    .lockState(StartupLockInfo.LockState.valueOf(state))
+                    .infoMessage("Reason why lock was not acquired")
+                    .exception(new RuntimeException("oops"))
                     .build();
 
             locker.releaseStartupLockIfPresent(info);

@@ -8,8 +8,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.locks.InterProcessLock;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.kiwiproject.curator.CuratorFrameworkHelper;
 import org.kiwiproject.curator.CuratorLockHelper;
@@ -51,26 +49,6 @@ public class StartupLocker {
     }
 
     /**
-     * A value class that contains information about a startup lock, such as whether a lock was successfully
-     * acquired, the lock path, the lock itself, as well as information when any exception occurs. 
-     */
-    @Getter
-    @Builder
-    public static class StartupLockInfo {
-
-        public enum LockState {
-            NOT_ATTEMPTED, ACQUIRED, ACQUIRE_FAIL
-        }
-
-        CuratorFramework client;
-        InterProcessLock lock;
-        String lockPath;
-        LockState lockState;
-        String infoMessage;
-        Exception exception;
-    }
-
-    /**
      * Attempts to acquire a lock from ZooKeeper during startup.
      *
      * @param lockPath      the path in ZooKeeper to store the lock
@@ -98,8 +76,11 @@ public class StartupLocker {
             var lock = curatorLockHelper.createInterProcessMutex(curatorFramework, lockPath);
 
             try {
+
                 tryAcquireStartupLock(lock, lockPath, lockTimeout);
-                environment.lifecycle().addLifeCycleListener(new StartupWithLockJettyLifeCycleListener(curatorFramework, lock, lockPath, executioner));
+                environment.lifecycle().addLifeCycleListener(
+                        new StartupWithLockJettyLifeCycleListener(curatorFramework, lock, lockPath, executioner));
+
                 return StartupLockInfo.builder()
                         .client(curatorFramework)
                         .lock(lock)
@@ -150,9 +131,9 @@ public class StartupLocker {
      */
     public void releaseStartupLockIfPresent(StartupLockInfo lockInfo) {
         if (lockInfo.getLockState() == StartupLockInfo.LockState.ACQUIRED) {
-            LOG.warn("Due to exception caught running app [{}], early releasing lock [{}] on path [{}]", this, lockInfo.lock, lockInfo.lockPath);
-            curatorLockHelper.releaseLockQuietlyIfHeld(lockInfo.lock);
-            curatorFrameworkHelper.closeIfStarted(lockInfo.client);
+            LOG.warn("Releasing lock [{}] on path [{}]", lockInfo.getLock(), lockInfo.getLockPath());
+            curatorLockHelper.releaseLockQuietlyIfHeld(lockInfo.getLock());
+            curatorFrameworkHelper.closeIfStarted(lockInfo.getClient());
         }
     }
 }
