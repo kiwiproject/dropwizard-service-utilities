@@ -32,6 +32,7 @@
     <dropwizard.version>2.0.16</dropwizard.version>
     <dropwizard-curator.version>0.14.0</dropwizard-curator.version>
     <kiwi.version>0.17.0</kiwi.version>
+    <service-discovery-client.version>0.9.0</service-discovery-client.version>
     <zookeeper.version>3.4.14</zookeeper.version>
 
     <!-- Versions for provided dependencies -->
@@ -105,6 +106,12 @@
       <groupId>org.kiwiproject</groupId>
       <artifactId>kiwi</artifactId>
       <version>${kiwi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>service-discovery-client</artifactId>
+      <version>${service-discovery-client.version}</version>
     </dependency>
 
     <dependency>
