@@ -76,7 +76,6 @@ public class StartupLocker {
             var lock = curatorLockHelper.createInterProcessMutex(curatorFramework, lockPath);
 
             try {
-
                 tryAcquireStartupLock(lock, lockPath, lockTimeout);
                 environment.lifecycle().addLifeCycleListener(
                         new StartupWithLockJettyLifeCycleListener(curatorFramework, lock, lockPath, executioner));
@@ -131,7 +130,7 @@ public class StartupLocker {
      */
     public void releaseStartupLockIfPresent(StartupLockInfo lockInfo) {
         if (lockInfo.getLockState() == StartupLockInfo.LockState.ACQUIRED) {
-            LOG.warn("Releasing lock [{}] on path [{}]", lockInfo.getLock(), lockInfo.getLockPath());
+            LOG.info("Releasing lock [{}] on path [{}]", lockInfo.getLock(), lockInfo.getLockPath());
             curatorLockHelper.releaseLockQuietlyIfHeld(lockInfo.getLock());
             curatorFrameworkHelper.closeIfStarted(lockInfo.getClient());
         }
