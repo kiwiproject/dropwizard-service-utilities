@@ -20,7 +20,7 @@ public class StandardEnvironmentConfigurations {
      *
      * @param environment the Dropwizard environment
      */
-    public void enableWadlGeneration(Environment environment) {
+    public static void enableWadlGeneration(Environment environment) {
         Map<String, Object> properties = Map.of(ServerProperties.WADL_FEATURE_DISABLE, false);
         environment.jersey().getResourceConfig().addProperties(properties);
     }
@@ -30,7 +30,7 @@ public class StandardEnvironmentConfigurations {
      *
      * @param environment the Dropwizard environment
      */
-    public void configureKiwiValidator(Environment environment) {
+    public static void configureKiwiValidator(Environment environment) {
         KiwiValidations.setValidator(environment.getValidator());
     }
 }
