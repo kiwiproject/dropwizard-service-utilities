@@ -41,9 +41,13 @@ public class ServerLoadFetcher {
     }
 
     /**
-     * Expected format:
+     * Example format on Linux-based systems:
      * <p>
      * {@code 18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03}
+     * <p>
+     * Example format on macOS systems:
+     * <p>
+     * {@code 18:29:28 up 34 days, 18:25, 1 user, load averages: 0.88 0.98 1.03}
      *
      * @return an {@link Optional} with the load average string or {@link Optional#empty()} if not found
      */

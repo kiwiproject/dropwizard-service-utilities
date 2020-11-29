@@ -27,7 +27,7 @@ class ServerLoadFetcherTest {
 
     @Test
     void testGet_UsingActualProcess() {
-        String load = new ServerLoadFetcher().get().orElse(null);
+        var load = new ServerLoadFetcher().get().orElse(null);
         assertThat(load)
                 .isNotNull()
                 .matches("^\\d+.\\d+[,]? \\d+.\\d+[,]? \\d+.\\d+$");
@@ -35,13 +35,16 @@ class ServerLoadFetcherTest {
 
     @Test
     void testGet_UsingMockProcess() throws InterruptedException {
-        String output = " 18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
-        Process proc = mock(Process.class);
+        var output = "18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
+        var proc = mock(Process.class);
         when(processes.launch("uptime")).thenReturn(proc);
-        ByteArrayInputStream bais = new ByteArrayInputStream(output.getBytes());
+
+        var bais = new ByteArrayInputStream(output.getBytes());
+
         when(proc.getInputStream()).thenReturn(bais);
         when(proc.waitFor(anyLong(), any())).thenReturn(true);
-        String load = serverLoad.get().orElse(null);
+
+        var load = serverLoad.get().orElse(null);
         assertThat(load)
                 .isNotNull()
                 .isEqualTo("0.88, 0.98, 1.03");
@@ -49,24 +52,28 @@ class ServerLoadFetcherTest {
 
     @Test
     void testGet_WhenLoadAverageString_IsNotPresent() {
-        String output = "this is total garbage in, so garbage out";
-        Process proc = mock(Process.class);
+        var output = "this is total garbage in, so garbage out";
+        var proc = mock(Process.class);
         when(processes.launch("uptime")).thenReturn(proc);
-        ByteArrayInputStream bais = new ByteArrayInputStream(output.getBytes());
+
+        var bais = new ByteArrayInputStream(output.getBytes());
         when(proc.getInputStream()).thenReturn(bais);
-        String load = serverLoad.get().orElse(null);
+
+        var load = serverLoad.get().orElse(null);
         assertThat(load).isNull();
     }
 
     @Test
     void testGet_WhenProcessWaitTimesOut() throws InterruptedException {
-        String output = " 18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
-        Process proc = mock(Process.class);
+        var output = "18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
+        var proc = mock(Process.class);
         when(processes.launch("uptime")).thenReturn(proc);
-        ByteArrayInputStream bais = new ByteArrayInputStream(output.getBytes());
+
+        var bais = new ByteArrayInputStream(output.getBytes());
         when(proc.getInputStream()).thenReturn(bais);
         when(proc.waitFor(anyLong(), any())).thenReturn(false);
-        String load = serverLoad.get().orElse(null);
+
+        var load = serverLoad.get().orElse(null);
         assertThat(load).isNull();
     }
 }
