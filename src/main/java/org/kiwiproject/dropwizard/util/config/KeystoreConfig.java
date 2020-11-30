@@ -1,0 +1,65 @@
+package org.kiwiproject.dropwizard.util.config;
+
+import io.dropwizard.util.Duration;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.kiwiproject.security.KeyStoreType;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+/**
+ * Configuration for keystore health checks.
+ */
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+public class KeystoreConfig {
+
+    private static final String DEFAULT_NAME = "Key store";
+    private static final String DEFAULT_TYPE = KeyStoreType.JKS.name();
+    private static final Duration DEFAULT_TTL = Duration.days(30);
+
+    /**
+     * A name that can be used for the health check using this configuration.
+     */
+    @NotBlank
+    @Builder.Default
+    private String name = DEFAULT_NAME;
+
+    /**
+     * The absolute path to the key store.
+     */
+    @NotBlank
+    private String path;
+
+    /**
+     * The keystore password. (Default: "")
+     */
+    @Builder.Default
+    private String pass = "";
+
+    /**
+     * The key store type. (Default: JKS)
+     */
+    @NotBlank
+    @Builder.Default
+    private String type = DEFAULT_TYPE;
+
+    /**
+     * The "time to live" to use when considering whether a certificate will expire "soon". The definition of "soon"
+     * is whether the certificate expires within "ttl" of the certificate's expiration date. (Default: 30 days)
+     * <p>
+     * For example, with the default 30 days, if a certificate's expiration date is after (now + 30 days) then it will
+     * be considered as expiring soon.
+     */
+    @NotNull
+    @Builder.Default
+    private Duration ttl = DEFAULT_TTL;
+}
