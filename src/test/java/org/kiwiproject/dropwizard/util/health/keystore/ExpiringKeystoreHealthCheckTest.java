@@ -128,7 +128,6 @@ class ExpiringKeystoreHealthCheckTest {
             var expirationDate = sixtyDaysAgo.plusDays(75);
             var expirationDateString = DATE_FORMATTER.format(expirationDate);
             softly.assertThat(certInfo.getExpiresOn()).startsWith(expirationDateString);
-
         }
 
         @SuppressWarnings("unchecked")
