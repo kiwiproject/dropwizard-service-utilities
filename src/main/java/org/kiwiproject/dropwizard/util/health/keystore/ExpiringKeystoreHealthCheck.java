@@ -34,7 +34,7 @@ public class ExpiringKeystoreHealthCheck extends HealthCheck {
     /**
      * @implNote There is no constant in JDK for this, however, see 'Java Security Standard Algorithm Names' on
      * the interwebs, specifically the 'CertificateFactoryTypes' subsection which defines X.509 as (currently the only)
-     * a valid type.
+     * a valid type. Note each JDK version has its own 'Java Security Standard Algorithm Names' page.
      * @see java.security.cert.CertificateFactory
      */
     private static final String X_509_CERT_TYPE = "X.509";
