@@ -26,7 +26,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * Health check that checks whether X.509 certificates are valid, expired, or will be expiring soon as configured
- * int a {@link KeystoreConfig}
+ * in a {@link KeystoreConfig}.
  */
 @Slf4j
 public class ExpiringKeystoreHealthCheck extends HealthCheck {
