@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.kiwiproject.collect.KiwiLists.first;
 
 import io.dropwizard.util.Duration;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 @DisplayName("ExpiringKeystoreHealthCheck")
 @ExtendWith(SoftAssertionsExtension.class)
+@Slf4j
 class ExpiringKeystoreHealthCheckTest {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("EE, d LLL yyyy");
@@ -45,7 +47,7 @@ class ExpiringKeystoreHealthCheckTest {
                     .name("Test Keystore Config")
                     .path(path)
                     .pass("unittest")
-                    .ttl(Duration.days(45))
+                    .expirationWarningThreshold(Duration.days(45))
                     .build();
 
             var healthCheck = new ExpiringKeystoreHealthCheck(config);
@@ -58,7 +60,7 @@ class ExpiringKeystoreHealthCheckTest {
             var details = result.getDetails();
             softly.assertThat(details).contains(
                     entry("path", path),
-                    entry("ttl", Duration.days(45))
+                    entry("expirationWarningThreshold", Duration.days(45))
             );
 
             List<BasicCertInfo> validCerts = getBasicCertInfoList(details, "validCerts");
@@ -105,7 +107,7 @@ class ExpiringKeystoreHealthCheckTest {
             var details = result.getDetails();
             softly.assertThat(details).contains(
                     entry("path", path),
-                    entry("ttl", Duration.days(30))
+                    entry("expirationWarningThreshold", Duration.days(30))
             );
 
             List<BasicCertInfo> validCerts = getBasicCertInfoList(details, "validCerts");
@@ -153,7 +155,7 @@ class ExpiringKeystoreHealthCheckTest {
             var details = result.getDetails();
             softly.assertThat(details).contains(
                     entry("path", path),
-                    entry("ttl", Duration.days(30)) // default ttl
+                    entry("expirationWarningThreshold", Duration.days(30)) // default expirationWarningThreshold
             );
 
             List<BasicCertInfo> validCerts = getBasicCertInfoList(details, "validCerts");
@@ -167,18 +169,6 @@ class ExpiringKeystoreHealthCheckTest {
         }
     }
 
-    /**
-     * The keytool command that generated the valid cert:
-     * <p>
-     * keytool -genkeypair -keyalg RSA -alias test -keystore test-keystore-with-one-valid-cert.jks -storepass password
-     * -validity 3650 -keysize 2048
-     * <p>
-     * Issued on: Mon Jun 10 21:34:22 GMT 2019
-     * <p>
-     * Expires on: Thu Jun 07 21:34:22 GMT 2029
-     * <p>
-     * Then renamed it to: test-keystore-with-one-valid-cert-until-2029.pkcs12
-     */
     @Nested
     class ShouldReportHealthy {
 
@@ -193,7 +183,7 @@ class ExpiringKeystoreHealthCheckTest {
                     .path(path)
                     .pass("unittest")
                     .type(KeyStoreType.PKCS12.name())
-                    .ttl(Duration.days(20))
+                    .expirationWarningThreshold(Duration.days(20))
                     .build();
 
             var healthCheck = new ExpiringKeystoreHealthCheck(config);
@@ -206,7 +196,7 @@ class ExpiringKeystoreHealthCheckTest {
             var details = result.getDetails();
             softly.assertThat(details).contains(
                     entry("path", path),
-                    entry("ttl", Duration.days(20))
+                    entry("expirationWarningThreshold", Duration.days(20))
             );
 
             List<BasicCertInfo> validCerts = getBasicCertInfoList(details, "validCerts");
@@ -250,16 +240,26 @@ class ExpiringKeystoreHealthCheckTest {
         }
     }
 
-    private String createTemporaryKeystore(Path dir, int daysValid, String dn) throws InterruptedException {
+    private String createTemporaryKeystore(Path dir, int daysValid, String dn) {
         var keystorePath = dir.resolve("temporary-keystore.jks").toAbsolutePath().toString();
 
         var processHelper = new ProcessHelper();
-        var keystoreGenProcess = processHelper.launch("keytool", "-alias", "Test", "-genkey", "-keystore", keystorePath, "-keyalg", "RSA", "-validity", String.valueOf(daysValid), "-startdate", "-60d", "-storepass", "unittest", "-keypass", "unittest", "-dname", dn);
+        var keystoreGenProcess = processHelper.launch("keytool",
+                "-alias", "Test",
+                "-genkey",
+                "-keystore", keystorePath,
+                "-keyalg", "RSA",
+                "-validity", String.valueOf(daysValid),
+                "-startdate", "-60d",
+                "-storepass", "unittest",
+                "-keypass", "unittest",
+                "-dname", dn);
 
         processHelper.waitForExit(keystoreGenProcess, 500, TimeUnit.MILLISECONDS);
 
-        System.out.println(KiwiIO.readInputStreamOf(keystoreGenProcess));
-        System.out.println(KiwiIO.readErrorStreamOf(keystoreGenProcess));
+        // These are here so that if the keytool command fails we can see the output
+        LOG.debug(KiwiIO.readInputStreamOf(keystoreGenProcess));
+        LOG.debug(KiwiIO.readErrorStreamOf(keystoreGenProcess));
 
         return keystorePath;
     }

@@ -51,12 +51,12 @@ public class ExpiringKeystoreHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         var keystoreResults = checkKeyStore();
 
         return keystoreResults.toResultBuilder()
                 .withDetail("path", keystoreResults.getPath())
-                .withDetail("ttl", keystoreConfig.getTtl())
+                .withDetail("expirationWarningThreshold", keystoreConfig.getExpirationWarningThreshold())
                 .withDetail("validCerts", keystoreResults.getValidCerts())
                 .withDetail("expiredCerts", keystoreResults.getExpiredCerts())
                 .withDetail("expiringCerts", keystoreResults.getExpiringCerts())
@@ -71,7 +71,7 @@ public class ExpiringKeystoreHealthCheck extends HealthCheck {
 
             return KeystoreHealthResults.builder()
                     .path(keystoreConfig.getPath())
-                    .ttl(keystoreConfig.getTtl())
+                    .expirationWarningThreshold(keystoreConfig.getExpirationWarningThreshold())
                     .exception(e)
                     .validCerts(emptyList())
                     .expiredCerts(emptyList())
@@ -91,7 +91,7 @@ public class ExpiringKeystoreHealthCheck extends HealthCheck {
 
     private KeystoreHealthResults checkKeyStore(KeyStore keyStore) throws KeyStoreException {
         var now = Instant.now();
-        var expirationThreshold = now.plusSeconds(keystoreConfig.getTtl().toSeconds());
+        var expirationThreshold = now.plusSeconds(keystoreConfig.getExpirationWarningThreshold().toSeconds());
 
         var basicCertInfos = StreamSupport
                 .stream(keyStoreAliasSpliterator(keyStore), USE_SEQUENTIAL_STREAM)
@@ -107,7 +107,7 @@ public class ExpiringKeystoreHealthCheck extends HealthCheck {
 
         return KeystoreHealthResults.builder()
                 .path(keystoreConfig.getPath())
-                .ttl(keystoreConfig.getTtl())
+                .expirationWarningThreshold(keystoreConfig.getExpirationWarningThreshold())
                 .validCerts(ok)
                 .expiredCerts(expired)
                 .expiringCerts(expiring)

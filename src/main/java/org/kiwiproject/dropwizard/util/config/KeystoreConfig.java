@@ -24,7 +24,7 @@ public class KeystoreConfig {
 
     private static final String DEFAULT_NAME = "Key store";
     private static final String DEFAULT_TYPE = KeyStoreType.JKS.name();
-    private static final Duration DEFAULT_TTL = Duration.days(30);
+    private static final Duration DEFAULT_EXPIRATION_WARNING_THRESHOLD = Duration.days(30);
 
     /**
      * A name that can be used for the health check using this configuration.
@@ -43,6 +43,7 @@ public class KeystoreConfig {
      * The keystore password. (Default: "")
      */
     @Builder.Default
+    @NotNull
     private String pass = "";
 
     /**
@@ -53,13 +54,13 @@ public class KeystoreConfig {
     private String type = DEFAULT_TYPE;
 
     /**
-     * The "time to live" to use when considering whether a certificate will expire "soon". The definition of "soon"
-     * is whether the certificate expires within "ttl" of the certificate's expiration date. (Default: 30 days)
+     * The threshold to use when considering whether a certificate will expire "soon". The definition of "soon"
+     * is whether the certificate expires within the threshold of the certificate's expiration date. (Default: 30 days)
      * <p>
-     * For example, with the default 30 days, if a certificate's expiration date is after (now + 30 days) then it will
+     * For example, with the default 30 days, if a certificate's expiration date is before (now + 30 days) then it will
      * be considered as expiring soon.
      */
     @NotNull
     @Builder.Default
-    private Duration ttl = DEFAULT_TTL;
+    private Duration expirationWarningThreshold = DEFAULT_EXPIRATION_WARNING_THRESHOLD;
 }

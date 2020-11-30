@@ -30,7 +30,7 @@ class KeystoreHealthResults {
     private final String path;
 
     @NonNull
-    private final Duration ttl;
+    private final Duration expirationWarningThreshold;
 
     @NonNull
     private final List<BasicCertInfo> validCerts;
@@ -81,15 +81,15 @@ class KeystoreHealthResults {
 
         var nowAtUTC = kiwiEnvironment.currentZonedDateTimeUTC();
         var durationUntilExpiration = java.time.Duration.between(nowAtUTC, earliestExpirationDate);
-        var fullTtl = KiwiDropwizardDurations.fromDropwizardDuration(ttl);
+        var fullWarningThreshold = KiwiDropwizardDurations.fromDropwizardDuration(expirationWarningThreshold);
 
-        var halfTtl = fullTtl.dividedBy(2);
-        if (durationUntilExpiration.compareTo(halfTtl) >= 0) {
+        var halfWarningThreshold = fullWarningThreshold.dividedBy(2);
+        if (durationUntilExpiration.compareTo(halfWarningThreshold) >= 0) {
             return HealthStatus.INFO;
         }
 
-        var quarterTtl = fullTtl.dividedBy(4);
-        if (durationUntilExpiration.compareTo(quarterTtl) >= 0) {
+        var quarterWarningThreshold = fullWarningThreshold.dividedBy(4);
+        if (durationUntilExpiration.compareTo(quarterWarningThreshold) >= 0) {
             return HealthStatus.WARN;
         }
 

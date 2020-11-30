@@ -31,7 +31,7 @@ class KeystoreHealthResultsTest {
         void shouldReportHealthy() {
             var results = KeystoreHealthResults.builder()
                     .path("/some/path/to/keystore.jks")
-                    .ttl(Duration.days(30))
+                    .expirationWarningThreshold(Duration.days(30))
                     .validCerts(List.of(BasicCertInfo.builder().subjectDN("valid-cert-1").build()))
                     .expiredCerts(List.of())
                     .expiringCerts(List.of())
@@ -50,7 +50,7 @@ class KeystoreHealthResultsTest {
         void setUp() {
             results = KeystoreHealthResults.builder()
                     .path("/a/path")
-                    .ttl(Duration.days(30))
+                    .expirationWarningThreshold(Duration.days(30))
                     .validCerts(List.of())
                     .expiredCerts(List.of())
                     .expiringCerts(List.of())
@@ -87,7 +87,7 @@ class KeystoreHealthResultsTest {
                     .build();
             results = KeystoreHealthResults.builder()
                     .path("/a/path/keystore.jks")
-                    .ttl(Duration.days(30))
+                    .expirationWarningThreshold(Duration.days(30))
                     .validCerts(List.of())
                     .expiredCerts(List.of(expiredCertl, expiredCert2))
                     .expiringCerts(List.of())
@@ -181,7 +181,7 @@ class KeystoreHealthResultsTest {
             return KeystoreHealthResults.builder()
                     .kiwiEnvironment(kiwiEnvironment)
                     .path("/etc/pki/test.jks")
-                    .ttl(Duration.days(ttlInDays))
+                    .expirationWarningThreshold(Duration.days(ttlInDays))
                     .validCerts(List.of())
                     .expiredCerts(List.of())
                     .expiringCerts(expiringCerts)
