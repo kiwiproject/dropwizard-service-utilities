@@ -1,14 +1,12 @@
 package org.kiwiproject.dropwizard.util.metrics;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.process.ProcessHelper;
+import org.kiwiproject.io.KiwiIO;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -54,9 +52,8 @@ public class ServerLoadFetcher {
     public Optional<String> get() {
         var process = processes.launch("uptime");
 
-        try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream(), UTF_8))) {
-            var output = reader.readLine();
-
+        try {
+            var output = KiwiIO.readInputStreamOf(process);
             var matcher = LOAD_AVERAGE_PATTERN.matcher(output);
             checkState(matcher.find(), "Did not find load average substring");
 
