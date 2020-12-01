@@ -39,6 +39,7 @@ public class HttpConnectionsHealthCheck extends HealthCheck {
     /**
      * Default name for the health check registration.
      */
+    @SuppressWarnings("unused")
     public static final String DEFAULT_NAME = "httpConnections";
 
     /**
