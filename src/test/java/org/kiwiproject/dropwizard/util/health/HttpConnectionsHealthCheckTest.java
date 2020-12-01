@@ -1,22 +1,22 @@
 package org.kiwiproject.dropwizard.util.health;
 
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.kiwiproject.test.constants.KiwiTestConstants.JSON_HELPER;
+import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheck;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.collect.KiwiMaps;
+import org.kiwiproject.dropwizard.util.health.HttpConnectionsHealthCheck.ClientConnectionInfo;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
 import java.util.Map;
@@ -37,117 +37,222 @@ class HttpConnectionsHealthCheckTest {
         healthCheck = new HttpConnectionsHealthCheck(metrics);
     }
 
-    @Test
-    void testClientIsNotBeingDumb_ByCheckingForInvalidThreshold(SoftAssertions softly) {
-        softly.assertThatThrownBy(() -> newHealthCheckWithThreshold(0.0)).isExactlyInstanceOf(IllegalArgumentException.class);
-        softly.assertThat(catchThrowable(() -> newHealthCheckWithThreshold(1.0))).isNull();
-        softly.assertThat(catchThrowable(() -> newHealthCheckWithThreshold(99.0))).isNull();
-        softly.assertThatThrownBy(() -> newHealthCheckWithThreshold(100.0)).isExactlyInstanceOf(IllegalArgumentException.class);
+    @Nested
+    class Construct {
+
+        @Test
+        void shouldCheckForInvalidThreshold(SoftAssertions softly) {
+            softly.assertThatThrownBy(() -> newHealthCheckWithThreshold(0.0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("warningThreshold must be more than 0 and less than 100");
+
+            softly.assertThatCode(() -> newHealthCheckWithThreshold(1.0)).doesNotThrowAnyException();
+            softly.assertThatCode(() -> newHealthCheckWithThreshold(99.0)).doesNotThrowAnyException();
+
+            softly.assertThatThrownBy(() -> newHealthCheckWithThreshold(100.0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("warningThreshold must be more than 0 and less than 100");
+        }
+
+        private void newHealthCheckWithThreshold(double value) {
+            new HttpConnectionsHealthCheck(metrics, value);
+        }
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    private HttpConnectionsHealthCheck newHealthCheckWithThreshold(double value) {
-        return new HttpConnectionsHealthCheck(metrics, value);
-    }
+    @Nested
+    class Check {
 
-    @Test
-    void testCheck_WhenNoDropwizardJerseyClients(SoftAssertions softly) {
-        when(metrics.getGauges(any())).thenReturn(new TreeMap<>());
+        @Nested
+        class IsHealthy {
 
-        HealthCheck.Result result = healthCheck.check();
+            @Test
+            void whenNoDropwizardJerseyClients() {
+                when(metrics.getGauges(any())).thenReturn(new TreeMap<>());
 
-        softly.assertThat(result.isHealthy()).isTrue();
-        softly.assertThat(result.getMessage()).isEqualTo("No HTTP clients found with metrics");
-    }
+                assertThatHealthCheck(healthCheck)
+                        .isHealthy()
+                        .hasMessage("No HTTP clients found with metrics");
+            }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test
-    void testCheck_OneDropwizardJerseyClient_ThatIsBelowDefaultWarningThreshold(SoftAssertions softly) {
-        SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
-                leasedGaugeNameFor("some-client"), gaugeReturning(4),
-                maxGaugeNameFor("some-client"), gaugeReturning(10)
-        );
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Test
+            void whenOneDropwizardJerseyClient_ThatIsBelowDefaultWarningThreshold() {
+                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                        leasedGaugeNameFor("some-client"), gaugeReturning(4),
+                        maxGaugeNameFor("some-client"), gaugeReturning(10)
+                );
 
-        when(metrics.getGauges(any())).thenReturn(gauges);
+                when(metrics.getGauges(any())).thenReturn(gauges);
 
-        HealthCheck.Result result = healthCheck.check();
+                assertThatHealthCheck(healthCheck)
+                        .isHealthy()
+                        .hasMessage("1 HTTP client(s) < 50.0% leased connections.");
 
-        softly.assertThat(result.isHealthy()).isTrue();
-        softly.assertThat(result.getMessage()).isEqualTo("1 HTTP client(s) < 50.0% leased connections.");
+                // NOTE: Yes this is calling the check method a second time, but I need the details map for
+                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
+                // methods, we can remove this part.
 
-        verifyClientInfo(softly, result, "details.healthyClients.some-client", "some-client", 4);
-    }
+                var result = healthCheck.check();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test
-    void testCheck_MultipleDropwizardJerseyClients_WhenAllAreBelowDefaultWarningThreshold(SoftAssertions softly) {
-        SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
-                leasedGaugeNameFor("some-client"), gaugeReturning(4),
-                maxGaugeNameFor("some-client"), gaugeReturning(10),
-                leasedGaugeNameFor("another-client"), gaugeReturning(2),
-                maxGaugeNameFor("another-client"), gaugeReturning(10)
-        );
+                var expectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("some-client")
+                        .leased(4)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
 
-        when(metrics.getGauges(any())).thenReturn(gauges);
+                assertThat(result.getDetails()).containsKey("healthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("healthyClients"))
+                        .contains(entry("some-client", expectedClientInfo));
 
-        HealthCheck.Result result = healthCheck.check();
+                assertThat(result.getDetails()).containsKey("unhealthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("unhealthyClients")).isEmpty();
 
-        softly.assertThat(result.isHealthy()).isTrue();
-        softly.assertThat(result.getMessage()).isEqualTo("2 HTTP client(s) < 50.0% leased connections.");
+            }
 
-        verifyClientInfo(softly, result, "details.healthyClients.some-client", "some-client", 4);
-        verifyClientInfo(softly, result, "details.healthyClients.another-client", "another-client", 2);
-    }
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Test
+            void whenMultipleDropwizardJerseyClients_ThatAreAllBelowDefaultWarningThreshold() {
+                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                        leasedGaugeNameFor("some-client"), gaugeReturning(4),
+                        maxGaugeNameFor("some-client"), gaugeReturning(10),
+                        leasedGaugeNameFor("another-client"), gaugeReturning(2),
+                        maxGaugeNameFor("another-client"), gaugeReturning(10)
+                );
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test
-    void testCheck_MultipleDropwizardJerseyClients_WhenOneIsAboveDefaultWarningThreshold(SoftAssertions softly) {
-        SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
-                leasedGaugeNameFor("some-client"), gaugeReturning(5),
-                maxGaugeNameFor("some-client"), gaugeReturning(10),
-                leasedGaugeNameFor("another-client"), gaugeReturning(2),
-                maxGaugeNameFor("another-client"), gaugeReturning(10)
-        );
+                when(metrics.getGauges(any())).thenReturn(gauges);
 
-        when(metrics.getGauges(any())).thenReturn(gauges);
+                assertThatHealthCheck(healthCheck)
+                        .isHealthy()
+                        .hasMessage("2 HTTP client(s) < 50.0% leased connections.");
 
-        HealthCheck.Result result = healthCheck.check();
+                // NOTE: Yes this is calling the check method a second time, but I need the details map for
+                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
+                // methods, we can remove this part.
 
-        softly.assertThat(result.isHealthy()).isFalse();
-        softly.assertThat(result.getMessage()).isEqualTo("1 of 2 HTTP client(s) >= 50.0% leased connections.");
+                var result = healthCheck.check();
 
-        verifyClientInfo(softly, result, "details.unhealthyClients.some-client", "some-client", 5);
-        verifyClientInfo(softly, result, "details.healthyClients.another-client", "another-client", 2);
-    }
+                var someClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("some-client")
+                        .leased(4)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test
-    void testCheck_MultipleDropwizardJerseyClients_WhenAllAreAboveDefaultWarningThreshold(SoftAssertions softly) {
-        SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
-                leasedGaugeNameFor("some-client"), gaugeReturning(5),
-                maxGaugeNameFor("some-client"), gaugeReturning(10),
-                leasedGaugeNameFor("another-client"), gaugeReturning(9),
-                maxGaugeNameFor("another-client"), gaugeReturning(10)
-        );
+                var anotherClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("another-client")
+                        .leased(2)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
 
-        when(metrics.getGauges(any())).thenReturn(gauges);
+                assertThat(result.getDetails()).containsKey("healthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("healthyClients"))
+                        .contains(
+                                entry("some-client", someClientExpectedClientInfo),
+                                entry("another-client", anotherClientExpectedClientInfo)
+                        );
 
-        HealthCheck.Result result = healthCheck.check();
+                assertThat(result.getDetails()).containsKey("unhealthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("unhealthyClients")).isEmpty();
+            }
+        }
 
-        softly.assertThat(result.isHealthy()).isFalse();
-        softly.assertThat(result.getMessage())
-                .isEqualTo("2 of 2 HTTP client(s) >= 50.0% leased connections.");
-    }
+        @Nested
+        class IsUnhealthy {
 
-    @SuppressWarnings("unchecked")
-    private void verifyClientInfo(SoftAssertions softly, HealthCheck.Result result, String path, String clientName, int leasedCount) {
-        var client = JSON_HELPER.getPath(result, path, new TypeReference<Map<String, Object>>() {});
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Test
+            void whenMultipleDropwizardJerseyClients_ThatOneIsAboveDefaultWarningThreshold() {
+                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                        leasedGaugeNameFor("some-client"), gaugeReturning(5),
+                        maxGaugeNameFor("some-client"), gaugeReturning(10),
+                        leasedGaugeNameFor("another-client"), gaugeReturning(2),
+                        maxGaugeNameFor("another-client"), gaugeReturning(10)
+                );
 
-        softly.assertThat(client).contains(
-                entry("clientName", clientName),
-                entry("leased", leasedCount),
-                entry("max", 10)
-        );
+                when(metrics.getGauges(any())).thenReturn(gauges);
+
+                assertThatHealthCheck(healthCheck)
+                        .isUnhealthy()
+                        .hasMessage("1 of 2 HTTP client(s) >= 50.0% leased connections.");
+
+                // NOTE: Yes this is calling the check method a second time, but I need the details map for
+                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
+                // methods, we can remove this part.
+
+                var result = healthCheck.check();
+
+                var someClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("some-client")
+                        .leased(5)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
+
+                var anotherClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("another-client")
+                        .leased(2)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
+
+                assertThat(result.getDetails()).containsKey("healthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("healthyClients"))
+                        .contains(entry("another-client", anotherClientExpectedClientInfo));
+
+                assertThat(result.getDetails()).containsKey("unhealthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("unhealthyClients"))
+                        .contains(entry("some-client", someClientExpectedClientInfo));
+            }
+
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Test
+            void whenMultipleDropwizardJerseyClients_ThatAllAreAboveDefaultWarningThreshold() {
+                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                        leasedGaugeNameFor("some-client"), gaugeReturning(5),
+                        maxGaugeNameFor("some-client"), gaugeReturning(10),
+                        leasedGaugeNameFor("another-client"), gaugeReturning(9),
+                        maxGaugeNameFor("another-client"), gaugeReturning(10)
+                );
+
+                when(metrics.getGauges(any())).thenReturn(gauges);
+
+                assertThatHealthCheck(healthCheck)
+                        .isUnhealthy()
+                        .hasMessage("2 of 2 HTTP client(s) >= 50.0% leased connections.");
+
+                // NOTE: Yes this is calling the check method a second time, but I need the details map for
+                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
+                // methods, we can remove this part.
+
+                var result = healthCheck.check();
+
+                var someClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("some-client")
+                        .leased(5)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
+
+                var anotherClientExpectedClientInfo = ClientConnectionInfo.builder()
+                        .clientName("another-client")
+                        .leased(9)
+                        .max(10)
+                        .warningThreshold(50.0)
+                        .build();
+
+                assertThat(result.getDetails()).containsKey("healthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("healthyClients")).isEmpty();
+
+                assertThat(result.getDetails()).containsKey("unhealthyClients");
+                assertThat((Map<String, ClientConnectionInfo>)result.getDetails().get("unhealthyClients"))
+                        .contains(
+                                entry("some-client", someClientExpectedClientInfo),
+                                entry("another-client", anotherClientExpectedClientInfo)
+                        );
+            }
+        }
     }
 
     private Gauge<Integer> gaugeReturning(Integer value) {

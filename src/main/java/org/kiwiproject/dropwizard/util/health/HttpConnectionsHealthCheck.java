@@ -13,9 +13,9 @@ import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -172,14 +172,14 @@ public class HttpConnectionsHealthCheck extends HealthCheck {
         return HTTP_CONN_MANAGER_GAUGE_PREFIX + clientName + type;
     }
 
-    @Getter
-    @ToString
-    private static class ClientConnectionInfo {
-        final String clientName;
-        final int leased;
-        final int max;
-        final double warningThreshold;
-        final double percentLeased;
+    @Value
+    @VisibleForTesting
+    static class ClientConnectionInfo {
+        String clientName;
+        int leased;
+        int max;
+        double warningThreshold;
+        double percentLeased;
 
         enum HealthStatus {
             HEALTHY, UNHEALTHY
