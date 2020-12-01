@@ -3,6 +3,7 @@ package org.kiwiproject.dropwizard.util.health;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatResult;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -84,15 +85,11 @@ class HttpConnectionsHealthCheckTest {
 
                 when(metrics.getGauges(any())).thenReturn(gauges);
 
-                assertThatHealthCheck(healthCheck)
+                var result = healthCheck.check();
+
+                assertThatResult(result)
                         .isHealthy()
                         .hasMessage("1 HTTP client(s) < 50.0% leased connections.");
-
-                // NOTE: Yes this is calling the check method a second time, but I need the details map for
-                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
-                // methods, we can remove this part.
-
-                var result = healthCheck.check();
 
                 var expectedClientInfo = ClientConnectionInfo.builder()
                         .clientName("some-client")
@@ -122,15 +119,11 @@ class HttpConnectionsHealthCheckTest {
 
                 when(metrics.getGauges(any())).thenReturn(gauges);
 
-                assertThatHealthCheck(healthCheck)
+                var result = healthCheck.check();
+
+                assertThatResult(result)
                         .isHealthy()
                         .hasMessage("2 HTTP client(s) < 50.0% leased connections.");
-
-                // NOTE: Yes this is calling the check method a second time, but I need the details map for
-                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
-                // methods, we can remove this part.
-
-                var result = healthCheck.check();
 
                 var someClientExpectedClientInfo = ClientConnectionInfo.builder()
                         .clientName("some-client")
@@ -173,15 +166,11 @@ class HttpConnectionsHealthCheckTest {
 
                 when(metrics.getGauges(any())).thenReturn(gauges);
 
-                assertThatHealthCheck(healthCheck)
+                var result = healthCheck.check();
+
+                assertThatResult(result)
                         .isUnhealthy()
                         .hasMessage("1 of 2 HTTP client(s) >= 50.0% leased connections.");
-
-                // NOTE: Yes this is calling the check method a second time, but I need the details map for
-                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
-                // methods, we can remove this part.
-
-                var result = healthCheck.check();
 
                 var someClientExpectedClientInfo = ClientConnectionInfo.builder()
                         .clientName("some-client")
@@ -218,15 +207,11 @@ class HttpConnectionsHealthCheckTest {
 
                 when(metrics.getGauges(any())).thenReturn(gauges);
 
-                assertThatHealthCheck(healthCheck)
+                var result = healthCheck.check();
+
+                assertThatResult(result)
                         .isUnhealthy()
                         .hasMessage("2 of 2 HTTP client(s) >= 50.0% leased connections.");
-
-                // NOTE: Yes this is calling the check method a second time, but I need the details map for
-                // analysis and verification. Once we had more options to the HealthCheckResultAssertions#hasDetail
-                // methods, we can remove this part.
-
-                var result = healthCheck.check();
 
                 var someClientExpectedClientInfo = ClientConnectionInfo.builder()
                         .clientName("some-client")
