@@ -16,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.config.TlsContextConfiguration;
+import org.kiwiproject.dropwizard.util.config.HttpHealthCheckConfig;
 import org.kiwiproject.dropwizard.util.health.HttpConnectionsHealthCheck;
 import org.kiwiproject.dropwizard.util.health.keystore.ExpiringKeystoreHealthCheck;
 import org.kiwiproject.dropwizard.util.metrics.ServerLoadGauge;
@@ -78,13 +79,18 @@ class AdminConfiguratorTest {
         }
 
         @Test
-        void shouldAddHttpConnectionsHealthCheck_WithGivenThreshold() {
+        void shouldAddHttpConnectionsHealthCheck_WithGivenConfig() {
+            var httpHealthCheckConfig = HttpHealthCheckConfig.builder()
+                    .name("Connections")
+                    .warningThreshold(60.0)
+                    .build();
+
             new AdminConfigurator(environment)
-                    .withHttpConnectionsHealthCheck(60.0)
+                    .withHttpConnectionsHealthCheck(httpHealthCheckConfig)
                     .configure();
 
             verify(environment.healthChecks())
-                    .register(eq(HttpConnectionsHealthCheck.DEFAULT_NAME), any(HttpConnectionsHealthCheck.class));
+                    .register(eq("Connections"), any(HttpConnectionsHealthCheck.class));
         }
     }
 

@@ -7,6 +7,7 @@ import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Environment;
 import org.kiwiproject.config.TlsContextConfiguration;
+import org.kiwiproject.dropwizard.util.config.HttpHealthCheckConfig;
 import org.kiwiproject.dropwizard.util.config.KeystoreConfig;
 import org.kiwiproject.dropwizard.util.health.HttpConnectionsHealthCheck;
 import org.kiwiproject.dropwizard.util.health.keystore.ExpiringKeystoreHealthCheck;
@@ -32,7 +33,7 @@ public class AdminConfigurator {
     private boolean shouldIncludeConfigResource;
 
     private TlsContextConfiguration tlsConfiguration;
-    private double leasedWarningThreshold;
+    private HttpHealthCheckConfig httpHealthCheckConfig;
     private List<String> hiddenFieldRegex;
     private Configuration config;
 
@@ -74,19 +75,19 @@ public class AdminConfigurator {
      * @see HttpConnectionsHealthCheck
      */
     public AdminConfigurator withHttpConnectionsHealthCheck() {
-        return withHttpConnectionsHealthCheck(HttpConnectionsHealthCheck.DEFAULT_WARNING_THRESHOLD);
+        return withHttpConnectionsHealthCheck(HttpHealthCheckConfig.builder().build());
     }
 
     /**
      * Enables the setup of the {@link HttpConnectionsHealthCheck} on the service with the given warning threshold.
      *
-     * @param leasedWarningThreshold the warning threshold for the {@link HttpConnectionsHealthCheck}
+     * @param httpHealthCheckConfig the configuration to use for the {@link HttpConnectionsHealthCheck}
      * @return this configurator
      * @see HttpConnectionsHealthCheck
      */
-    public AdminConfigurator withHttpConnectionsHealthCheck(double leasedWarningThreshold) {
+    public AdminConfigurator withHttpConnectionsHealthCheck(HttpHealthCheckConfig httpHealthCheckConfig) {
         this.shouldIncludeHttpConnectionsHealthCheck = true;
-        this.leasedWarningThreshold = leasedWarningThreshold;
+        this.httpHealthCheckConfig = httpHealthCheckConfig;
         return this;
     }
 
@@ -157,8 +158,8 @@ public class AdminConfigurator {
 
     private void addHttpConnectionsHealthCheck() {
         if (shouldIncludeHttpConnectionsHealthCheck) {
-            environment.healthChecks().register(HttpConnectionsHealthCheck.DEFAULT_NAME,
-                    new HttpConnectionsHealthCheck(environment.metrics(), leasedWarningThreshold));
+            environment.healthChecks().register(httpHealthCheckConfig.getName(),
+                    new HttpConnectionsHealthCheck(environment.metrics(), httpHealthCheckConfig.getWarningThreshold()));
         }
     }
 
