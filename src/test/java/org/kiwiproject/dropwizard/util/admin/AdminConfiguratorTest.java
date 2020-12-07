@@ -43,7 +43,7 @@ class AdminConfiguratorTest {
             var adminEnvironment = mock(AdminEnvironment.class);
             when(environment.admin()).thenReturn(adminEnvironment);
 
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeServerLoadTask()
                     .configure();
 
@@ -56,7 +56,7 @@ class AdminConfiguratorTest {
 
         @Test
         void shouldAddServerLoadGauge() {
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeServerLoadMetric()
                     .configure();
 
@@ -69,7 +69,7 @@ class AdminConfiguratorTest {
 
         @Test
         void shouldAddHttpConnectionsHealthCheck_WithDefault() {
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeHttpConnectionsHealthCheck()
                     .configure();
 
@@ -79,7 +79,7 @@ class AdminConfiguratorTest {
 
         @Test
         void shouldAddHttpConnectionsHealthCheck_WithGivenThreshold() {
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeHttpConnectionsHealthCheck(60.0)
                     .configure();
 
@@ -93,7 +93,7 @@ class AdminConfiguratorTest {
 
         @Test
         void shouldThrowIllegalArgumentException_WhenTlsConfigIsNull() {
-            var configurator = new AdminConfigurator<>(environment);
+            var configurator = new AdminConfigurator(environment);
 
             assertThatThrownBy(() -> configurator.includeExpiringKeystoreHealthCheck(null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -109,7 +109,7 @@ class AdminConfiguratorTest {
                     .trustStorePassword("password")
                     .build();
 
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeExpiringKeystoreHealthCheck(tlsConfiguration)
                     .configure();
 
@@ -124,7 +124,7 @@ class AdminConfiguratorTest {
                     .trustStorePassword("password")
                     .build();
 
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeExpiringKeystoreHealthCheck(tlsConfiguration)
                     .configure();
 
@@ -139,7 +139,7 @@ class AdminConfiguratorTest {
 
         @Test
         void shouldThrowIllegalArgumentException_WhenConfigIsNull() {
-            var configurator = new AdminConfigurator<>(environment);
+            var configurator = new AdminConfigurator(environment);
 
             assertThatThrownBy(() -> configurator.includeConfigResource(null, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -150,7 +150,7 @@ class AdminConfiguratorTest {
         void shouldAddConfigResource() {
             var config = mock(Configuration.class);
 
-            new AdminConfigurator<>(environment)
+            new AdminConfigurator(environment)
                     .includeConfigResource(config, List.of())
                     .configure();
 

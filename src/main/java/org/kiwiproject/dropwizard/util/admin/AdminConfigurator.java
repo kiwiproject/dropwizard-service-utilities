@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * A utility to configure and setup various "standard" settings for a Dropwizard service. Standard in this case is very
  * opinionated to this library.
  */
-public class AdminConfigurator<T extends Configuration> {
+public class AdminConfigurator {
 
     private final Environment environment;
 
@@ -34,7 +34,7 @@ public class AdminConfigurator<T extends Configuration> {
     private TlsContextConfiguration tlsConfiguration;
     private double leasedWarningThreshold;
     private List<String> hiddenFieldRegex;
-    private T config;
+    private Configuration config;
 
     /**
      * Creates a new {@link AdminConfigurator} with a given Dropwizard {@link Environment}
@@ -51,7 +51,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @return this configurator
      * @see ServerLoadTask
      */
-    public AdminConfigurator<T> includeServerLoadTask() {
+    public AdminConfigurator includeServerLoadTask() {
         this.shouldIncludeServerLoadTask = true;
         return this;
     }
@@ -62,7 +62,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @return this configurator
      * @see ServerLoadGauge
      */
-    public AdminConfigurator<T> includeServerLoadMetric() {
+    public AdminConfigurator includeServerLoadMetric() {
         this.shouldIncludeServerLoadMetric = true;
         return this;
     }
@@ -73,7 +73,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @return this configurator
      * @see HttpConnectionsHealthCheck
      */
-    public AdminConfigurator<T> includeHttpConnectionsHealthCheck() {
+    public AdminConfigurator includeHttpConnectionsHealthCheck() {
         return includeHttpConnectionsHealthCheck(HttpConnectionsHealthCheck.DEFAULT_WARNING_THRESHOLD);
     }
 
@@ -84,7 +84,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @return this configurator
      * @see HttpConnectionsHealthCheck
      */
-    public AdminConfigurator<T> includeHttpConnectionsHealthCheck(double leasedWarningThreshold) {
+    public AdminConfigurator includeHttpConnectionsHealthCheck(double leasedWarningThreshold) {
         this.shouldIncludeHttpConnectionsHealthCheck = true;
         this.leasedWarningThreshold = leasedWarningThreshold;
         return this;
@@ -99,7 +99,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @throws IllegalArgumentException if tlsConfiguration is null
      * @see ExpiringKeystoreHealthCheck
      */
-    public AdminConfigurator<T> includeExpiringKeystoreHealthCheck(TlsContextConfiguration tlsConfiguration) {
+    public AdminConfigurator includeExpiringKeystoreHealthCheck(TlsContextConfiguration tlsConfiguration) {
         this.shouldIncludeExpiringKeystoreHealthCheck = true;
         this.tlsConfiguration = requireNotNull(tlsConfiguration, "tlsConfiguration is required");
         return this;
@@ -115,7 +115,7 @@ public class AdminConfigurator<T extends Configuration> {
      * @throws IllegalArgumentException if config is null
      * @see ConfigResource
      */
-    public AdminConfigurator<T> includeConfigResource(T config, List<String> hiddenFieldRegex) {
+    public <T extends Configuration> AdminConfigurator includeConfigResource(T config, List<String> hiddenFieldRegex) {
         this.shouldIncludeConfigResource = true;
         this.hiddenFieldRegex = hiddenFieldRegex;
         this.config = requireNotNull(config, "config is required");
