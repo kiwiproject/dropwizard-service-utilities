@@ -44,7 +44,7 @@ class AdminConfiguratorTest {
             when(environment.admin()).thenReturn(adminEnvironment);
 
             new AdminConfigurator(environment)
-                    .includeServerLoadTask()
+                    .withServerLoadTask()
                     .configure();
 
             verify(environment.admin()).addTask(any(ServerLoadTask.class));
@@ -57,7 +57,7 @@ class AdminConfiguratorTest {
         @Test
         void shouldAddServerLoadGauge() {
             new AdminConfigurator(environment)
-                    .includeServerLoadMetric()
+                    .withServerLoadMetric()
                     .configure();
 
             verify(environment.metrics()).register(eq(ServerLoadGauge.NAME), any(ServerLoadGauge.class));
@@ -70,7 +70,7 @@ class AdminConfiguratorTest {
         @Test
         void shouldAddHttpConnectionsHealthCheck_WithDefault() {
             new AdminConfigurator(environment)
-                    .includeHttpConnectionsHealthCheck()
+                    .withHttpConnectionsHealthCheck()
                     .configure();
 
             verify(environment.healthChecks())
@@ -80,7 +80,7 @@ class AdminConfiguratorTest {
         @Test
         void shouldAddHttpConnectionsHealthCheck_WithGivenThreshold() {
             new AdminConfigurator(environment)
-                    .includeHttpConnectionsHealthCheck(60.0)
+                    .withHttpConnectionsHealthCheck(60.0)
                     .configure();
 
             verify(environment.healthChecks())
@@ -95,7 +95,7 @@ class AdminConfiguratorTest {
         void shouldThrowIllegalArgumentException_WhenTlsConfigIsNull() {
             var configurator = new AdminConfigurator(environment);
 
-            assertThatThrownBy(() -> configurator.includeExpiringKeystoreHealthCheck(null))
+            assertThatThrownBy(() -> configurator.withExpiringKeystoreHealthCheck(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("tlsConfiguration is required");
         }
@@ -110,7 +110,7 @@ class AdminConfiguratorTest {
                     .build();
 
             new AdminConfigurator(environment)
-                    .includeExpiringKeystoreHealthCheck(tlsConfiguration)
+                    .withExpiringKeystoreHealthCheck(tlsConfiguration)
                     .configure();
 
             verify(environment.healthChecks()).register(eq("Key store"), any(ExpiringKeystoreHealthCheck.class));
@@ -125,7 +125,7 @@ class AdminConfiguratorTest {
                     .build();
 
             new AdminConfigurator(environment)
-                    .includeExpiringKeystoreHealthCheck(tlsConfiguration)
+                    .withExpiringKeystoreHealthCheck(tlsConfiguration)
                     .configure();
 
             verify(environment.healthChecks()).register(eq("Trust store"), any(ExpiringKeystoreHealthCheck.class));
@@ -141,7 +141,7 @@ class AdminConfiguratorTest {
         void shouldThrowIllegalArgumentException_WhenConfigIsNull() {
             var configurator = new AdminConfigurator(environment);
 
-            assertThatThrownBy(() -> configurator.includeConfigResource(null, null))
+            assertThatThrownBy(() -> configurator.withConfigResource(null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("config is required");
         }
@@ -151,7 +151,7 @@ class AdminConfiguratorTest {
             var config = mock(Configuration.class);
 
             new AdminConfigurator(environment)
-                    .includeConfigResource(config, List.of())
+                    .withConfigResource(config, List.of())
                     .configure();
 
             verify(environment.jersey()).register(any(ConfigResource.class));

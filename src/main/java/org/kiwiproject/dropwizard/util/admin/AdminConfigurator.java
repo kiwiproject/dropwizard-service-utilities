@@ -51,7 +51,7 @@ public class AdminConfigurator {
      * @return this configurator
      * @see ServerLoadTask
      */
-    public AdminConfigurator includeServerLoadTask() {
+    public AdminConfigurator withServerLoadTask() {
         this.shouldIncludeServerLoadTask = true;
         return this;
     }
@@ -62,7 +62,7 @@ public class AdminConfigurator {
      * @return this configurator
      * @see ServerLoadGauge
      */
-    public AdminConfigurator includeServerLoadMetric() {
+    public AdminConfigurator withServerLoadMetric() {
         this.shouldIncludeServerLoadMetric = true;
         return this;
     }
@@ -73,8 +73,8 @@ public class AdminConfigurator {
      * @return this configurator
      * @see HttpConnectionsHealthCheck
      */
-    public AdminConfigurator includeHttpConnectionsHealthCheck() {
-        return includeHttpConnectionsHealthCheck(HttpConnectionsHealthCheck.DEFAULT_WARNING_THRESHOLD);
+    public AdminConfigurator withHttpConnectionsHealthCheck() {
+        return withHttpConnectionsHealthCheck(HttpConnectionsHealthCheck.DEFAULT_WARNING_THRESHOLD);
     }
 
     /**
@@ -84,7 +84,7 @@ public class AdminConfigurator {
      * @return this configurator
      * @see HttpConnectionsHealthCheck
      */
-    public AdminConfigurator includeHttpConnectionsHealthCheck(double leasedWarningThreshold) {
+    public AdminConfigurator withHttpConnectionsHealthCheck(double leasedWarningThreshold) {
         this.shouldIncludeHttpConnectionsHealthCheck = true;
         this.leasedWarningThreshold = leasedWarningThreshold;
         return this;
@@ -99,7 +99,7 @@ public class AdminConfigurator {
      * @throws IllegalArgumentException if tlsConfiguration is null
      * @see ExpiringKeystoreHealthCheck
      */
-    public AdminConfigurator includeExpiringKeystoreHealthCheck(TlsContextConfiguration tlsConfiguration) {
+    public AdminConfigurator withExpiringKeystoreHealthCheck(TlsContextConfiguration tlsConfiguration) {
         this.shouldIncludeExpiringKeystoreHealthCheck = true;
         this.tlsConfiguration = requireNotNull(tlsConfiguration, "tlsConfiguration is required");
         return this;
@@ -115,7 +115,7 @@ public class AdminConfigurator {
      * @throws IllegalArgumentException if config is null
      * @see ConfigResource
      */
-    public <T extends Configuration> AdminConfigurator includeConfigResource(T config, List<String> hiddenFieldRegex) {
+    public <T extends Configuration> AdminConfigurator withConfigResource(T config, List<String> hiddenFieldRegex) {
         this.shouldIncludeConfigResource = true;
         this.hiddenFieldRegex = hiddenFieldRegex;
         this.config = requireNotNull(config, "config is required");
