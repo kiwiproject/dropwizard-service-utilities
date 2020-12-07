@@ -47,7 +47,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link ServerLoadTask} on the service.
+     * Enables setup of the {@link ServerLoadTask} on the service.
      *
      * @return this configurator
      * @see ServerLoadTask
@@ -58,7 +58,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link ServerLoadGauge} on the service.
+     * Enables setup of the {@link ServerLoadGauge} on the service.
      *
      * @return this configurator
      * @see ServerLoadGauge
@@ -69,7 +69,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link HttpConnectionsHealthCheck} on the service with the default warning threshold.
+     * Enables setup of the {@link HttpConnectionsHealthCheck} on the service with the default warning threshold.
      *
      * @return this configurator
      * @see HttpConnectionsHealthCheck
@@ -79,7 +79,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link HttpConnectionsHealthCheck} on the service with the given warning threshold.
+     * Enables setup of the {@link HttpConnectionsHealthCheck} on the service with the given warning threshold.
      *
      * @param httpHealthCheckConfig the configuration to use for the {@link HttpConnectionsHealthCheck}
      * @return this configurator
@@ -92,7 +92,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link ExpiringKeystoreHealthCheck} on the service with the given
+     * Enables setup of the {@link ExpiringKeystoreHealthCheck} on the service with the given
      * {@link TlsContextConfiguration}.
      *
      * @param tlsConfiguration the {@link TlsContextConfiguration} needed to set up the health check
@@ -107,11 +107,11 @@ public class AdminConfigurator {
     }
 
     /**
-     * Enables the setup of the {@link ConfigResource} on the service with the given config and optional list of
+     * Enables setup of the {@link ConfigResource} on the service with the given config and optional list of
      * regex patterns to exclude from the output.
      *
-     * @param config            the configuration for the service
-     * @param hiddenFieldRegex  list of regex patterns to match for sensitive fields in the config (e.g. passwords)
+     * @param config           the configuration for the service
+     * @param hiddenFieldRegex list of regex patterns to match for sensitive fields in the config (e.g. passwords)
      * @return this configurator
      * @throws IllegalArgumentException if config is null
      * @see ConfigResource
