@@ -36,6 +36,6 @@ public class UnknownPropertiesHealthCheck extends HealthCheck {
 
     private String unknownPropertiesMessage(long count) {
         checkPositive(count, "expected 1 or higher");
-        return count == 1 ? "1 unknown property detected" : count + " unknown properties detected";
+        return count == 1 ? "1 unknown property detected" : (count + " unknown properties detected");
     }
 }
