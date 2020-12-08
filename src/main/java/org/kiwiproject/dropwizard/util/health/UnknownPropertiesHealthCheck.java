@@ -1,5 +1,6 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static org.kiwiproject.base.KiwiPreconditions.checkPositive;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newHealthyResult;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResultBuilder;
@@ -28,8 +29,13 @@ public class UnknownPropertiesHealthCheck extends HealthCheck {
         }
 
         return newUnhealthyResultBuilder(HealthStatus.INFO)
-                .withMessage("%d unknown properties detected", handler.getUnknownPropertyCount())
-                .withDetail("unexpectedPaths", handler.getUnexpectedPaths())
+                .withMessage(unknownPropertiesMessage(handler.getUnknownPropertyCount()))
+                .withDetail("unexpectedPaths", handler.getUnexpectedPropertyPaths())
                 .build();
+    }
+
+    private String unknownPropertiesMessage(long count) {
+        checkPositive(count, "expected 1 or higher");
+        return count == 1 ? "1 unknown property detected" : count + " unknown properties detected";
     }
 }

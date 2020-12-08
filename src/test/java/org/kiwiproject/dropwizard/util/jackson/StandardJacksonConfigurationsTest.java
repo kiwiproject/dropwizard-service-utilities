@@ -97,7 +97,7 @@ class StandardJacksonConfigurationsTest {
             StandardJacksonConfigurations.registerJacksonDeserializationProblemHandler(config, mapper, registry);
 
             verify(mapper).addHandler(isA(LoggingDeserializationProblemHandler.class));
-            verify(registry).register(eq("Message Deserialization"), isA(UnknownPropertiesHealthCheck.class));
+            verify(registry).register(eq("Unknown JSON Properties"), isA(UnknownPropertiesHealthCheck.class));
         }
 
         @Test
@@ -128,7 +128,7 @@ class StandardJacksonConfigurationsTest {
             verify(mapper).configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
             verify(mapper).configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
             verify(mapper).addHandler(isA(LoggingDeserializationProblemHandler.class));
-            verify(env.healthChecks()).register(eq("Message Deserialization"), isA(UnknownPropertiesHealthCheck.class));
+            verify(env.healthChecks()).register(eq("Unknown JSON Properties"), isA(UnknownPropertiesHealthCheck.class));
         }
     }
 }

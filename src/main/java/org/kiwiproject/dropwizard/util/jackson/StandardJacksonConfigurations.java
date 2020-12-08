@@ -59,7 +59,7 @@ public class StandardJacksonConfigurations {
             mapper.addHandler(handler);
 
             if (config.isRegisterHealthCheckForUnknownJsonProperties()) {
-                healthChecks.register("Message Deserialization", new UnknownPropertiesHealthCheck(handler));
+                healthChecks.register("Unknown JSON Properties", new UnknownPropertiesHealthCheck(handler));
             }
         }
     }

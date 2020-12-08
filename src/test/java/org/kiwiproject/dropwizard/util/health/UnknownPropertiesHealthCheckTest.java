@@ -41,15 +41,28 @@ class UnknownPropertiesHealthCheckTest {
     class IsUnhealthy {
 
         @Test
-        void whenHandlerHasUnknownProperties() {
+        void whenHandlerHasOneUnknownProperty() {
             when(handler.getUnknownPropertyCount()).thenReturn(1L);
 
             var paths = Set.of("badPath");
-            when(handler.getUnexpectedPaths()).thenReturn(paths);
+            when(handler.getUnexpectedPropertyPaths()).thenReturn(paths);
 
             assertThat(healthCheck)
                     .isUnhealthy()
-                    .hasMessage("1 unknown properties detected")
+                    .hasMessage("1 unknown property detected")
+                    .hasDetail("unexpectedPaths", paths);
+        }
+
+        @Test
+        void whenHandlerHasMultipleUnknownProperty() {
+            when(handler.getUnknownPropertyCount()).thenReturn(2L);
+
+            var paths = Set.of("badPath", "anotherBadPath");
+            when(handler.getUnexpectedPropertyPaths()).thenReturn(paths);
+
+            assertThat(healthCheck)
+                    .isUnhealthy()
+                    .hasMessage("2 unknown properties detected")
                     .hasDetail("unexpectedPaths", paths);
         }
     }
