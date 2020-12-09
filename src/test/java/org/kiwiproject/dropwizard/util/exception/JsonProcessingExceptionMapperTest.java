@@ -33,7 +33,7 @@ class JsonProcessingExceptionMapperTest {
     }
 
     private JsonProcessingException createJsonException() {
-        String badJson = "{ \"first\": \"Bob\" \"last\": \"Jones\" )"; // missing comma before 'last property
+        String badJson = "{ \"first\": \"Bob\" \"last\": \"Jones\" )"; // missing comma before 'last' property
         try {
             OBJECT_MAPPER.readValue(badJson, Person.class);
         } catch (JsonProcessingException e) {
