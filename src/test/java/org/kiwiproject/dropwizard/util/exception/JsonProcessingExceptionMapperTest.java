@@ -64,9 +64,16 @@ class JsonProcessingExceptionMapperTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private ErrorMessage getErrorMessage(Response r) {
-        Map entity = (Map) r.getEntity();
-        List<ErrorMessage> errors = (List<ErrorMessage>) entity.get("errors");
-        return errors.get(0);
+        assertThat(r.getEntity()).isInstanceOf(Map.class);
+        var entity = (Map) r.getEntity();
+
+        assertThat(entity).containsKey("errors");
+        var errorsObj = entity.get("errors");
+
+        assertThat(errorsObj).isInstanceOf(List.class);
+        var errors = (List<ErrorMessage>) entity.get("errors");
+        
+        return first(errors);
     }
 
     @Getter
