@@ -1,6 +1,7 @@
 package org.kiwiproject.dropwizard.util.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.kiwiproject.dropwizard.util.exception.ErrorMessageAssertion.assertAndGetErrorMessage;
 import static org.kiwiproject.test.constants.KiwiTestConstants.OBJECT_MAPPER;
 import static org.mockito.Mockito.mock;
 
@@ -9,15 +10,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.kiwiproject.jaxrs.exception.ErrorMessage;
-
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("JsonProcessingExceptionMapper")
 class JsonProcessingExceptionMapperTest {
@@ -27,7 +25,7 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = createJsonException();
         var response = mapper.toResponse(jsonException);
-        var errorMessage = getErrorMessage(response);
+        var errorMessage = assertAndGetErrorMessage(response);
 
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
@@ -47,7 +45,19 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = new JsonGenerationException("Problem generating", mock(JsonGenerator.class));
         var response = mapper.toResponse(jsonException);
-        var errorMessage = getErrorMessage(response);
+        var errorMessage = assertAndGetErrorMessage(response);
+
+        assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
+    }
+
+    @Test
+    void shouldProcessInvalidDefinitionException() {
+        var mapper = new JsonProcessingExceptionMapper();
+        var jsonException = InvalidDefinitionException.from(mock(JsonParser.class),
+                "Problem generating", mock(JavaType.class));
+
+        var response = mapper.toResponse(jsonException);
+        var errorMessage = assertAndGetErrorMessage(response);
 
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
@@ -57,23 +67,9 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = new JsonParseException(mock(JsonParser.class), "No suitable constructor found for Foo");
         var response = mapper.toResponse(jsonException);
-        var errorMessage = getErrorMessage(response);
+        var errorMessage = assertAndGetErrorMessage(response);
 
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private ErrorMessage getErrorMessage(Response r) {
-        assertThat(r.getEntity()).isInstanceOf(Map.class);
-        var entity = (Map) r.getEntity();
-
-        assertThat(entity).containsKey("errors");
-        var errorsObj = entity.get("errors");
-
-        assertThat(errorsObj).isInstanceOf(List.class);
-        var errors = (List<ErrorMessage>) entity.get("errors");
-        
-        return first(errors);
     }
 
     @Getter

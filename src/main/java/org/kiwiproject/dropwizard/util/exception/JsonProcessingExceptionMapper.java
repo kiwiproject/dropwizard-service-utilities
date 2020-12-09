@@ -2,6 +2,7 @@ package org.kiwiproject.dropwizard.util.exception;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.jaxrs.exception.JaxrsBadRequestException;
 import org.kiwiproject.jaxrs.exception.JaxrsException;
@@ -12,7 +13,8 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Override default Dropwizard mapper to use common error structure.
+ * Override default Dropwizard mapper to use kiwi's {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage}.
+ * The the response entity is built using {@link JaxrsExceptionMapper#buildResponseEntity(JaxrsException)}.
  */
 @Slf4j
 @Provider
@@ -24,7 +26,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
     public Response toResponse(JsonProcessingException exception) {
         JaxrsException e;
 
-        if (exception instanceof JsonGenerationException) {
+        if (exception instanceof JsonGenerationException || exception instanceof InvalidDefinitionException) {
             LOG.warn("Error generating JSON", exception);
             e = new JaxrsException(exception);
         } else {

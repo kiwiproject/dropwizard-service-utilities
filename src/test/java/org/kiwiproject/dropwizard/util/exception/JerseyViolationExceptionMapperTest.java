@@ -1,5 +1,7 @@
 package org.kiwiproject.dropwizard.util.exception;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.kiwiproject.dropwizard.util.exception.ErrorMessageAssertion.assertAndGetErrorMessage;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertUnprocessableEntity;
 
 import io.dropwizard.jersey.validation.JerseyViolationException;
@@ -15,6 +17,10 @@ class JerseyViolationExceptionMapperTest {
     void shouldReturn422_UnprocessableEntity_Response() {
         var ex = new JerseyViolationException(Set.of(), null);
         var response = new JerseyViolationExceptionMapper().toResponse(ex);
+
         assertUnprocessableEntity(response);
+
+        var errorMessage = assertAndGetErrorMessage(response);
+        assertThat(errorMessage.getMessage()).isEqualTo("Validation failed");
     }
 }
