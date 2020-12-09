@@ -12,6 +12,8 @@ import org.kiwiproject.io.KiwiIO;
 /**
  * Health check that checks if we are able to launch processes. This check attempts to launch a simple echo process
  * and verifies the output is as expected.
+ *
+ * @implNote Only works on *nix-like systems, or maybe in Windows if there is an uptime command installed and on the PATH.
  */
 @Slf4j
 public class ProcessLaunchHealthCheck extends HealthCheck {
