@@ -32,12 +32,12 @@ public class MongoHealthCheck extends HealthCheck {
         var dbName = db.getName();
 
         try {
-            var statsCommandResult = db.getStats();
+            var statsResult = db.getStats();
 
-            var isHealthy = statsCommandResult.ok();
+            var isHealthy = statsResult.ok();
             var resultBuilder = newResultBuilder(isHealthy)
-                    .withDetail("storageSize", statsCommandResult.get("storageSize"))
-                    .withDetail("dataSize", statsCommandResult.get("dataSize"));
+                    .withDetail("storageSize", statsResult.get("storageSize"))
+                    .withDetail("dataSize", statsResult.get("dataSize"));
 
             if (isHealthy) {
                 return resultBuilder.withMessage("Mongo %s/%s is up", host, dbName).build();
@@ -45,11 +45,11 @@ public class MongoHealthCheck extends HealthCheck {
 
             return resultBuilder
                     .withMessage("Failed to retrieve db stats %s/%s : %s",
-                            host, dbName, statsCommandResult.getErrorMessage())
+                            host, dbName, statsResult.getErrorMessage())
                     .build();
         } catch (Exception e) {
             LOG.error("Unable to connect to Mongo: {}/{}", host, dbName, e);
-            return newUnhealthyResult(HealthStatus.CRITICAL, "Mongo %s/%s is not up: %s",
+            return newUnhealthyResult(HealthStatus.CRITICAL, "Unable to connect to Mongo %s/%s: %s",
                     host, dbName, e.getMessage());
         }
     }
