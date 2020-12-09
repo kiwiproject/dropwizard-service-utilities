@@ -37,7 +37,7 @@ public class ProcessKillHealthCheck extends HealthCheck {
     }
 
     private Result resultBasedOnSuccessfulKill(Process process) {
-        var exitCode = processes.kill(process.pid(), KillSignal.SIGHUP, KillTimeoutAction.FORCE_KILL);
+        var exitCode = processes.kill(process.pid(), KillSignal.SIGTERM, KillTimeoutAction.FORCE_KILL);
         return resultBasedOnExitCode(exitCode);
     }
 

@@ -51,7 +51,7 @@ class ProcessKillHealthCheckTest {
         @Test
         void whenExceptionIsThrown() {
             var uncheckedIOException = new UncheckedIOException(new IOException("I/0 error"));
-            when(processes.kill(processId, KillSignal.SIGHUP, KillTimeoutAction.FORCE_KILL))
+            when(processes.kill(processId, KillSignal.SIGTERM, KillTimeoutAction.FORCE_KILL))
                     .thenThrow(uncheckedIOException);
 
             assertThatHealthCheck(healthCheck)
@@ -62,7 +62,7 @@ class ProcessKillHealthCheckTest {
 
         @Test
         void whenUnsuccessfulKillExitCode() {
-            when(processes.kill(processId, KillSignal.SIGHUP, KillTimeoutAction.FORCE_KILL)).thenReturn(137);
+            when(processes.kill(processId, KillSignal.SIGTERM, KillTimeoutAction.FORCE_KILL)).thenReturn(137);
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasMessage("Unsuccessful kill exit code: 137");
