@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.metrics.health.HealthStatus;
 
+@SuppressWarnings("deprecation")
 @DisplayName("MongoHealthCheck")
 class MongoHealthCheckTest {
 
@@ -34,17 +35,21 @@ class MongoHealthCheckTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Nested
     class IsUnhealthy {
 
         @Test
         void whenExceptionIsThrown() {
-            var healthCheck = new MongoHealthCheck(null);
+            var mockDb = setupMockDB();
+            when(mockDb.getStats()).thenThrow(new RuntimeException("oops"));
+
+            var healthCheck = new MongoHealthCheck(mockDb);
 
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
-                    .hasMessageStartingWith("Mongo is not up: ");
+                    .hasMessageStartingWith("Mongo " + SERVER_ADDRESS + "/" + DB_NAME + " is not up: oops");
 
         }
 
@@ -59,9 +64,15 @@ class MongoHealthCheckTest {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static DB createMockedMongoDb(boolean getStatsSuccessful) {
+        var mockDb = setupMockDB();
+        var mockedResult = mockedCommandResult(getStatsSuccessful);
 
+        when(mockDb.getStats()).thenReturn(mockedResult);
+        return mockDb;
+    }
+
+    private static DB setupMockDB() {
         var mockDb = mock(DB.class);
         var mockMongo = mock(Mongo.class);
         var mockServerAddress = mock(ServerAddress.class);
@@ -71,9 +82,6 @@ class MongoHealthCheckTest {
         when(mockServerAddress.toString()).thenReturn(MongoHealthCheckTest.SERVER_ADDRESS);
         when(mockDb.getName()).thenReturn(MongoHealthCheckTest.DB_NAME);
 
-        var mockedResult = mockedCommandResult(getStatsSuccessful);
-
-        when(mockDb.getStats()).thenReturn(mockedResult);
         return mockDb;
     }
 

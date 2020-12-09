@@ -28,16 +28,16 @@ public class MongoHealthCheck extends HealthCheck {
     @SuppressWarnings({"deprecation", "ConstantConditions"})
     @Override
     protected Result check() throws Exception {
+        var host = db.getMongo().getAddress().toString();
+        var dbName = db.getName();
+
         try {
-            var host = db.getMongo().getAddress().toString();
-            var dbName = db.getName();
+            var statsCommandResult = db.getStats();
 
-            var result = db.getStats();
-
-            var isHealthy = result.ok();
+            var isHealthy = statsCommandResult.ok();
             var resultBuilder = newResultBuilder(isHealthy)
-                    .withDetail("storageSize", result.get("storageSize"))
-                    .withDetail("dataSize", result.get("dataSize"));
+                    .withDetail("storageSize", statsCommandResult.get("storageSize"))
+                    .withDetail("dataSize", statsCommandResult.get("dataSize"));
 
             if (isHealthy) {
                 return resultBuilder.withMessage("Mongo %s/%s is up", host, dbName).build();
@@ -45,11 +45,12 @@ public class MongoHealthCheck extends HealthCheck {
 
             return resultBuilder
                     .withMessage("Failed to retrieve db stats %s/%s : %s",
-                            host, dbName, result.getErrorMessage())
+                            host, dbName, statsCommandResult.getErrorMessage())
                     .build();
         } catch (Exception e) {
-            LOG.error("Unable to connect to Mongo: {}", e.getMessage(), e);
-            return newUnhealthyResult(HealthStatus.CRITICAL, "Mongo is not up: " + e.getMessage());
+            LOG.error("Unable to connect to Mongo: {}/{}", host, dbName, e);
+            return newUnhealthyResult(HealthStatus.CRITICAL, "Mongo %s/%s is not up: %s",
+                    host, dbName, e.getMessage());
         }
     }
 }
