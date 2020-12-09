@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.kiwiproject.base.process.ProcessHelper;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +43,18 @@ class ProcessLaunchHealthCheckTest {
 
             var inputStream = toInputStream(ECHO_MESSAGE);
             when(process.getInputStream()).thenReturn(inputStream);
+
+            assertThatHealthCheck(healthCheck)
+                    .isHealthy();
+        }
+
+        /**
+         * Only running on Linux and MacOS since we know for a fact that 'echo' exists there.
+         */
+        @Test
+        @EnabledOnOs({OS.LINUX, OS.MAC})
+        void whenEchoProcessCanBeLaunched_UsingActualProcess() {
+            healthCheck = new ProcessLaunchHealthCheck(new ProcessHelper());
 
             assertThatHealthCheck(healthCheck)
                     .isHealthy();

@@ -37,7 +37,7 @@ public class ProcessLaunchHealthCheck extends HealthCheck {
     }
 
     private static Result resultBasedOnEchoOutput(String line) {
-        if (ECHO_MESSAGE.equals(line)) {
+        if (ECHO_MESSAGE.equals(line.stripTrailing())) {
             return newHealthyResult();
         }
 
