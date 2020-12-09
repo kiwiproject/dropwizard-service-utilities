@@ -49,7 +49,7 @@ class MongoHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
-                    .hasMessageStartingWith("Mongo " + SERVER_ADDRESS + "/" + DB_NAME + " is not up: oops");
+                    .hasMessageStartingWith("Unable to connect to Mongo " + SERVER_ADDRESS + "/" + DB_NAME + ": oops");
 
         }
 
