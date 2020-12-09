@@ -41,7 +41,7 @@ public class LoggingExceptionMapper<E extends Throwable> implements ExceptionMap
         } else {
             var exceptionName = exception.getClass().getCanonicalName();
 
-            // don't want to load spring libraries to create it's own exception mapper but don't want alot of
+            // don't want to load spring libraries to create it's own exception mapper but don't want a lot of
             // services to have to create a duplicate DataAccessExceptionMapper either so ...
             r = exceptionName.startsWith("org.springframework.dao.")
                     ? dataAccessExceptionResponse(exceptionName, exception)
