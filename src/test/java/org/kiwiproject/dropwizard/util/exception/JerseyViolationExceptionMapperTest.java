@@ -1,7 +1,7 @@
 package org.kiwiproject.dropwizard.util.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.kiwiproject.dropwizard.util.exception.ErrorMessageAssertion.assertAndGetErrorMessage;
+import static org.kiwiproject.dropwizard.util.exception.ErrorMessageAssertions.assertAndGetErrorMessage;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertUnprocessableEntity;
 
 import io.dropwizard.jersey.validation.JerseyViolationException;

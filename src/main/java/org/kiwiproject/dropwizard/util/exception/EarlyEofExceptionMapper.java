@@ -12,7 +12,7 @@ import javax.ws.rs.ext.Provider;
 
 /**
  * Override default Dropwizard mapper to use kiwi's {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage}.
- * The the response entity is built using {@link JaxrsExceptionMapper#buildResponseEntity(JaxrsException)}.
+ * The response entity is built using {@link JaxrsExceptionMapper#buildResponseEntity(JaxrsException)}.
  */
 @Slf4j
 @Provider

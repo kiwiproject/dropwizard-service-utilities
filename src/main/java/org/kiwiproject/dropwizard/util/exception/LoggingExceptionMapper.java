@@ -16,8 +16,9 @@ import javax.ws.rs.ext.Provider;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Override default Dropwizard mapper to use common error structure. Catches all exceptions that don't have an explicit
- * ExceptionMapper defined for them.
+ * Override default Dropwizard mapper to use kiwi's {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage}.
+ * Catches all exceptions that don't have an explicit ExceptionMapper defined for them. The response entity is built
+ * using {@link JaxrsExceptionMapper#buildResponseEntity(JaxrsException)}.
  *
  * @param <E> the exception to be mapped
  */
