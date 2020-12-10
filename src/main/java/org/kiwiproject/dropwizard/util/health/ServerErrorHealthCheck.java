@@ -2,7 +2,7 @@ package org.kiwiproject.dropwizard.util.health;
 
 import static org.kiwiproject.collect.KiwiMaps.isNullOrEmpty;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newHealthyResult;
-import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -28,13 +28,17 @@ public class ServerErrorHealthCheck extends HealthCheck {
     @VisibleForTesting
     static final int FIFTEEN_MINUTES_IN_SECONDS = 15 * 60;
 
-    private static final double DEFAULT_WARNING_THRESHOLD = 1.0;
-    private static final double DEFAULT_CRITICAL_THRESHOLD = 10.0;
+    @VisibleForTesting
+    static final int DEFAULT_WARNING_THRESHOLD = 1;
+
+    @VisibleForTesting
+    static final int DEFAULT_CRITICAL_THRESHOLD = 10;
+
     private static final String MSG_SUFFIX = "5xx error responses in the last 15 minutes";
 
     private final MetricRegistry metrics;
-    private final double warningThreshold;
-    private final double criticalThreshold;
+    private final int warningThreshold;
+    private final int criticalThreshold;
 
     /**
      * Create the health check with the given {@link MetricRegistry}, defaulting the warning and critical thresholds.
@@ -52,7 +56,7 @@ public class ServerErrorHealthCheck extends HealthCheck {
      * @param warningThreshold  the threshold for a warning severity
      * @param criticalThreshold the threshold for a critical severity
      */
-    public ServerErrorHealthCheck(MetricRegistry metrics, double warningThreshold, double criticalThreshold) {
+    public ServerErrorHealthCheck(MetricRegistry metrics, int warningThreshold, int criticalThreshold) {
         this.metrics = metrics;
         this.warningThreshold = warningThreshold;
         this.criticalThreshold = criticalThreshold;
@@ -71,12 +75,25 @@ public class ServerErrorHealthCheck extends HealthCheck {
 
         LOG.trace("15 minute rate on 5xx responses meter is roughly {}", estimatedErrorCount);
 
+        return setupResultBuilder(estimatedErrorCount)
+                .withDetail("rate", meter.getFifteenMinuteRate())
+                .withDetail("approximateCount", estimatedErrorCount)
+                .withDetail("warningThreshold", warningThreshold)
+                .withDetail("criticalThreshold", criticalThreshold)
+                .withDetail("meter", METER_NAME)
+                .build();
+    }
+
+    private ResultBuilder setupResultBuilder(double estimatedErrorCount) {
         if (estimatedErrorCount >= criticalThreshold) {
-            return newUnhealthyResult(HealthStatus.CRITICAL, "Critical level of %s", MSG_SUFFIX);
+            return newResultBuilder(false, HealthStatus.CRITICAL)
+                    .withMessage("Critical level of %s", MSG_SUFFIX);
         } else if (estimatedErrorCount >= warningThreshold) {
-            return newUnhealthyResult(HealthStatus.WARN, "Some %s", MSG_SUFFIX);
+            return newResultBuilder(false, HealthStatus.WARN)
+                    .withMessage("Some %s", MSG_SUFFIX);
         }
 
-        return newHealthyResult("No %s", MSG_SUFFIX);
+        return newResultBuilder(true)
+                .withMessage("No %s", MSG_SUFFIX);
     }
 }

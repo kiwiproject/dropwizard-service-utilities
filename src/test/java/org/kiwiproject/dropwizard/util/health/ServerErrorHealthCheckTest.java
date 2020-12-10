@@ -1,5 +1,7 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.DEFAULT_CRITICAL_THRESHOLD;
+import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.DEFAULT_WARNING_THRESHOLD;
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.FIFTEEN_MINUTES_IN_SECONDS;
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.METER_NAME;
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.METRIC_FILTER;
@@ -66,9 +68,9 @@ class ServerErrorHealthCheckTest {
 
         @ParameterizedTest
         @ValueSource(doubles = {0.0, 0.5, 0.999999})
-        void whenRequiredMeterIsReturnedAndRateIsLessThanThreshold(double rate) {
+        void whenRequiredMeterIsReturnedAndRateIsLessThanThreshold(double count) {
             var meter = mock(Meter.class);
-            when(meter.getFifteenMinuteRate()).thenReturn(rate/FIFTEEN_MINUTES_IN_SECONDS);
+            when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
 
             var meters = new TreeMap<String, Meter>();
             meters.put(METER_NAME, meter);
@@ -77,7 +79,12 @@ class ServerErrorHealthCheckTest {
 
             assertThatHealthCheck(healthCheck)
                     .isHealthy()
-                    .hasMessage("No 5xx error responses in the last 15 minutes");
+                    .hasMessage("No 5xx error responses in the last 15 minutes")
+                    .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
+                    .hasDetail("approximateCount", count)
+                    .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
+                    .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
+                    .hasDetail("meter", METER_NAME);
         }
     }
 
@@ -85,10 +92,10 @@ class ServerErrorHealthCheckTest {
     class IsUnhealthy {
 
         @ParameterizedTest
-        @ValueSource(doubles = { 1.0, 5.0, 9.999999 })
-        void withWarningSeverity_WhenRateIsEqualToOrGreaterThanWarningThreshold(double rate) {
+        @ValueSource(doubles = {1.0, 5.0, 9.999999})
+        void withWarningSeverity_WhenRateIsEqualToOrGreaterThanWarningThreshold(double count) {
             var meter = mock(Meter.class);
-            when(meter.getFifteenMinuteRate()).thenReturn(rate/FIFTEEN_MINUTES_IN_SECONDS);
+            when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
 
             var meters = new TreeMap<String, Meter>();
             meters.put(METER_NAME, meter);
@@ -98,14 +105,19 @@ class ServerErrorHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.WARN.name())
-                    .hasMessage("Some 5xx error responses in the last 15 minutes");
+                    .hasMessage("Some 5xx error responses in the last 15 minutes")
+                    .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
+                    .hasDetail("approximateCount", count)
+                    .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
+                    .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
+                    .hasDetail("meter", METER_NAME);
         }
 
         @ParameterizedTest
-        @ValueSource(doubles = { 10.0, 100.0 })
-        void withCriticalSeverity_WhenRateIsEqualToOrGreaterThanCriticalThreshold(double rate) {
+        @ValueSource(doubles = {10.0, 100.0})
+        void withCriticalSeverity_WhenRateIsEqualToOrGreaterThanCriticalThreshold(double count) {
             var meter = mock(Meter.class);
-            when(meter.getFifteenMinuteRate()).thenReturn(rate/FIFTEEN_MINUTES_IN_SECONDS);
+            when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
 
             var meters = new TreeMap<String, Meter>();
             meters.put(METER_NAME, meter);
@@ -115,21 +127,26 @@ class ServerErrorHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
-                    .hasMessage("Critical level of 5xx error responses in the last 15 minutes");
+                    .hasMessage("Critical level of 5xx error responses in the last 15 minutes")
+                    .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
+                    .hasDetail("approximateCount", count)
+                    .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
+                    .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
+                    .hasDetail("meter", METER_NAME);
         }
 
         @Test
         void withCustomThresholdsMet() {
-            healthCheck = new ServerErrorHealthCheck(metrics, 5.0, 20.0);
+            healthCheck = new ServerErrorHealthCheck(metrics, 5, 20);
 
             var warningMeter = mock(Meter.class);
-            when(warningMeter.getFifteenMinuteRate()).thenReturn(5.5/FIFTEEN_MINUTES_IN_SECONDS);
+            when(warningMeter.getFifteenMinuteRate()).thenReturn(5.5 / FIFTEEN_MINUTES_IN_SECONDS);
 
             var warningMeters = new TreeMap<String, Meter>();
             warningMeters.put(METER_NAME, warningMeter);
 
             var criticalMeter = mock(Meter.class);
-            when(criticalMeter.getFifteenMinuteRate()).thenReturn(21.0/FIFTEEN_MINUTES_IN_SECONDS);
+            when(criticalMeter.getFifteenMinuteRate()).thenReturn(21.0 / FIFTEEN_MINUTES_IN_SECONDS);
 
             var criticalMeters = new TreeMap<String, Meter>();
             criticalMeters.put(METER_NAME, criticalMeter);
@@ -141,12 +158,22 @@ class ServerErrorHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.WARN.name())
-                    .hasMessage("Some 5xx error responses in the last 15 minutes");
+                    .hasMessage("Some 5xx error responses in the last 15 minutes")
+                    .hasDetail("rate", 5.5 / FIFTEEN_MINUTES_IN_SECONDS)
+                    .hasDetail("approximateCount", 5.5)
+                    .hasDetail("warningThreshold", 5)
+                    .hasDetail("criticalThreshold", 20)
+                    .hasDetail("meter", METER_NAME);
 
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
-                    .hasMessage("Critical level of 5xx error responses in the last 15 minutes");
+                    .hasMessage("Critical level of 5xx error responses in the last 15 minutes")
+                    .hasDetail("rate", 21.0 / FIFTEEN_MINUTES_IN_SECONDS)
+                    .hasDetail("approximateCount", 21.0)
+                    .hasDetail("warningThreshold", 5)
+                    .hasDetail("criticalThreshold", 20)
+                    .hasDetail("meter", METER_NAME);
         }
     }
 }
