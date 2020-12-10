@@ -33,7 +33,7 @@
     <dropwizard-curator.version>0.14.0</dropwizard-curator.version>
     <kiwi.version>0.17.0</kiwi.version>
     <metrics-healthchecks-severity.version>0.14.0</metrics-healthchecks-severity.version>
-    <registry-aware-jersey-client>0.7.0-SNAPSHOT</registry-aware-jersey-client>
+    <registry-aware-jersey-client>0.7.0</registry-aware-jersey-client>
     <service-discovery-client.version>0.9.0</service-discovery-client.version>
     <zookeeper.version>3.4.14</zookeeper.version>
 
