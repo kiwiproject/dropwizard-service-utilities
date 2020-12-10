@@ -37,7 +37,7 @@ public class ServerErrorHealthCheck extends HealthCheck {
     private final double criticalThreshold;
 
     /**
-     * Create the health check with the given {@link MetricRegistry}, defaulting the warning and critical thresholds
+     * Create the health check with the given {@link MetricRegistry}, defaulting the warning and critical thresholds.
      *
      * @param metrics the Metrics registry
      */
