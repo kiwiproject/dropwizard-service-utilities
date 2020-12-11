@@ -1,7 +1,7 @@
 package org.kiwiproject.dropwizard.util.job;
 
 /**
- * Interface for defining a handler when the {@link MonitoredJob} encounters an error.
+ * Interface that defines a handler for when a {@link MonitoredJob} encounters an error.
  */
 public interface JobErrorHandler {
 
