@@ -42,6 +42,7 @@
     <jersey.version>2.32</jersey.version>
     <metrics-servlets.version>4.1.16</metrics-servlets.version>
     <metrics-jetty9>4.1.16</metrics-jetty9>
+    <registry-aware-jersey-client>0.7.0</registry-aware-jersey-client>
 
     <!-- Versions for optional dependencies -->
 
@@ -205,6 +206,13 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>registry-aware-jersey-client</artifactId>
+      <version>${registry-aware-jersey-client}</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Test dependencies -->
 
     <dependency>
@@ -228,6 +236,19 @@
         <exclusion>
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-client</artifactId>
+      <version>${dropwizard.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.connectors</groupId>
+          <artifactId>jersey-apache-connector</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
