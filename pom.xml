@@ -118,12 +118,6 @@
 
     <dependency>
       <groupId>org.kiwiproject</groupId>
-      <artifactId>registry-aware-jersey-client</artifactId>
-      <version>${registry-aware-jersey-client}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.kiwiproject</groupId>
       <artifactId>service-discovery-client</artifactId>
       <version>${service-discovery-client.version}</version>
     </dependency>
@@ -210,6 +204,13 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>registry-aware-jersey-client</artifactId>
+      <version>${registry-aware-jersey-client}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies -->
