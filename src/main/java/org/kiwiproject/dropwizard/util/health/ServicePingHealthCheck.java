@@ -110,7 +110,7 @@ public class ServicePingHealthCheck extends HealthCheck {
 
         } catch (Exception e) {
             var msg = format("Exception pinging service {} at {}: {} ({})",
-                    serviceIdentifier.getServiceName(), target.getUri().toString(), e.getMessage(),
+                    serviceIdentifier.getServiceName(), target.getUri(), e.getMessage(),
                     e.getClass().getName());
 
             return unhealthyResult(msg, e);
