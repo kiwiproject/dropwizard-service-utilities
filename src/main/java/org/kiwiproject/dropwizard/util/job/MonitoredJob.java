@@ -10,28 +10,26 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.kiwiproject.base.CatchingRunnable;
 import org.kiwiproject.base.DefaultEnvironment;
 import org.kiwiproject.base.KiwiEnvironment;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 /**
  * Sets up a job from a {@link Runnable} that can be monitored through health checks to ensure it is running correctly.
- *
- * @param <T> a task that extends {@link Runnable}
  */
 @Slf4j
 @Getter
-public class MonitoredJob<T extends Runnable> implements CatchingRunnable {
+public class MonitoredJob implements CatchingRunnable {
 
     private final String name;
-    private final T task;
-    private final Function<MonitoredJob<T>, Boolean> decisionFunction;
+    private final Runnable task;
+    private final Function<MonitoredJob, Boolean> decisionFunction;
     private final JobErrorHandler errorHandler;
     private final Duration timeout;
     private final KiwiEnvironment environment;
@@ -43,14 +41,14 @@ public class MonitoredJob<T extends Runnable> implements CatchingRunnable {
 
     @Builder
     private MonitoredJob(String name,
-                        T task,
-                        Function<MonitoredJob<T>, Boolean> decisionFunction,
-                        JobErrorHandler errorHandler,
-                        Duration timeout,
-                        KiwiEnvironment environment) {
+                         Runnable task,
+                         Function<MonitoredJob, Boolean> decisionFunction,
+                         JobErrorHandler errorHandler,
+                         Duration timeout,
+                         KiwiEnvironment environment) {
         this.name = requireNotBlank(name, "name is required");
         this.task = requireNotNull(task, "task is required");
-        this.decisionFunction = isNull(decisionFunction) ? Objects::nonNull : decisionFunction;
+        this.decisionFunction = isNull(decisionFunction) ? (job -> true) : decisionFunction;
         this.errorHandler = errorHandler;
         this.timeout = timeout;
         this.environment = isNull(environment) ? new DefaultEnvironment() : environment;
@@ -79,7 +77,8 @@ public class MonitoredJob<T extends Runnable> implements CatchingRunnable {
     }
 
     private boolean isActive() {
-        return decisionFunction.apply(this);
+        var result = decisionFunction.apply(this);
+        return BooleanUtils.isTrue(result);
     }
 
     @Override

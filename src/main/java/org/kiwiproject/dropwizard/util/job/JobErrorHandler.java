@@ -11,5 +11,5 @@ public interface JobErrorHandler {
      * @param job       the job that was run
      * @param throwable the error that occurred
      */
-    void handle(MonitoredJob<? extends Runnable> job, Throwable throwable);
+    void handle(MonitoredJob job, Throwable throwable);
 }

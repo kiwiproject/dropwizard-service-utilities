@@ -1,6 +1,7 @@
 package org.kiwiproject.dropwizard.util.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
@@ -12,10 +13,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.kiwiproject.base.KiwiEnvironment;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 @DisplayName("MonitoredJob")
 @ExtendWith(SoftAssertionsExtension.class)
@@ -109,8 +114,11 @@ class MonitoredJobTest {
             softly.assertThat(job.getFailureCount().get()).isZero();
         }
 
-        @Test
-        void shouldSkipExecutionWhenNotActive(SoftAssertions softly) {
+        @ParameterizedTest
+        @MethodSource("org.kiwiproject.dropwizard.util.job.MonitoredJobTest#falseAndNullDecisionFunctions")
+        void shouldSkipExecutionWhenDecisionFunctionReturnsFalseOrNull(
+                Function<MonitoredJob, Boolean> decisionFun, SoftAssertions softly) {
+
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -121,7 +129,7 @@ class MonitoredJobTest {
                     .name("Run inactive no errors")
                     .task(taskRunCount::incrementAndGet)
                     .environment(environment)
-                    .decisionFunction(task -> false)
+                    .decisionFunction(decisionFun)
                     .build();
 
             job.run();
@@ -166,13 +174,13 @@ class MonitoredJobTest {
             var taskHandledCount = new AtomicInteger();
             var handler = new JobErrorHandler() {
                 @Override
-                public void handle(MonitoredJob<? extends Runnable> job, Throwable throwable) {
+                public void handle(MonitoredJob job, Throwable throwable) {
                     taskHandledCount.incrementAndGet();
                 }
             };
 
             var job = MonitoredJob.builder()
-                    .name("Run active with errors no handler")
+                    .name("Run active with errors and has handler")
                     .task(MonitoredJobTest::throwException)
                     .environment(environment)
                     .errorHandler(handler)
@@ -186,6 +194,31 @@ class MonitoredJobTest {
             softly.assertThat(job.getFailureCount().get()).isOne();
             softly.assertThat(taskHandledCount.get()).isOne();
         }
+
+        @Test
+        void shouldNotAllowExceptionsThrownByErrorHandlerToEscape() {
+            var handler = new JobErrorHandler() {
+                @Override
+                public void handle(MonitoredJob job, Throwable throwable) {
+                    throw new RuntimeException("error handling error");
+                }
+            };
+
+            var job = MonitoredJob.builder()
+                    .name("Run active with errors and has handler that throws exception")
+                    .task(MonitoredJobTest::throwException)
+                    .errorHandler(handler)
+                    .build();
+
+            assertThatCode(job::run).doesNotThrowAnyException();
+        }
+    }
+
+    static Stream<Function<MonitoredJob, Boolean>> falseAndNullDecisionFunctions() {
+        return Stream.of(
+                job -> false,
+                job -> null
+        );
     }
 
     private static void throwException() {
