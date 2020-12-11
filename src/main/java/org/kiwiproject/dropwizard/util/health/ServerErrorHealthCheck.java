@@ -77,7 +77,7 @@ public class ServerErrorHealthCheck extends HealthCheck {
 
         return setupResultBuilder(estimatedErrorCount)
                 .withDetail("rate", meter.getFifteenMinuteRate())
-                .withDetail("approximateCount", estimatedErrorCount)
+                .withDetail("approximateCount", toDoubleWithOneDecimalPlace(estimatedErrorCount))
                 .withDetail("warningThreshold", warningThreshold)
                 .withDetail("criticalThreshold", criticalThreshold)
                 .withDetail("meter", METER_NAME)
@@ -95,5 +95,12 @@ public class ServerErrorHealthCheck extends HealthCheck {
 
         return newResultBuilder(true)
                 .withMessage("No %s", MSG_SUFFIX);
+    }
+
+    // I am 100% sure this isn't even remotely close to the most efficient way to do this.
+    // Feel free to improve it and submit a PR.
+    @VisibleForTesting
+    static double toDoubleWithOneDecimalPlace(double value) {
+        return Double.parseDouble(String.format("%.1f", value));
     }
 }

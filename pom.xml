@@ -49,6 +49,7 @@
     <!-- Versions for test dependencies -->
     <curator.version>2.13.0</curator.version>
     <jackson.version>2.10.5</jackson.version>
+    <junit-pioneer.version>1.1.0</junit-pioneer.version>
     <kiwi-test.version>0.12.0</kiwi-test.version>
 
     <!-- Versions for plugins -->
@@ -271,13 +272,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.kiwiproject</groupId>
-      <artifactId>kiwi-test</artifactId>
-      <version>${kiwi-test.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${jackson.version}</version>
@@ -292,6 +286,39 @@
           <artifactId>jakarta.xml.bind-api</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit-pioneer</groupId>
+      <artifactId>junit-pioneer</artifactId>
+      <version>${junit-pioneer.version}</version>
+      <scope>test</scope>
+      <!-- Because Pioneer is not on Jupiter 5.7.0 yet -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-params</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-commons</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-launcher</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>kiwi-test</artifactId>
+      <version>${kiwi-test.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
