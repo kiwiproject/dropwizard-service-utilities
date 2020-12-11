@@ -4,8 +4,8 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 import static org.kiwiproject.collect.KiwiArrays.isNullOrEmpty;
-import static org.kiwiproject.metrics.health.HealthCheckResults.newHealthyResult;
-import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newHealthyResultBuilder;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResultBuilder;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -27,6 +27,9 @@ import java.util.stream.Stream;
  */
 @Slf4j
 public class ServicePingHealthCheck extends HealthCheck {
+
+    private static final String PING_URI_KEY = "pingUri";
+    private static final String IMPORTANCE_KEY = "importance";
 
     /**
      * Indicator of how important a dependent service is to the current service.
@@ -95,25 +98,28 @@ public class ServicePingHealthCheck extends HealthCheck {
         try {
             target = getStatusPathTarget();
         } catch (MissingServiceRuntimeException e) {
-            return unhealthyResult(format("Service {} not found", serviceIdentifier.getServiceName()), e);
+            return unhealthyResult("unknown", format("Service {} not found", serviceIdentifier.getServiceName()), e);
         }
 
+        var pingUri = target.getUri().toString();
+
         try {
+
             var response = target
                     .request()
                     .get();
 
             return KiwiResponses.onSuccessOrFailureWithResult(response,
-                    successResponse -> newHealthyResult(),
-                    failResponse -> unhealthyResult(
-                            notOkStatusMessage(target.getUri().toString(), failResponse.getStatus())));
+                    successResponse -> healthyResult(pingUri),
+                    failResponse -> unhealthyResult(pingUri,
+                            notOkStatusMessage(pingUri, failResponse.getStatus())));
 
         } catch (Exception e) {
             var msg = format("Exception pinging service {} at {}: {} ({})",
-                    serviceIdentifier.getServiceName(), target.getUri(), e.getMessage(),
+                    serviceIdentifier.getServiceName(), pingUri, e.getMessage(),
                     e.getClass().getName());
 
-            return unhealthyResult(msg, e);
+            return unhealthyResult(pingUri, msg, e);
         }
     }
 
@@ -122,19 +128,34 @@ public class ServicePingHealthCheck extends HealthCheck {
                 instance -> instance.getPaths().getStatusPath());
     }
 
+    private Result healthyResult(String pingUri) {
+        return newHealthyResultBuilder()
+                .withDetail(PING_URI_KEY, pingUri)
+                .withDetail(IMPORTANCE_KEY, dependencyImportance.name())
+                .build();
+    }
+
     private String notOkStatusMessage(String uri, int status) {
         return format("Ping to service {} at {} returned non-OK status {}",
                 serviceIdentifier.getServiceName(), uri, status);
     }
 
-    private Result unhealthyResult(String message, Exception e) {
+    private Result unhealthyResult(String pingUri, String message, Exception e) {
         LOG.warn(message, e);
-        return newUnhealthyResult(dependencyImportance.healthStatus, message);
+        return newUnhealthyResultBuilder(dependencyImportance.healthStatus, e)
+                .withMessage(message)
+                .withDetail(PING_URI_KEY, pingUri)
+                .withDetail(IMPORTANCE_KEY, dependencyImportance.name())
+                .build();
     }
 
-    private Result unhealthyResult(String message) {
+    private Result unhealthyResult(String pingUri, String message) {
         LOG.warn(message);
-        return newUnhealthyResult(dependencyImportance.healthStatus, message);
+        return newUnhealthyResultBuilder(dependencyImportance.healthStatus)
+                .withMessage(message)
+                .withDetail(PING_URI_KEY, pingUri)
+                .withDetail(IMPORTANCE_KEY, dependencyImportance.name())
+                .build();
     }
 
     /**

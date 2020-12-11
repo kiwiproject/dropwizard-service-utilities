@@ -33,7 +33,6 @@
     <dropwizard-curator.version>0.14.0</dropwizard-curator.version>
     <kiwi.version>0.17.0</kiwi.version>
     <metrics-healthchecks-severity.version>0.14.0</metrics-healthchecks-severity.version>
-    <registry-aware-jersey-client>0.7.0</registry-aware-jersey-client>
     <service-discovery-client.version>0.9.0</service-discovery-client.version>
     <zookeeper.version>3.4.14</zookeeper.version>
 
@@ -43,6 +42,7 @@
     <jersey.version>2.32</jersey.version>
     <metrics-servlets.version>4.1.16</metrics-servlets.version>
     <metrics-jetty9>4.1.16</metrics-jetty9>
+    <registry-aware-jersey-client>0.7.0</registry-aware-jersey-client>
 
     <!-- Versions for optional dependencies -->
 

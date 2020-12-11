@@ -83,7 +83,10 @@ class ServicePingHealthCheckTest {
             when(registryClient.findServiceInstanceBy(any(InstanceQuery.class))).thenReturn(Optional.of(instance));
 
             assertThatHealthCheck(healthCheck)
-                    .isHealthy();
+                    .isHealthy()
+                    .hasDetail("severity", HealthStatus.OK.name())
+                    .hasDetail("pingUri", CLIENT.baseUri() + "/pingGood")
+                    .hasDetail("importance", DependencyImportance.REQUIRED.name());
         }
     }
 
@@ -103,7 +106,9 @@ class ServicePingHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasMessage("Service test-service not found")
-                    .hasDetail("severity", HealthStatus.CRITICAL.name());
+                    .hasDetail("severity", HealthStatus.CRITICAL.name())
+                    .hasDetail("pingUri", "unknown")
+                    .hasDetail("importance", DependencyImportance.REQUIRED.name());
         }
 
         @Test
@@ -129,7 +134,9 @@ class ServicePingHealthCheckTest {
                     .isUnhealthy()
                     .hasMessageStartingWith("Ping to service test-service at ")
                     .hasMessageEndingWith("returned non-OK status 400")
-                    .hasDetail("severity", HealthStatus.CRITICAL.name());
+                    .hasDetail("severity", HealthStatus.CRITICAL.name())
+                    .hasDetail("pingUri", CLIENT.baseUri() + "/pingNotOKStatus")
+                    .hasDetail("importance", DependencyImportance.REQUIRED.name());
         }
     }
 
