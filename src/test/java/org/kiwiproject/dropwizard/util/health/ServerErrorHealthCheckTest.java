@@ -5,6 +5,7 @@ import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.DEFA
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.FIFTEEN_MINUTES_IN_SECONDS;
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.METER_NAME;
 import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.METRIC_FILTER;
+import static org.kiwiproject.dropwizard.util.health.ServerErrorHealthCheck.toDoubleWithOneDecimalPlace;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.params.DoubleRangeSource;
 import org.kiwiproject.metrics.health.HealthStatus;
 
 import java.util.TreeMap;
@@ -67,7 +68,7 @@ class ServerErrorHealthCheckTest {
         }
 
         @ParameterizedTest
-        @ValueSource(doubles = {0.0, 0.5, 0.999999})
+        @DoubleRangeSource(from = 0.0, to = 1.0, step = 0.1)
         void whenRequiredMeterIsReturnedAndRateIsLessThanThreshold(double count) {
             var meter = mock(Meter.class);
             when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
@@ -81,7 +82,7 @@ class ServerErrorHealthCheckTest {
                     .isHealthy()
                     .hasMessage("No 5xx error responses in the last 15 minutes")
                     .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
-                    .hasDetail("approximateCount", count)
+                    .hasDetail("approximateCount", toDoubleWithOneDecimalPlace(count))
                     .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
                     .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
                     .hasDetail("meter", METER_NAME);
@@ -92,7 +93,7 @@ class ServerErrorHealthCheckTest {
     class IsUnhealthy {
 
         @ParameterizedTest
-        @ValueSource(doubles = {1.0, 5.0, 9.999999})
+        @DoubleRangeSource(from = 1.0, to = 10.0, step = 0.1)
         void withWarningSeverity_WhenRateIsEqualToOrGreaterThanWarningThreshold(double count) {
             var meter = mock(Meter.class);
             when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
@@ -107,14 +108,14 @@ class ServerErrorHealthCheckTest {
                     .hasDetail("severity", HealthStatus.WARN.name())
                     .hasMessage("Some 5xx error responses in the last 15 minutes")
                     .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
-                    .hasDetail("approximateCount", count)
+                    .hasDetail("approximateCount", toDoubleWithOneDecimalPlace(count))
                     .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
                     .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
                     .hasDetail("meter", METER_NAME);
         }
 
         @ParameterizedTest
-        @ValueSource(doubles = {10.0, 100.0})
+        @DoubleRangeSource(from = 10.0, to = 100.0)
         void withCriticalSeverity_WhenRateIsEqualToOrGreaterThanCriticalThreshold(double count) {
             var meter = mock(Meter.class);
             when(meter.getFifteenMinuteRate()).thenReturn(count / FIFTEEN_MINUTES_IN_SECONDS);
@@ -129,7 +130,7 @@ class ServerErrorHealthCheckTest {
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
                     .hasMessage("Critical level of 5xx error responses in the last 15 minutes")
                     .hasDetail("rate", count / FIFTEEN_MINUTES_IN_SECONDS)
-                    .hasDetail("approximateCount", count)
+                    .hasDetail("approximateCount", toDoubleWithOneDecimalPlace(count))
                     .hasDetail("warningThreshold", DEFAULT_WARNING_THRESHOLD)
                     .hasDetail("criticalThreshold", DEFAULT_CRITICAL_THRESHOLD)
                     .hasDetail("meter", METER_NAME);
