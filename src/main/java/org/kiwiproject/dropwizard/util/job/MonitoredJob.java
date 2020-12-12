@@ -6,6 +6,7 @@ import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.concurrent.Async.doAsync;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -24,19 +25,32 @@ import java.util.function.Function;
  * Sets up a job from a {@link Runnable} that can be monitored through health checks to ensure it is running correctly.
  */
 @Slf4j
-@Getter
+//@Getter
 public class MonitoredJob implements CatchingRunnable {
 
-    private final String name;
     private final Runnable task;
-    private final Function<MonitoredJob, Boolean> decisionFunction;
     private final JobErrorHandler errorHandler;
     private final Duration timeout;
+
+    @Getter
+    private final String name;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final Function<MonitoredJob, Boolean> decisionFunction;
+
+    @Getter(AccessLevel.PACKAGE)
     private final KiwiEnvironment environment;
 
+    @Getter
     private final AtomicLong lastSuccess = new AtomicLong();
+
+    @Getter
     private final AtomicLong lastFailure = new AtomicLong();
+
+    @Getter
     private final AtomicLong failureCount = new AtomicLong();
+
+    @Getter
     private final AtomicLong lastExecutionTime = new AtomicLong();
 
     @Builder
@@ -76,7 +90,13 @@ public class MonitoredJob implements CatchingRunnable {
         lastSuccess.set(environment.currentTimeMillis());
     }
 
-    private boolean isActive() {
+    /**
+     * Checks if the job should be active and execute. This is useful if the same job runs in separate JVMs but only a
+     * single one of the jobs should run at a time.
+     *
+     * @return true if this job should run, false otherwise
+     */
+    public boolean isActive() {
         var result = decisionFunction.apply(this);
         return BooleanUtils.isTrue(result);
     }
