@@ -112,6 +112,7 @@ public class AdminConfigurator {
      *
      * @param config           the configuration for the service
      * @param hiddenFieldRegex list of regex patterns to match for sensitive fields in the config (e.g. passwords)
+     * @param <T>              the type of the Dropwizard configuration class
      * @return this configurator
      * @throws IllegalArgumentException if config is null
      * @see ConfigResource
