@@ -1,11 +1,5 @@
 package org.kiwiproject.dropwizard.util.health;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import io.dropwizard.util.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +10,12 @@ import org.kiwiproject.dropwizard.util.job.MonitoredJob;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("MonitoredJobHealthCheck")
 class MonitoredJobHealthCheckTest {
@@ -35,17 +35,19 @@ class MonitoredJobHealthCheckTest {
         @Test
         void shouldRequireMonitoredJob() {
             var builder = MonitoredJobHealthCheck.builder();
-            assertThatThrownBy(builder::build)
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("job is required");
+
+            assertThatIllegalArgumentException()
+                    .isThrownBy(builder::build)
+                    .withMessage("job is required");
         }
 
         @Test
         void shouldRequireExpectedFrequency() {
             var builder = MonitoredJobHealthCheck.builder().job(mock(MonitoredJob.class));
-            assertThatThrownBy(builder::build)
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("expectedFrequency is required");
+
+            assertThatIllegalArgumentException()
+                    .isThrownBy(builder::build)
+                    .withMessage("expectedFrequency is required");
         }
 
         @Test
