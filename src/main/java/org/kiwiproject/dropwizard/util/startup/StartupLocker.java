@@ -53,6 +53,7 @@ public class StartupLocker {
      *
      * @param lockPath      the path in ZooKeeper to store the lock
      * @param lockTimeout   the amount of time to wait for the lock to be acquired
+     * @param assignment    the port assignment (static or dynamic port assignment)
      * @param curatorConfig the Curator configuration
      * @param environment   the Dropwizard environment
      * @return information about the attempted lock, whether it was obtained, etc. Clients are expected check the
