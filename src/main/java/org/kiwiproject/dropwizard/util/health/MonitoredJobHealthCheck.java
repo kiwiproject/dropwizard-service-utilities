@@ -85,11 +85,13 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     static final Duration DEFAULT_WARNING_DURATION = Duration.minutes(15);
 
     private final MonitoredJob job;
-    private final Duration expectedFrequency;
+    private final long expectedFrequency;
     private final Duration errorWarningDuration;
+    private final long errorWarningMilliseconds;
     private final double thresholdFactor;
     private final long lowerTimeBound;
     private final KiwiEnvironment kiwiEnvironment;
+    private final long warningThreshold;
 
     @Builder
     private MonitoredJobHealthCheck(MonitoredJob job,
@@ -100,11 +102,13 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                                     KiwiEnvironment environment) {
 
         this.job = requireNotNull(job, "job is required");
-        this.expectedFrequency = requireNotNull(expectedFrequency, "expectedFrequency is required");
+        this.expectedFrequency = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
         this.errorWarningDuration = isNull(errorWarningDuration) ? DEFAULT_WARNING_DURATION : errorWarningDuration;
+        this.errorWarningMilliseconds = this.errorWarningDuration.toMilliseconds();
         this.thresholdFactor = isNull(thresholdFactor) ? DEFAULT_THRESHOLD_FACTOR : thresholdFactor;
         this.kiwiEnvironment = isNull(environment) ? new DefaultEnvironment() : environment;
         this.lowerTimeBound = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
+        this.warningThreshold = getWarningThreshold();
     }
 
     @Override
@@ -117,12 +121,11 @@ public class MonitoredJobHealthCheck extends HealthCheck {
 
             var now = kiwiEnvironment.currentTimeMillis();
             var lastFailure = job.getLastFailure().get();
-            if ((now - lastFailure) < errorWarningDuration.toMilliseconds()) {
+            if ((now - lastFailure) < errorWarningMilliseconds) {
                 return buildUnhealthyResult(f("An error has occurred at: {}, which is within the threshold of: {}",
                         instantToStringOrNever(job.getLastFailure().get()), errorWarningDuration));
             }
 
-            var warningThreshold = getWarningThreshold();
             if ((now - getTimeOrServerStart(lastRun)) > warningThreshold) {
                 return buildUnhealthyResult(f("Last successful execution was: {}, which is older than the threshold of: {} seconds",
                         instantToStringOrNever(lastRun), Duration.milliseconds(warningThreshold).toSeconds()));
@@ -155,9 +158,9 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("lastFailure", job.getLastFailure())
                 .withDetail("lastSuccess", job.getLastSuccess())
                 .withDetail("lastExecutionTimeMs", job.getLastExecutionTime())
-                .withDetail("expectedFrequencyMs", expectedFrequency.toMilliseconds())
+                .withDetail("expectedFrequencyMs", expectedFrequency)
                 .withDetail("warningThresholdMs", getWarningThreshold())
-                .withDetail("errorWarningDurationMs", errorWarningDuration.toMilliseconds());
+                .withDetail("errorWarningDurationMs", errorWarningMilliseconds);
     }
 
     private static void checkValidHealthArgumentCombination(boolean healthy, Exception error) {
@@ -165,7 +168,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     }
 
     private long getWarningThreshold() {
-        return Math.max((long) (expectedFrequency.toMilliseconds() * thresholdFactor),
+        return Math.max((long) (expectedFrequency * thresholdFactor),
                 MINIMUM_WARNING_THRESHOLD.toMilliseconds());
     }
 
@@ -177,8 +180,8 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         return resultBuilderWith(message, false).build();
     }
 
-    private long getTimeOrServerStart(long lastRun) {
-        return Math.max(lastRun, lowerTimeBound);
+    private long getTimeOrServerStart(long lastRunMs) {
+        return Math.max(lastRunMs, lowerTimeBound);
     }
 
     private Result handleException(Exception e) {

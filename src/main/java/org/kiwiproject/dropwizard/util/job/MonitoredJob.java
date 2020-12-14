@@ -1,11 +1,5 @@
 package org.kiwiproject.dropwizard.util.job;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
-import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
-import static org.kiwiproject.concurrent.Async.doAsync;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,11 +15,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+import static org.kiwiproject.concurrent.Async.doAsync;
+
 /**
  * Sets up a job from a {@link Runnable} that can be monitored through health checks to ensure it is running correctly.
  */
 @Slf4j
-//@Getter
 public class MonitoredJob implements CatchingRunnable {
 
     private final Runnable task;
