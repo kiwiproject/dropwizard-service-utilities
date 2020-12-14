@@ -1,5 +1,15 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.isNull;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+import static org.kiwiproject.base.KiwiStrings.f;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
+import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResultBuilder;
+
+import java.time.Instant;
+
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.util.Duration;
@@ -11,20 +21,13 @@ import org.kiwiproject.base.DefaultEnvironment;
 import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.dropwizard.util.job.MonitoredJob;
 
-import java.time.Instant;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.isNull;
-import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
-import static org.kiwiproject.base.KiwiStrings.f;
-import static org.kiwiproject.metrics.health.HealthCheckResults.*;
-
 /**
  * Health check that monitors a {@link MonitoredJob} to ensure that it is running on schedule and not encountering
  * errors while running.
  * <p>
  * <b>Builder Parameters:</b>
  * <table>
+ *     <caption>Monitored Job Health Check Builder Params</caption>
  *     <tr>
  *         <td>Name</td>
  *         <td>Default</td>
