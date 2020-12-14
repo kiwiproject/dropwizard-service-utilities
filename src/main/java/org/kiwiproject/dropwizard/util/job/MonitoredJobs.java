@@ -1,13 +1,11 @@
 package org.kiwiproject.dropwizard.util.job;
 
-import static com.google.common.collect.Maps.newConcurrentMap;
-import static java.util.Objects.isNull;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -15,8 +13,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Environment;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
@@ -30,7 +26,7 @@ import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 public class MonitoredJobs {
 
     @VisibleForTesting
-    static final Map<String, JobContext> JOBS = newConcurrentMap();
+    static final Set<String> JOBS = new HashSet<>();
 
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final String EMPTY_STRING = "";
@@ -103,16 +99,15 @@ public class MonitoredJobs {
                 .decisionFunction(decisionFn)
                 .build();
 
-        var healthCheck = registerHealthCheck(env, name, schedule, job);
-
+        registerHealthCheck(env, name, schedule, job);
         scheduleJob(executor, schedule, job);
 
-        JOBS.put(name, new JobContext(job, healthCheck, executor));
+        JOBS.add(name);
         return job;
     }
 
     private static void validateJob(String name, JobSchedule schedule) {
-        checkArgument(isNull(JOBS.get(name)), IllegalArgumentException.class,
+        checkArgument(!JOBS.contains(name), IllegalArgumentException.class,
                 "Jobs cannot be registered more than once with the same name: {}", name);
 
         checkArgumentNotNull(schedule.getInitialDelay(),
@@ -122,7 +117,7 @@ public class MonitoredJobs {
                 "Job '{}' must specify a non-null interval delay", name);
     }
 
-    private static MonitoredJobHealthCheck registerHealthCheck(Environment env, String name,
+    private static void registerHealthCheck(Environment env, String name,
                                                                JobSchedule schedule, MonitoredJob job) {
 
         LOG.debug("Creating and registering health check for job: {}", name);
@@ -133,24 +128,11 @@ public class MonitoredJobs {
                 .build();
 
         env.healthChecks().register(f("Job: {}", name), healthCheck);
-        return healthCheck;
     }
 
     private static void scheduleJob(ScheduledExecutorService executor, JobSchedule schedule, MonitoredJob job) {
         LOG.debug("Scheduling job: {} to run every: {}", job.getName(), schedule.getIntervalDelay());
         executor.scheduleWithFixedDelay(job, schedule.getInitialDelay().toSeconds(),
                 schedule.getIntervalDelay().toSeconds(), TimeUnit.SECONDS);
-    }
-
-    /**
-     * Container that holds the newly created {@link MonitoredJob}, {@link MonitoredJobHealthCheck}
-     * and the {@link Executor} running the job.
-     */
-    @Getter
-    @AllArgsConstructor
-    public static class JobContext {
-        private final MonitoredJob job;
-        private final MonitoredJobHealthCheck healthCheck;
-        private final Executor executor;
     }
 }

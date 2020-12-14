@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
-import org.kiwiproject.dropwizard.util.job.MonitoredJobs.JobContext;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
 @DisplayName("MonitoredJobs")
@@ -57,9 +56,7 @@ class MonitoredJobsTest {
             void whenJobWithNameAlreadyRegistered() {
                 var jobName = "AlreadyRegistered";
 
-                MonitoredJobs.JOBS.put(jobName,
-                        new JobContext(mock(MonitoredJob.class), mock(MonitoredJobHealthCheck.class),
-                                mock(ScheduledExecutorService.class)));
+                MonitoredJobs.JOBS.add(jobName);
 
                 assertThatIllegalArgumentException()
                         .isThrownBy(() -> MonitoredJobs.registerJob(env, jobName, new JobSchedule(), null))
@@ -89,6 +86,50 @@ class MonitoredJobsTest {
 
         @Nested
         class ShouldRegisterHealthCheckAndScheduleJob {
+
+            @BeforeEach
+            void setUp() {
+                MonitoredJobs.JOBS.clear();
+            }
+
+            @Test
+            void whenArgumentsAreValid_DefaultingDecisionFunctionAndExecutor() {
+                var schedule = new JobSchedule(Duration.seconds(10), Duration.seconds(30));
+                Runnable task = () -> System.out.println("hello");
+
+                var executor = mock(ScheduledExecutorService.class);
+                var scheduledExecutorServiceBuilder = mock(ScheduledExecutorServiceBuilder.class);
+                when(env.lifecycle().scheduledExecutorService(anyString(), eq(true)))
+                        .thenReturn(scheduledExecutorServiceBuilder);
+                when(scheduledExecutorServiceBuilder.build()).thenReturn(executor);
+
+                var monitoredJob = MonitoredJobs.registerJob(env, "ValidJob", schedule, task);
+
+                assertThat(monitoredJob).isNotNull();
+
+                verify(env.healthChecks()).register(eq("Job: ValidJob"), any(MonitoredJobHealthCheck.class));
+                verify(executor).scheduleWithFixedDelay(monitoredJob, 10, 30, TimeUnit.SECONDS);
+            }
+
+            @Test
+            void whenArgumentsAreValid_DefaultingExecutor() {
+                var schedule = new JobSchedule(Duration.seconds(10), Duration.seconds(30));
+                Runnable task = () -> System.out.println("hello");
+
+                var executor = mock(ScheduledExecutorService.class);
+                var scheduledExecutorServiceBuilder = mock(ScheduledExecutorServiceBuilder.class);
+                when(env.lifecycle().scheduledExecutorService(anyString(), eq(true)))
+                        .thenReturn(scheduledExecutorServiceBuilder);
+                when(scheduledExecutorServiceBuilder.build()).thenReturn(executor);
+
+                var monitoredJob = MonitoredJobs.registerJob(env, "ValidJob", schedule, task,
+                        (job) -> true);
+
+                assertThat(monitoredJob).isNotNull();
+
+                verify(env.healthChecks()).register(eq("Job: ValidJob"), any(MonitoredJobHealthCheck.class));
+                verify(executor).scheduleWithFixedDelay(monitoredJob, 10, 30, TimeUnit.SECONDS);
+            }
 
             @Test
             void whenArgumentsAreValid() {
