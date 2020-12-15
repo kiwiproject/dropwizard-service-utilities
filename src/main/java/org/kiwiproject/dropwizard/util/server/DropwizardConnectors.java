@@ -5,6 +5,11 @@ import static java.util.stream.Collectors.toMap;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -13,18 +18,16 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.experimental.UtilityClass;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 /**
- * Utility class that assists with setting up the server connectors in Dropwizard
+ * Utility class that assists with setting up the server connectors in Dropwizard.
  */
 @UtilityClass
 public class DropwizardConnectors {
 
-    enum ConnectorType {
+    /**
+     * Enum defining the possible options for a connector type in Dropwizard.
+     */
+    public enum ConnectorType {
         HTTP(HttpConnectorFactory.class), HTTPS(HttpsConnectorFactory.class);
 
         private final Class<? extends ConnectorFactory> connectorClass;
