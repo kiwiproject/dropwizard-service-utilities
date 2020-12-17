@@ -5,11 +5,6 @@ import static java.util.stream.Collectors.toMap;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -17,6 +12,10 @@ import io.dropwizard.jetty.HttpsConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.experimental.UtilityClass;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Utility class that assists with setting up the server connectors in Dropwizard.
@@ -28,19 +27,22 @@ public class DropwizardConnectors {
      * Enum defining the possible options for a connector type in Dropwizard.
      */
     public enum ConnectorType {
-        HTTP(HttpConnectorFactory.class), HTTPS(HttpsConnectorFactory.class);
+        HTTP, HTTPS;
 
-        private final Class<? extends ConnectorFactory> connectorClass;
+        /**
+         * Given an {@link HttpConnectorFactory} instance, determine whether it is for HTTP or HTTPS.
+         *
+         * @param factory the instance
+         * @return the ConnectorType
+         */
+        static ConnectorType forHttpConnectorFactory(HttpConnectorFactory factory) {
+            checkArgumentNotNull(factory, "factory cannot be null");
 
-        ConnectorType(Class<? extends ConnectorFactory> connectorClass) {
-            this.connectorClass = connectorClass;
-        }
+            if (factory instanceof HttpsConnectorFactory) {
+                return HTTPS;
+            }
 
-        static ConnectorType forClass(Class<? extends ConnectorFactory> connectorClass) {
-            return Arrays.stream(ConnectorType.values())
-                    .filter(type -> type.connectorClass == connectorClass)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unable to find ConnectorType for " + connectorClass.getName()));
+            return HTTP;
         }
     }
 
@@ -49,7 +51,7 @@ public class DropwizardConnectors {
      *
      * @param serverFactory {@link ServerFactory} to check to make sure it is a {@link DefaultServerFactory}
      * @return the given server factory if it is an instance of {@link DefaultServerFactory}
-     * @throws IllegalStateException if serverFactory is not a {@link DefaultServerFactory}
+     * @throws IllegalStateException    if serverFactory is not a {@link DefaultServerFactory}
      * @throws IllegalArgumentException if serverFactory is null
      */
     public static DefaultServerFactory requireDefaultServerFactory(ServerFactory serverFactory) {
@@ -106,10 +108,8 @@ public class DropwizardConnectors {
     static Map<ConnectorType, ConnectorFactory> createConnectorFactoryMap(List<ConnectorFactory> connectors) {
         return connectors.stream()
                 .filter(factory -> factory instanceof HttpConnectorFactory)
-                .collect(toMap(
-                        factory -> ConnectorType.forClass(factory.getClass()),
-                        identity()
-                ));
+                .map(HttpConnectorFactory.class::cast)
+                .collect(toMap(ConnectorType::forHttpConnectorFactory, identity()));
     }
 
     private static Optional<Integer> getPort(HttpConnectorFactory connector) {
