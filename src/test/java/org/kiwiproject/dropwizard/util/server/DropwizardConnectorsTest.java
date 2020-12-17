@@ -31,7 +31,7 @@ class DropwizardConnectorsTest {
     @Nested
     class GetDefaultServerFactory {
         @Test
-        void throwsIllegalStateException_WhenServerFactory_IsNotInstance0fDefaultServerFactory() {
+        void throwsIllegalStateException_WhenServerFactory_IsNotInstanceOfDefaultServerFactory() {
             ServerFactory factory = new SimpleServerFactory();
             assertThatThrownBy(() -> DropwizardConnectors.requireDefaultServerFactory(factory))
                     .isExactlyInstanceOf(IllegalStateException.class)
@@ -96,6 +96,17 @@ class DropwizardConnectorsTest {
             var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTP);
             assertThat(port).isEmpty();
         }
+
+        @Test
+        void shouldSelectLastConnectorFactoryWhenGivenMoreThanOne() {
+            var connectorFactories = buildHttpsConnectorFactories();
+            factory.setApplicationConnectors(connectorFactories);
+
+            var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTPS);
+            assertThat(port)
+                    .describedAs("should always choose the port from the last ConnectorFactory")
+                    .hasValue(8003);
+        }
     }
 
     @Nested
@@ -138,6 +149,30 @@ class DropwizardConnectorsTest {
             var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTP);
             assertThat(port).isEmpty();
         }
+
+        @Test
+        void shouldSelectLastConnectorFactoryWhenGivenMoreThanOne() {
+            var connectorFactories = buildHttpsConnectorFactories();
+            factory.setAdminConnectors(connectorFactories);
+
+            var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTPS);
+            assertThat(port)
+                    .describedAs("should always choose the port from the last ConnectorFactory")
+                    .hasValue(8003);
+        }
+    }
+
+    private static List<ConnectorFactory> buildHttpsConnectorFactories() {
+        var httpsConnector1 = new HttpsConnectorFactory();
+        httpsConnector1.setPort(8001);
+
+        var httpsConnector2 = new HttpsConnectorFactory();
+        httpsConnector2.setPort(8002);
+
+        var httpsConnector3 = new HttpsConnectorFactory();
+        httpsConnector3.setPort(8003);
+
+        return List.of(httpsConnector1, httpsConnector2, httpsConnector3);
     }
 
     @Nested
