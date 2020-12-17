@@ -1,11 +1,13 @@
 package org.kiwiproject.dropwizard.util.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.jetty.HttpsConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import io.dropwizard.server.SimpleServerFactory;
@@ -16,8 +18,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.kiwiproject.dropwizard.util.server.DropwizardConnectors.ConnectorType;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @DisplayName("DropwizardConnectors")
 class DropwizardConnectorsTest {
@@ -25,7 +31,7 @@ class DropwizardConnectorsTest {
     @Nested
     class GetDefaultServerFactory {
         @Test
-        void throwsIllegalStateException_WhenServerFactory_IsNotInstance0fDefaultServerFactory() {
+        void throwsIllegalStateException_WhenServerFactory_IsNotInstanceOfDefaultServerFactory() {
             ServerFactory factory = new SimpleServerFactory();
             assertThatThrownBy(() -> DropwizardConnectors.requireDefaultServerFactory(factory))
                     .isExactlyInstanceOf(IllegalStateException.class)
@@ -67,13 +73,13 @@ class DropwizardConnectorsTest {
 
         @Test
         void shouldReturnApplicationPortWhenMatchIsFound() {
-            var port = DropwizardConnectors.getApplicationPort(factory, DropwizardConnectors.ConnectorType.HTTP);
+            var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTP);
             assertThat(port).hasValue(8080);
         }
 
         @Test
         void shouldReturnEmptyWhenMatchIsNotFound() {
-            var port = DropwizardConnectors.getApplicationPort(factory, DropwizardConnectors.ConnectorType.HTTPS);
+            var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTPS);
             assertThat(port).isEmpty();
         }
 
@@ -87,8 +93,19 @@ class DropwizardConnectorsTest {
             };
 
             factory.setApplicationConnectors(List.of(connector));
-            var port = DropwizardConnectors.getApplicationPort(factory, DropwizardConnectors.ConnectorType.HTTP);
+            var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTP);
             assertThat(port).isEmpty();
+        }
+
+        @Test
+        void shouldSelectLastConnectorFactoryWhenGivenMoreThanOne() {
+            var connectorFactories = buildHttpsConnectorFactories();
+            factory.setApplicationConnectors(connectorFactories);
+
+            var port = DropwizardConnectors.getApplicationPort(factory, ConnectorType.HTTPS);
+            assertThat(port)
+                    .describedAs("should always choose the port from the last ConnectorFactory")
+                    .hasValue(8003);
         }
     }
 
@@ -109,13 +126,13 @@ class DropwizardConnectorsTest {
 
         @Test
         void shouldReturnAdminPortWhenMatchIsFound() {
-            var port = DropwizardConnectors.getAdminPort(factory, DropwizardConnectors.ConnectorType.HTTP);
+            var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTP);
             assertThat(port).hasValue(8080);
         }
 
         @Test
         void shouldReturnEmptyWhenMatchIsNotFound() {
-            var port = DropwizardConnectors.getAdminPort(factory, DropwizardConnectors.ConnectorType.HTTPS);
+            var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTPS);
             assertThat(port).isEmpty();
         }
 
@@ -129,26 +146,81 @@ class DropwizardConnectorsTest {
             };
 
             factory.setAdminConnectors(List.of(connector));
-            var port = DropwizardConnectors.getAdminPort(factory, DropwizardConnectors.ConnectorType.HTTP);
+            var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTP);
             assertThat(port).isEmpty();
         }
+
+        @Test
+        void shouldSelectLastConnectorFactoryWhenGivenMoreThanOne() {
+            var connectorFactories = buildHttpsConnectorFactories();
+            factory.setAdminConnectors(connectorFactories);
+
+            var port = DropwizardConnectors.getAdminPort(factory, ConnectorType.HTTPS);
+            assertThat(port)
+                    .describedAs("should always choose the port from the last ConnectorFactory")
+                    .hasValue(8003);
+        }
+    }
+
+    private static List<ConnectorFactory> buildHttpsConnectorFactories() {
+        var httpsConnector1 = new HttpsConnectorFactory();
+        httpsConnector1.setPort(8001);
+
+        var httpsConnector2 = new HttpsConnectorFactory();
+        httpsConnector2.setPort(8002);
+
+        var httpsConnector3 = new HttpsConnectorFactory();
+        httpsConnector3.setPort(8003);
+
+        return List.of(httpsConnector1, httpsConnector2, httpsConnector3);
     }
 
     @Nested
-    class ConnectorType {
+    class ConnectorTypeEnum {
 
-        @Test
-        void forClass_ShouldThrowIllegalArgumentException_WhenTheClassDoesNotMatch() {
-            class MyConnector implements ConnectorFactory {
-                @Override
-                public Connector build(Server server, MetricRegistry metricRegistry, String s, ThreadPool threadPool) {
-                    return null;
-                }
+        @Nested
+        class ForHttpConnectorFactory {
+
+            @Test
+            void shouldThrow_GivenNullArgument() {
+                //noinspection ResultOfMethodCallIgnored
+                assertThatIllegalArgumentException()
+                        .isThrownBy(() -> ConnectorType.forHttpConnectorFactory(null))
+                        .withMessage("factory cannot be null");
             }
 
-            assertThatThrownBy(() -> DropwizardConnectors.ConnectorType.forClass(MyConnector.class))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Unable to find ConnectorType for " + MyConnector.class.getName());
+            @ParameterizedTest
+            @MethodSource("org.kiwiproject.dropwizard.util.server.DropwizardConnectorsTest#httpConnectorFactories")
+            void shouldReturnHTTP_GivenHttpConnectorFactorySubclasses(HttpConnectorFactory factory) {
+                assertThat(ConnectorType.forHttpConnectorFactory(factory)).isEqualTo(ConnectorType.HTTP);
+            }
+
+            @ParameterizedTest
+            @MethodSource("org.kiwiproject.dropwizard.util.server.DropwizardConnectorsTest#httpsConnectorFactories")
+            void shouldReturnHTTPS_GivenHttpsConnectorFactory(HttpConnectorFactory factory) {
+                assertThat(ConnectorType.forHttpConnectorFactory(factory)).isEqualTo(ConnectorType.HTTPS);
+            }
         }
     }
+
+    static Stream<HttpConnectorFactory> httpConnectorFactories() {
+        return Stream.of(
+                new HttpConnectorFactory(),
+                new CustomHttpConnectorFactory()
+        );
+    }
+
+    static Stream<HttpConnectorFactory> httpsConnectorFactories() {
+        return Stream.of(
+                new HttpsConnectorFactory(),
+                new CustomHttpsConnectorFactory()
+        );
+    }
+
+    static class CustomHttpConnectorFactory extends HttpConnectorFactory {
+    }
+
+    static class CustomHttpsConnectorFactory extends HttpsConnectorFactory {
+    }
+
 }
