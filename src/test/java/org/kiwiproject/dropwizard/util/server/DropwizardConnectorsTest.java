@@ -3,7 +3,6 @@ package org.kiwiproject.dropwizard.util.server;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.jetty.ConnectorFactory;
@@ -20,10 +19,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.kiwiproject.dropwizard.util.server.DropwizardConnectors.ConnectorType;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @DisplayName("DropwizardConnectors")
 class DropwizardConnectorsTest {
@@ -155,19 +155,31 @@ class DropwizardConnectorsTest {
             }
 
             @ParameterizedTest
-            @ValueSource(classes = {HttpConnectorFactory.class, CustomHttpConnectorFactory.class})
-            void shouldReturnHTTP_GivenHttpConnectorFactorySubclasses(Class<? extends HttpConnectorFactory> type) {
-                var factory = mock(type);
+            @MethodSource("org.kiwiproject.dropwizard.util.server.DropwizardConnectorsTest#httpConnectorFactories")
+            void shouldReturnHTTP_GivenHttpConnectorFactorySubclasses(HttpConnectorFactory factory) {
                 assertThat(ConnectorType.forHttpConnectorFactory(factory)).isEqualTo(ConnectorType.HTTP);
             }
 
             @ParameterizedTest
-            @ValueSource(classes = {HttpsConnectorFactory.class, CustomHttpsConnectorFactory.class})
-            void shouldReturnHTTPS_GivenHttpsConnectorFactory(Class<? extends HttpConnectorFactory> type) {
-                var factory = mock(type);
+            @MethodSource("org.kiwiproject.dropwizard.util.server.DropwizardConnectorsTest#httpsConnectorFactories")
+            void shouldReturnHTTPS_GivenHttpsConnectorFactory(HttpConnectorFactory factory) {
                 assertThat(ConnectorType.forHttpConnectorFactory(factory)).isEqualTo(ConnectorType.HTTPS);
             }
         }
+    }
+
+    static Stream<HttpConnectorFactory> httpConnectorFactories() {
+        return Stream.of(
+                new HttpConnectorFactory(),
+                new CustomHttpConnectorFactory()
+        );
+    }
+
+    static Stream<HttpConnectorFactory> httpsConnectorFactories() {
+        return Stream.of(
+                new HttpsConnectorFactory(),
+                new CustomHttpsConnectorFactory()
+        );
     }
 
     static class CustomHttpConnectorFactory extends HttpConnectorFactory {
