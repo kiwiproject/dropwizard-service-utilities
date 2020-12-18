@@ -1,5 +1,6 @@
 package org.kiwiproject.dropwizard.util.jackson;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -119,15 +120,16 @@ class StandardJacksonConfigurationsTest {
         @Test
         void shouldRegisterAllOfTheStandardConfigurations() {
             var config = JacksonConfig.builder().build();
-            var mapper = mock(ObjectMapper.class);
-            var env = DropwizardMockitoMocks.mockEnvironment(mapper, mock(Validator.class));
+            var dropwizardMapper = mock(ObjectMapper.class);
+            var env = DropwizardMockitoMocks.mockEnvironment(dropwizardMapper, mock(Validator.class));
 
-            StandardJacksonConfigurations.registerAllStandardJacksonConfigurations(config, env);
+            var objectMapper = StandardJacksonConfigurations.registerAllStandardJacksonConfigurations(config, env);
+            assertThat(objectMapper).isSameAs(dropwizardMapper);
 
-            verify(mapper).registerModule(isA(SimpleModule.class));
-            verify(mapper).configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
-            verify(mapper).configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
-            verify(mapper).addHandler(isA(LoggingDeserializationProblemHandler.class));
+            verify(dropwizardMapper).registerModule(isA(SimpleModule.class));
+            verify(dropwizardMapper).configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+            verify(dropwizardMapper).configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+            verify(dropwizardMapper).addHandler(isA(LoggingDeserializationProblemHandler.class));
             verify(env.healthChecks()).register(eq("Unknown JSON Properties"), isA(UnknownPropertiesHealthCheck.class));
         }
     }
