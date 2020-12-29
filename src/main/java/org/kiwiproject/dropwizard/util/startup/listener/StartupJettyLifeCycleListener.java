@@ -22,7 +22,7 @@ public class StartupJettyLifeCycleListener extends AbstractLifeCycle.AbstractLif
 
     @Override
     public void lifeCycleFailure(LifeCycle event, Throwable cause) {
-        LOG.error("Jetty LifeCycleFailure with event [{}]. Exiting the JVM!", event);
+        LOG.error("Jetty LifeCycleFailure with event [{}]. Exiting the JVM!", event, cause);
         executioner.exit();
     }
 }

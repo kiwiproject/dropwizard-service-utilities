@@ -26,7 +26,10 @@ public class StartupWithLockJettyLifeCycleListener extends AbstractLifeCycle.Abs
     private final CuratorFrameworkHelper curatorFrameworkHelper = new CuratorFrameworkHelper();
     private final SystemExecutioner executioner;
 
-    public StartupWithLockJettyLifeCycleListener(CuratorFramework curatorFramework, InterProcessLock lock, String lockPath, SystemExecutioner executioner) {
+    public StartupWithLockJettyLifeCycleListener(CuratorFramework curatorFramework,
+                                                 InterProcessLock lock,
+                                                 String lockPath,
+                                                 SystemExecutioner executioner) {
         this.curatorFramework = requireNotNull(curatorFramework);
         this.lock = requireNotNull(lock);
         this.lockPath = requireNotBlank(lockPath);
@@ -35,7 +38,8 @@ public class StartupWithLockJettyLifeCycleListener extends AbstractLifeCycle.Abs
 
     @Override
     public void lifeCycleFailure(LifeCycle event, Throwable cause) {
-        LOG.error("Jetty LifeCycleFailure with event [{}]. Releasing lock [{}] on path [{}] and exiting the JVM!", event, lock, lockPath);
+        LOG.error("Jetty LifeCycleFailure with event [{}]. Releasing lock [{}] on path [{}] and exiting the JVM!",
+                event, lock, lockPath, cause);
         releaseLockAndClose();
         executioner.exit();
     }
@@ -48,7 +52,8 @@ public class StartupWithLockJettyLifeCycleListener extends AbstractLifeCycle.Abs
 
     @Override
     public void lifeCycleStopped(LifeCycle event) {
-        LOG.trace("Jetty LifeCycleStopped with event [{}]. Releasing lock [{}] on path [{}] if still held (which is highly unlikely).", event, lock, lockPath);
+        LOG.trace("Jetty LifeCycleStopped with event [{}]. Releasing lock [{}] on path [{}] if still held (which is highly unlikely).",
+                event, lock, lockPath);
         releaseLockAndClose();
     }
 
