@@ -36,7 +36,7 @@ class ConfigResourceTest {
 
         @Override
         public void run(TestConfig config, Environment environment) {
-            environment.jersey().register(new ConfigResource<>(config, List.of(".*Password")));
+            environment.jersey().register(new ConfigResource(config, List.of(".*Password")));
         }
     }
 

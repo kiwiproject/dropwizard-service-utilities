@@ -191,7 +191,7 @@ public class AdminConfigurator {
 
     private void addConfigResource() {
         if (shouldIncludeConfigResource) {
-            environment.jersey().register(new ConfigResource<>(config, hiddenFieldRegex));
+            environment.jersey().register(new ConfigResource(config, hiddenFieldRegex));
         }
     }
 }

@@ -22,13 +22,13 @@ import java.util.List;
  */
 @Slf4j
 @Path("app/config")
-public class ConfigResource<T extends Configuration> {
+public class ConfigResource {
 
     // Intentionally creating a separate JsonHelper to allow customizations
     private final JsonHelper jsonHelper;
-    private final T config;
+    private final Configuration config;
 
-    public ConfigResource(T config, List<String> hiddenRegex) {
+    public ConfigResource(Configuration config, List<String> hiddenRegex) {
         this.config = config;
         this.jsonHelper = JsonHelper.newDropwizardJsonHelper();
 
