@@ -30,10 +30,10 @@
     <properties>
         <!-- Versions for required dependencies -->
         <dropwizard.version>2.0.16</dropwizard.version>
-        <dropwizard-curator.version>0.14.0</dropwizard-curator.version>
+        <dropwizard-curator.version>0.15.0</dropwizard-curator.version>
         <kiwi.version>0.18.0</kiwi.version>
         <metrics-healthchecks-severity.version>0.15.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.9.0</service-discovery-client.version>
+        <service-discovery-client.version>0.10.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
@@ -42,7 +42,8 @@
         <jersey.version>2.32</jersey.version>
         <metrics-servlets.version>4.1.16</metrics-servlets.version>
         <metrics-jetty9>4.1.16</metrics-jetty9>
-        <registry-aware-jersey-client>0.7.0</registry-aware-jersey-client>
+        <mongo.version>3.11.2</mongo.version>
+        <registry-aware-jersey-client>0.8.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
@@ -184,6 +185,13 @@
                     <artifactId>javassist</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>${mongo.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
