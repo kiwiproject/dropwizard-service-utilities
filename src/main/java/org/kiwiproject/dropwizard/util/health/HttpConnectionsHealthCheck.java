@@ -37,10 +37,10 @@ import java.util.SortedMap;
 public class HttpConnectionsHealthCheck extends HealthCheck {
 
     /**
-     * Default name for the health check registration.
+     * A default name that can be used when registering this health check.
      */
     @SuppressWarnings("unused")
-    public static final String DEFAULT_NAME = "httpConnections";
+    public static final String DEFAULT_NAME = "HTTP Connections";
 
     /**
      * Default percent above which this health check will report unhealthy.

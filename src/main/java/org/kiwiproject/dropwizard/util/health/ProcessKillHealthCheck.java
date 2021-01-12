@@ -16,6 +16,12 @@ import org.kiwiproject.base.process.ProcessHelper;
 @Slf4j
 public class ProcessKillHealthCheck extends HealthCheck {
 
+    /**
+     * A default name that can be used when registering this health check.
+     */
+    @SuppressWarnings("unused")
+    public static final String DEFAULT_NAME = "Process Kill";
+
     private final ProcessHelper processes;
 
     public ProcessKillHealthCheck(ProcessHelper processes) {

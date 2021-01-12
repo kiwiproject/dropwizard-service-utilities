@@ -15,6 +15,12 @@ import java.util.List;
  */
 public class ProcessGrepHealthCheck extends HealthCheck {
 
+    /**
+     * A default name that can be used when registering this health check.
+     */
+    @SuppressWarnings("unused")
+    public static final String DEFAULT_NAME = "Process Grep";
+
     private final ProcessHelper processes;
 
     public ProcessGrepHealthCheck(ProcessHelper processes) {

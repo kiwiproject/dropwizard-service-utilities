@@ -18,6 +18,12 @@ import org.kiwiproject.io.KiwiIO;
 @Slf4j
 public class ProcessLaunchHealthCheck extends HealthCheck {
 
+    /**
+     * A default name that can be used when registering this health check.
+     */
+    @SuppressWarnings("unused")
+    public static final String DEFAULT_NAME = "Process Launch";
+
     static final String ECHO_MESSAGE = "Launch process health check";
 
     private final ProcessHelper processes;
