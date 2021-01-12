@@ -57,6 +57,35 @@ class MonitoredJobTest {
             assertThat(job.getDecisionFunction()).isNotNull();
             assertThat(job.getEnvironment()).isNotNull();
         }
+
+        @Test
+        void shouldAllowErrorHandlerToBeSet() {
+            var job = MonitoredJob.builder()
+                    .name("Name and Task Job")
+                    .task(() -> System.out.println("Hello"))
+                    .build();
+
+            var handler = new JobErrorHandler() {
+                @Override
+                public void handle(MonitoredJob job, Throwable throwable) {
+                    // Intentionally blank
+                }
+            };
+
+            var enhancedJob = job.withErrorHandler(handler);
+            assertThat(enhancedJob).isNotSameAs(job);
+        }
+
+        @Test
+        void shouldAllowTimeoutToBeSet() {
+            var job = MonitoredJob.builder()
+                    .name("Name and Task Job")
+                    .task(() -> System.out.println("Hello"))
+                    .build();
+
+            var enhancedJob = job.withTimeout(Duration.ofSeconds(1));
+            assertThat(enhancedJob).isNotSameAs(job);
+        }
     }
 
     @Nested

@@ -4,19 +4,19 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * A set of utilities to assist in setting up MonitoredJobs with health checks.
@@ -91,7 +91,6 @@ public class MonitoredJobs {
                                            Runnable runnable,
                                            Function<MonitoredJob, Boolean> decisionFn,
                                            ScheduledExecutorService executor) {
-        validateJob(name, schedule);
 
         var job = MonitoredJob.builder()
                 .name(name)
@@ -99,10 +98,32 @@ public class MonitoredJobs {
                 .decisionFunction(decisionFn)
                 .build();
 
-        registerHealthCheck(env, name, schedule, job);
+        return registerJob(env, job, schedule, executor);
+    }
+
+    /**
+     * Using a given {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * {@link Environment}, with the job's name, the given schedule and the given job.
+     *
+     * @param env       the Dropwizard environment to register the health check and schedule the job.
+     * @param job       a {@link MonitoredJob} to schedule and monitor.
+     * @param schedule  the schedule for the job.
+     * @param executor  the scheduled executor to use to schedule the job.
+     * @return the given {@link MonitoredJob}.
+     */
+    public static MonitoredJob registerJob(Environment env,
+                                           MonitoredJob job,
+                                           JobSchedule schedule,
+                                           ScheduledExecutorService executor) {
+
+        var jobName = job.getName();
+
+        validateJob(jobName, schedule);
+
+        registerHealthCheck(env, jobName, schedule, job);
         scheduleJob(executor, schedule, job);
 
-        JOBS.add(name);
+        JOBS.add(jobName);
         return job;
     }
 

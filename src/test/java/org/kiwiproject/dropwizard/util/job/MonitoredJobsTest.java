@@ -9,9 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import io.dropwizard.lifecycle.setup.ScheduledExecutorServiceBuilder;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
@@ -24,6 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @DisplayName("MonitoredJobs")
 @ExtendWith(SoftAssertionsExtension.class)
@@ -141,6 +141,24 @@ class MonitoredJobsTest {
                         (job) -> true, executor);
 
                 assertThat(monitoredJob).isNotNull();
+
+                verify(env.healthChecks()).register(eq("Job: ValidJob"), any(MonitoredJobHealthCheck.class));
+                verify(executor).scheduleWithFixedDelay(monitoredJob, 10, 30, TimeUnit.SECONDS);
+            }
+
+            @Test
+            void whenGivenAMonitoredJob() {
+                var job = MonitoredJob.builder()
+                        .name("ValidJob")
+                        .task(() -> System.out.println("hello"))
+                        .build();
+
+                var schedule = new JobSchedule(Duration.seconds(10), Duration.seconds(30));
+                var executor = mock(ScheduledExecutorService.class);
+
+                var monitoredJob = MonitoredJobs.registerJob(env, job, schedule, executor);
+
+                assertThat(monitoredJob).isSameAs(job);
 
                 verify(env.healthChecks()).register(eq("Job: ValidJob"), any(MonitoredJobHealthCheck.class));
                 verify(executor).scheduleWithFixedDelay(monitoredJob, 10, 30, TimeUnit.SECONDS);
