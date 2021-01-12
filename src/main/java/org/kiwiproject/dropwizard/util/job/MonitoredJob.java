@@ -1,9 +1,16 @@
 package org.kiwiproject.dropwizard.util.job;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+import static org.kiwiproject.concurrent.Async.doAsync;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.kiwiproject.base.CatchingRunnable;
@@ -15,12 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
-import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
-import static org.kiwiproject.concurrent.Async.doAsync;
-
 /**
  * Sets up a job from a {@link Runnable} that can be monitored through health checks to ensure it is running correctly.
  */
@@ -28,7 +29,11 @@ import static org.kiwiproject.concurrent.Async.doAsync;
 public class MonitoredJob implements CatchingRunnable {
 
     private final Runnable task;
+
+    @With
     private final JobErrorHandler errorHandler;
+
+    @With
     private final Duration timeout;
 
     @Getter
@@ -53,11 +58,11 @@ public class MonitoredJob implements CatchingRunnable {
     private final AtomicLong lastExecutionTime = new AtomicLong();
 
     @Builder
-    private MonitoredJob(String name,
-                         Runnable task,
-                         Function<MonitoredJob, Boolean> decisionFunction,
+    private MonitoredJob(Runnable task,
                          JobErrorHandler errorHandler,
                          Duration timeout,
+                         String name,
+                         Function<MonitoredJob, Boolean> decisionFunction,
                          KiwiEnvironment environment) {
         this.name = requireNotBlank(name, "name is required");
         this.task = requireNotNull(task, "task is required");

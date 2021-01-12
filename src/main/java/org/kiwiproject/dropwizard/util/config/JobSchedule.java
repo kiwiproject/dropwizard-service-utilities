@@ -1,7 +1,9 @@
 package org.kiwiproject.dropwizard.util.config;
 
 import io.dropwizard.util.Duration;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +15,9 @@ import javax.validation.constraints.NotNull;
  */
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class JobSchedule {
 
     /**
@@ -22,6 +25,7 @@ public class JobSchedule {
      * to 30 seconds.
      */
     @NotNull
+    @Builder.Default
     private Duration initialDelay = Duration.seconds(30);
 
     /**
