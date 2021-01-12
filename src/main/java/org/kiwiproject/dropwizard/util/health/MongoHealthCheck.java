@@ -16,7 +16,11 @@ import org.kiwiproject.metrics.health.HealthStatus;
 @Slf4j
 public class MongoHealthCheck extends HealthCheck {
 
-    public static final String TITLE = "Mongo";
+    /**
+     * A default name that can be used when registering this health check.
+     */
+    @SuppressWarnings("unused")
+    public static final String DEFAULT_NAME = "Mongo";
 
     private final DB db;
 

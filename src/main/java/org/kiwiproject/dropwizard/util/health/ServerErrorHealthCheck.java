@@ -19,6 +19,12 @@ import org.kiwiproject.metrics.health.HealthStatus;
 @Slf4j
 public class ServerErrorHealthCheck extends HealthCheck {
 
+    /**
+     * A default name that can be used when registering this health check.
+     */
+    @SuppressWarnings("unused")
+    public static final String DEFAULT_NAME = "5xx Errors";
+
     @VisibleForTesting
     static final String METER_NAME = "io.dropwizard.jetty.MutableServletContextHandler.5xx-responses";
 

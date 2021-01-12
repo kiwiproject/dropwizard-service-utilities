@@ -24,6 +24,9 @@ import java.util.stream.Stream;
 
 /**
  * Health check to perform a ping on a configured dependent service to ensure the service is at least running.
+ * <p>
+ * Note there is not a default name, since there can be more than one of these registered. Use the
+ * {@link #nameFor(ServiceIdentifier)} method to generate unique health check names.
  */
 @Slf4j
 public class ServicePingHealthCheck extends HealthCheck {
@@ -79,9 +82,9 @@ public class ServicePingHealthCheck extends HealthCheck {
      * {@link RegistryAwareClient} and marking the importance of the dependency by the given
      * {@link DependencyImportance}.
      *
-     * @param serviceIdentifier     the identifier for the service to be pinged.
-     * @param client                the {@link RegistryAwareClient} to use for service lookup and to perform the request
-     * @param dependencyImportance  the importance of the dependent service to the current service
+     * @param serviceIdentifier    the identifier for the service to be pinged.
+     * @param client               the {@link RegistryAwareClient} to use for service lookup and to perform the request
+     * @param dependencyImportance the importance of the dependent service to the current service
      */
     public ServicePingHealthCheck(ServiceIdentifier serviceIdentifier,
                                   RegistryAwareClient client,
@@ -162,9 +165,9 @@ public class ServicePingHealthCheck extends HealthCheck {
      * Registers a {@link ServicePingHealthCheck} for each of the given {@link ServiceIdentifier}s given, defaulting the
      * importance to REQUIRED.
      *
-     * @param healthCheckRegistry   the {@link HealthCheckRegistry} to register the health checks.
-     * @param client                the {@link RegistryAwareClient} to use for service lookup and to perform the request.
-     * @param serviceIdentifiers    the identifiers for the service to be pinged.
+     * @param healthCheckRegistry the {@link HealthCheckRegistry} to register the health checks.
+     * @param client              the {@link RegistryAwareClient} to use for service lookup and to perform the request.
+     * @param serviceIdentifiers  the identifiers for the service to be pinged.
      */
     public static void registerServiceChecks(HealthCheckRegistry healthCheckRegistry,
                                              RegistryAwareClient client,
@@ -179,10 +182,10 @@ public class ServicePingHealthCheck extends HealthCheck {
      * <p>
      * NOTE: If different importances are required for different services, then call this method for each importance.
      *
-     * @param healthCheckRegistry   the {@link HealthCheckRegistry} to register the health checks.
-     * @param client                the {@link RegistryAwareClient} to use for service lookup and to perform the request.
-     * @param importance            the {@link DependencyImportance} of the services being checked.
-     * @param serviceIdentifiers    the identifiers for the service to be pinged.
+     * @param healthCheckRegistry the {@link HealthCheckRegistry} to register the health checks.
+     * @param client              the {@link RegistryAwareClient} to use for service lookup and to perform the request.
+     * @param importance          the {@link DependencyImportance} of the services being checked.
+     * @param serviceIdentifiers  the identifiers for the service to be pinged.
      */
     public static void registerServiceChecks(HealthCheckRegistry healthCheckRegistry,
                                              RegistryAwareClient client,
