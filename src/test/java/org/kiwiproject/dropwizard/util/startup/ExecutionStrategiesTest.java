@@ -120,12 +120,13 @@ class ExecutionStrategiesTest {
 
         LOG.debug("Executing TestApplication using {} with exitCode {} and exitWaitDelayMillis {}",
                 javaBin, exitCode, exitWaitDelayMillis);
+        long start = System.nanoTime();
         var process = new ProcessBuilder(command).start();
         var exitValueOrNull = Processes.waitForExit(process, 5, TimeUnit.SECONDS).orElse(null);
-        var execResult = new ExecResult(process.pid(), exitValueOrNull);
-        LOG.debug("Received result: {}", execResult);
+        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+        LOG.debug("After {} ms, received exit value {} for process {}", elapsedMillis, exitValueOrNull, process.pid());
 
-        return execResult;
+        return new ExecResult(process.pid(), exitValueOrNull);
     }
 
     @Value
