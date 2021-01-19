@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @DisplayName("ExecutionStrategies")
+@Slf4j
 class ExecutionStrategiesTest {
 
     @Test
@@ -86,7 +87,9 @@ class ExecutionStrategiesTest {
             var result = execTestApplication(exitCode, exitWaitDelayMillis);
 
             assertThat(result.pid).isPositive();
-            assertThat(result.exitValue).isEqualTo(exitCode);
+            assertThat(result.exitValue)
+                    .describedAs("Expecting non-null exit code (null means timeout waiting for process to exit)")
+                    .isEqualTo(exitCode);
         }
     }
 
@@ -115,9 +118,14 @@ class ExecutionStrategiesTest {
                 String.valueOf(exitCode),
                 String.valueOf(exitWaitDelayMillis));
 
+        LOG.debug("Executing TestApplication using {} with exitCode {} and exitWaitDelayMillis {}",
+                javaBin, exitCode, exitWaitDelayMillis);
         var process = new ProcessBuilder(command).start();
-        var exitValueOrNull = Processes.waitForExit(process, 1, TimeUnit.SECONDS).orElse(null);
-        return new ExecResult(process.pid(), exitValueOrNull);
+        var exitValueOrNull = Processes.waitForExit(process, 5, TimeUnit.SECONDS).orElse(null);
+        var execResult = new ExecResult(process.pid(), exitValueOrNull);
+        LOG.debug("Received result: {}", execResult);
+
+        return execResult;
     }
 
     @Value
