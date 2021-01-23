@@ -33,7 +33,7 @@
         <dropwizard-curator.version>0.15.0</dropwizard-curator.version>
         <kiwi.version>0.18.0</kiwi.version>
         <metrics-healthchecks-severity.version>0.15.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.11.0</service-discovery-client.version>
+        <service-discovery-client.version>0.12.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
@@ -43,7 +43,7 @@
         <metrics-servlets.version>4.1.16</metrics-servlets.version>
         <metrics-jetty9>4.1.16</metrics-jetty9>
         <mongo.version>3.11.2</mongo.version>
-        <registry-aware-jersey-client>0.9.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>0.10.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
@@ -51,7 +51,7 @@
         <curator.version>2.13.0</curator.version>
         <hibernate.version>5.4.24.Final</hibernate.version>
         <jackson.version>2.10.5</jackson.version>
-        <junit-pioneer.version>1.1.0</junit-pioneer.version>
+        <junit-pioneer.version>1.2.0</junit-pioneer.version>
         <kiwi-test.version>0.13.0</kiwi-test.version>
         <spring.version>5.3.0</spring.version>
 
