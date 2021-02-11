@@ -30,29 +30,30 @@
     <properties>
         <!-- Versions for required dependencies -->
         <dropwizard.version>2.0.19</dropwizard.version>
-        <dropwizard-curator.version>0.15.0</dropwizard-curator.version>
-        <kiwi.version>0.18.0</kiwi.version>
-        <metrics-healthchecks-severity.version>0.15.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.12.0</service-discovery-client.version>
+        <dropwizard-curator.version>0.16.0</dropwizard-curator.version>
+        <kiwi.version>0.19.0</kiwi.version>
+        <jackson.version>[2.10.5,2.10.6)</jackson.version>
+        <metrics-healthchecks-severity.version>0.16.0</metrics-healthchecks-severity.version>
+        <service-discovery-client.version>0.13.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
-        <hibernate-validator.version>6.1.6.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.1.7.Final</hibernate-validator.version>
         <hk2-utils.version>2.6.1</hk2-utils.version>
-        <jersey.version>2.32</jersey.version>
-        <metrics-servlets.version>4.1.16</metrics-servlets.version>
-        <metrics-jetty9>4.1.16</metrics-jetty9>
+        <jersey.version>2.33</jersey.version>
+        <metrics-servlets.version>4.1.17</metrics-servlets.version>
+        <metrics-jetty9>4.1.17</metrics-jetty9>
         <mongo.version>3.11.2</mongo.version>
-        <registry-aware-jersey-client>0.10.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>0.11.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
         <curator.version>2.13.0</curator.version>
         <hibernate.version>5.4.24.Final</hibernate.version>
-        <jackson.version>2.10.5</jackson.version>
+        <httpcore.version>4.4.14</httpcore.version>
         <junit-pioneer.version>1.2.0</junit-pioneer.version>
-        <kiwi-test.version>0.13.0</kiwi-test.version>
+        <kiwi-test.version>0.14.0</kiwi-test.version>
         <spring.version>5.3.0</spring.version>
 
         <!-- Versions for plugins -->
@@ -75,6 +76,10 @@
                 <exclusion>
                     <groupId>org.hibernate.validator</groupId>
                     <artifactId>hibernate-validator</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -101,10 +106,20 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>joda-time</groupId>
                     <artifactId>joda-time</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -261,6 +276,10 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.glassfish.jersey.connectors</groupId>
                     <artifactId>jersey-apache-connector</artifactId>
                 </exclusion>
@@ -302,11 +321,22 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.version}</version>
             <scope>test</scope>
             <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>jakarta.activation</groupId>
                     <artifactId>jakarta.activation-api</artifactId>
