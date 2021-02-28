@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>0.8.0</version>
+        <version>0.9.0</version>
     </parent>
 
     <artifactId>dropwizard-service-utilities</artifactId>
@@ -29,32 +29,32 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard.version>2.0.19</dropwizard.version>
-        <dropwizard-curator.version>0.16.0</dropwizard-curator.version>
-        <kiwi.version>0.19.0</kiwi.version>
+        <dropwizard.version>2.0.20</dropwizard.version>
+        <dropwizard-curator.version>0.17.0</dropwizard-curator.version>
+        <kiwi.version>0.20.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
-        <metrics-healthchecks-severity.version>0.16.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.13.0</service-discovery-client.version>
+        <metrics-healthchecks-severity.version>0.17.0</metrics-healthchecks-severity.version>
+        <service-discovery-client.version>0.14.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
         <hibernate-validator.version>6.1.7.Final</hibernate-validator.version>
         <hk2-utils.version>2.6.1</hk2-utils.version>
         <jersey.version>2.33</jersey.version>
-        <metrics-servlets.version>4.1.17</metrics-servlets.version>
-        <metrics-jetty9>4.1.17</metrics-jetty9>
-        <mongo.version>3.11.2</mongo.version>
-        <registry-aware-jersey-client>0.11.0</registry-aware-jersey-client>
+        <metrics-servlets.version>4.1.18</metrics-servlets.version>
+        <metrics-jetty9>4.1.18</metrics-jetty9>
+        <mongo.version>3.12.8</mongo.version>
+        <registry-aware-jersey-client>0.12.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
         <curator.version>2.13.0</curator.version>
-        <hibernate.version>5.4.24.Final</hibernate.version>
+        <hibernate.version>5.4.28.Final</hibernate.version>
         <httpcore.version>4.4.14</httpcore.version>
         <junit-pioneer.version>1.2.0</junit-pioneer.version>
-        <kiwi-test.version>0.14.0</kiwi-test.version>
-        <spring.version>5.3.0</spring.version>
+        <kiwi-test.version>0.15.0</kiwi-test.version>
+        <spring.version>5.3.4</spring.version>
 
         <!-- Versions for plugins -->
 
