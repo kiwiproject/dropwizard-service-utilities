@@ -118,7 +118,7 @@ public class DropwizardConnectors {
     @VisibleForTesting
     static Map<ConnectorType, HttpConnectorFactory> createConnectorFactoryMap(List<ConnectorFactory> connectors) {
         return connectors.stream()
-                .filter(factory -> factory instanceof HttpConnectorFactory)
+                .filter(HttpConnectorFactory.class::isInstance)
                 .map(HttpConnectorFactory.class::cast)
                 .collect(toMap(ConnectorType::forHttpConnectorFactory, identity(), DropwizardConnectors::last));
     }

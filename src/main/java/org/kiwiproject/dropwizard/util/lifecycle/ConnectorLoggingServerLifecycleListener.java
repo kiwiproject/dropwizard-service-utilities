@@ -14,7 +14,7 @@ class ConnectorLoggingServerLifecycleListener implements ServerLifecycleListener
     @Override
     public void serverStarted(Server server) {
         Arrays.stream(server.getConnectors())
-                .filter(connector -> connector instanceof ServerConnector)
+                .filter(ServerConnector.class::isInstance)
                 .forEach(connector ->
                         LOG.info("Server connector [{}] is on port [{}]", connector.getName(),
                                 getLocalPort(connector)));
