@@ -353,7 +353,7 @@
             <artifactId>junit-pioneer</artifactId>
             <version>${junit-pioneer.version}</version>
             <scope>test</scope>
-            <!-- Because Pioneer is not on Jupiter 5.7.0 yet -->
+            <!-- Because Pioneer is behind Jupiter's current version -->
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
