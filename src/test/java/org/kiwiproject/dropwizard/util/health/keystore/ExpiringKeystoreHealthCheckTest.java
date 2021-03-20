@@ -33,13 +33,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 class ExpiringKeystoreHealthCheckTest {
 
+    // This formats dates to look like "Fri, 19 Mar 2021" or "Sun, 7 Jun 2020"
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("EE, d LLL yyyy");
 
     @Nested
     class ShouldReportUnhealthy {
         @SuppressWarnings("unchecked")
         @Test
-        void whenThereAreExpiredCerts(SoftAssertions softly, @TempDir Path tempDir) throws Exception {
+        void whenThereAreExpiredCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
             var path = createTemporaryKeystore(tempDir, 30, dn);
 
@@ -87,7 +88,7 @@ class ExpiringKeystoreHealthCheckTest {
 
         @SuppressWarnings("unchecked")
         @Test
-        void whenThereAreExpiringCerts(SoftAssertions softly, @TempDir Path tempDir) throws Exception {
+        void whenThereAreExpiringCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
             var path = createTemporaryKeystore(tempDir, 75, dn);
 
@@ -134,7 +135,7 @@ class ExpiringKeystoreHealthCheckTest {
 
         @SuppressWarnings("unchecked")
         @Test
-        void whenAnExceptionIsThrown(SoftAssertions softly, @TempDir Path tempDir) throws Exception {
+        void whenAnExceptionIsThrown(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
             var path = createTemporaryKeystore(tempDir, 75, dn);
 
@@ -174,7 +175,7 @@ class ExpiringKeystoreHealthCheckTest {
 
         @SuppressWarnings("unchecked")
         @Test
-        void whenThereAreOnlyValidCerts(SoftAssertions softly, @TempDir Path tempDir) throws Exception {
+        void whenThereAreOnlyValidCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Valid Test,OU=Development,O=Project,L=There,ST=VA,C=US";
             var path = createTemporaryKeystore(tempDir, 600, dn);
 
@@ -255,11 +256,14 @@ class ExpiringKeystoreHealthCheckTest {
                 "-keypass", "unittest",
                 "-dname", dn);
 
-        processHelper.waitForExit(keystoreGenProcess, 500, TimeUnit.MILLISECONDS);
+        processHelper.waitForExit(keystoreGenProcess, 5, TimeUnit.SECONDS)
+                .ifPresentOrElse(
+                        exitCode -> LOG.info("keytool exited with code {}", exitCode),
+                        () -> LOG.warn("keytool did not exit within timeout"));
 
         // These are here so that if the keytool command fails we can see the output
-        LOG.debug(KiwiIO.readInputStreamOf(keystoreGenProcess));
-        LOG.debug(KiwiIO.readErrorStreamOf(keystoreGenProcess));
+        LOG.debug("keytool stdout: [{}]", KiwiIO.readInputStreamOf(keystoreGenProcess));
+        LOG.debug("keytool stderr: [{}]", KiwiIO.readErrorStreamOf(keystoreGenProcess));
 
         return keystorePath;
     }
