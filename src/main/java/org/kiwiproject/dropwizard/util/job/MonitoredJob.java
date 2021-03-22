@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.kiwiproject.base.CatchingRunnable;
@@ -30,10 +29,8 @@ public class MonitoredJob implements CatchingRunnable {
 
     private final Runnable task;
 
-    @With
     private final JobErrorHandler errorHandler;
 
-    @With
     private final Duration timeout;
 
     @Getter
@@ -67,7 +64,7 @@ public class MonitoredJob implements CatchingRunnable {
         this.name = requireNotBlank(name, "name is required");
         this.task = requireNotNull(task, "task is required");
         this.decisionFunction = isNull(decisionFunction) ? (job -> true) : decisionFunction;
-        this.errorHandler = errorHandler;
+        this.errorHandler = isNull(errorHandler) ? JobErrorHandlers.noOpHandler() : errorHandler;
         this.timeout = timeout;
         this.environment = isNull(environment) ? new DefaultEnvironment() : environment;
     }
