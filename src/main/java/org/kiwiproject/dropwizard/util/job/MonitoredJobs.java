@@ -1,6 +1,8 @@
 package org.kiwiproject.dropwizard.util.job;
 
+import static java.util.Objects.isNull;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgument;
+import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
@@ -8,9 +10,12 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.kiwiproject.base.KiwiEnvironment;
+import org.kiwiproject.dropwizard.util.KiwiDropwizardDurations;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,10 +40,10 @@ public class MonitoredJobs {
      * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule and runnable.
      *
-     * @param env       the Dropwizard environment to register the health check and schedule the job.
-     * @param name      the name of the job
-     * @param schedule  the schedule for the job
-     * @param runnable  the task that will be run inside the Monitored Job
+     * @param env      the Dropwizard environment to register the health check and schedule the job.
+     * @param name     the name of the job
+     * @param schedule the schedule for the job
+     * @param runnable the task that will be run inside the Monitored Job
      * @return the new {@link MonitoredJob}
      */
     public static MonitoredJob registerJob(Environment env, String name, JobSchedule schedule, Runnable runnable) {
@@ -49,11 +54,11 @@ public class MonitoredJobs {
      * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule, runnable and decision function.
      *
-     * @param env           the Dropwizard environment to register the health check and schedule the job.
-     * @param name          the name of the job
-     * @param schedule      the schedule for the job
-     * @param runnable      the task that will be run inside the Monitored Job
-     * @param decisionFn    the function that will decide of the job should run
+     * @param env        the Dropwizard environment to register the health check and schedule the job.
+     * @param name       the name of the job
+     * @param schedule   the schedule for the job
+     * @param runnable   the task that will be run inside the Monitored Job
+     * @param decisionFn the function that will decide of the job should run
      * @return the new {@link MonitoredJob}
      */
     public static MonitoredJob registerJob(Environment env,
@@ -77,12 +82,12 @@ public class MonitoredJobs {
      * {@link Environment}, with the given name, schedule, runnable, decision function and
      * {@link ScheduledExecutorService}.
      *
-     * @param env           the Dropwizard environment to register the health check and schedule the job.
-     * @param name          the name of the job
-     * @param schedule      the schedule for the job
-     * @param runnable      the task that will be run inside the Monitored Job
-     * @param decisionFn    the function that will decide of the job should run
-     * @param executor      the scheduled executor to use to schedule the job
+     * @param env        the Dropwizard environment to register the health check and schedule the job.
+     * @param name       the name of the job
+     * @param schedule   the schedule for the job
+     * @param runnable   the task that will be run inside the Monitored Job
+     * @param decisionFn the function that will decide of the job should run
+     * @param executor   the scheduled executor to use to schedule the job
      * @return the new {@link MonitoredJob}
      */
     public static MonitoredJob registerJob(Environment env,
@@ -105,16 +110,21 @@ public class MonitoredJobs {
      * Using a given {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the job's name, the given schedule and the given job.
      *
-     * @param env       the Dropwizard environment to register the health check and schedule the job.
-     * @param job       a {@link MonitoredJob} to schedule and monitor.
-     * @param schedule  the schedule for the job.
-     * @param executor  the scheduled executor to use to schedule the job.
+     * @param env      the Dropwizard environment to register the health check and schedule the job.
+     * @param job      a {@link MonitoredJob} to schedule and monitor.
+     * @param schedule the schedule for the job.
+     * @param executor the scheduled executor to use to schedule the job.
      * @return the given {@link MonitoredJob}.
      */
     public static MonitoredJob registerJob(Environment env,
                                            MonitoredJob job,
                                            JobSchedule schedule,
                                            ScheduledExecutorService executor) {
+
+        checkArgumentNotNull(env, "Dropwizard Environment must not be null");
+        checkArgumentNotNull(job, "MonitoredJob must not be null");
+        checkArgumentNotNull(schedule, "JobSchedule must not be null");
+        checkArgumentNotNull(executor, "ScheduledExecutorService must not be null");
 
         var jobName = job.getName();
 
@@ -138,8 +148,10 @@ public class MonitoredJobs {
                 "Job '{}' must specify a non-null interval delay", name);
     }
 
-    private static void registerHealthCheck(Environment env, String name,
-                                                               JobSchedule schedule, MonitoredJob job) {
+    private static void registerHealthCheck(Environment env,
+                                            String name,
+                                            JobSchedule schedule,
+                                            MonitoredJob job) {
 
         LOG.debug("Creating and registering health check for job: {}", name);
 
@@ -155,5 +167,104 @@ public class MonitoredJobs {
         LOG.debug("Scheduling job: {} to run every: {}", job.getName(), schedule.getIntervalDelay());
         executor.scheduleWithFixedDelay(job, schedule.getInitialDelay().toSeconds(),
                 schedule.getIntervalDelay().toSeconds(), TimeUnit.SECONDS);
+    }
+
+    /**
+     * Builder to allow for customizing all aspects of a {@link MonitoredJob} and then registering it.
+     *
+     * @return a new builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for creating and registering {@link MonitoredJob} instances.
+     */
+    public static class Builder {
+
+        private Runnable task;
+        private JobErrorHandler errorHandler;
+        private Duration timeout;
+        private String name;
+        private Function<MonitoredJob, Boolean> decisionFunction;
+        private KiwiEnvironment kiwiEnvironment;
+        private Environment environment;
+        private JobSchedule schedule;
+        private ScheduledExecutorService executor;
+
+        public Builder task(Runnable task) {
+            this.task = task;
+            return this;
+        }
+
+        public Builder errorHandler(JobErrorHandler errorHandler) {
+            this.errorHandler = errorHandler;
+            return this;
+        }
+
+        public Builder timeout(io.dropwizard.util.Duration timeout) {
+            return timeout(KiwiDropwizardDurations.fromDropwizardDuration(timeout));
+        }
+
+        public Builder timeout(Duration timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder decisionFunction(Function<MonitoredJob, Boolean> decisionFunction) {
+            this.decisionFunction = decisionFunction;
+            return this;
+        }
+
+        public Builder kiwiEnvironment(KiwiEnvironment kiwiEnvironment) {
+            this.kiwiEnvironment = kiwiEnvironment;
+            return this;
+        }
+
+        public Builder environment(Environment environment) {
+            this.environment = environment;
+            return this;
+        }
+
+        public Builder schedule(JobSchedule schedule) {
+            this.schedule = schedule;
+            return this;
+        }
+
+        public Builder executor(ScheduledExecutorService executor) {
+            this.executor = executor;
+            return this;
+        }
+
+        /**
+         * This is the terminal operation that builds a new {@link MonitoredJob} instance and registers it.
+         *
+         * @return the new job instance
+         * @see #registerJob(Environment, MonitoredJob, JobSchedule, ScheduledExecutorService)
+         */
+        public MonitoredJob registerJob() {
+            checkArgumentNotNull(task, "task is required");
+            checkArgumentNotBlank(name, "non-blank name is required");
+            checkArgumentNotNull(environment, "environment is required");
+            checkArgumentNotNull(schedule, "schedule is required");
+
+            var job = MonitoredJob.builder()
+                    .task(task)
+                    .errorHandler(errorHandler)
+                    .timeout(timeout)
+                    .name(name)
+                    .decisionFunction(decisionFunction)
+                    .environment(kiwiEnvironment)
+                    .build();
+            var localExecutor = isNull(this.executor) ? buildScheduledExecutor(environment, name) : this.executor;
+
+            return MonitoredJobs.registerJob(environment, job, schedule, localExecutor);
+        }
     }
 }
