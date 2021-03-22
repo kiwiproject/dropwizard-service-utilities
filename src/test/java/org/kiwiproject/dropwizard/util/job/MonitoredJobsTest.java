@@ -206,7 +206,20 @@ class MonitoredJobsTest {
             }
 
             @Test
-            void whenGivenAMonitoredJob() {
+            void whenGivenAMonitoredJob_ButNoExecutor() {
+                var job = MonitoredJob.builder()
+                        .name("ValidJob")
+                        .task(task)
+                        .build();
+
+                var monitoredJob = MonitoredJobs.registerJob(env, job, schedule);
+
+                assertAndVerifyJob(job);
+                assertThat(monitoredJob).isSameAs(job);
+            }
+
+            @Test
+            void whenGivenAMonitoredJob_AndExecutor() {
                 var job = MonitoredJob.builder()
                         .name("ValidJob")
                         .task(task)

@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
 
 /**
  * A set of utilities to assist in setting up MonitoredJobs with health checks.
+ * <p>
+ * There are convenience static factory methods to create and register {@link MonitoredJob} instances. If none of
+ * them suits your requirements, use the {@link #builder()} for control over job creation and registration.
  */
 @Slf4j
 @UtilityClass
@@ -66,15 +69,8 @@ public class MonitoredJobs {
                                            JobSchedule schedule,
                                            Runnable runnable,
                                            Function<MonitoredJob, Boolean> decisionFn) {
-        var executor = buildScheduledExecutor(env, name);
+        var executor = newScheduledExecutor(env, name);
         return registerJob(env, name, schedule, runnable, decisionFn, executor);
-    }
-
-    private static ScheduledExecutorService buildScheduledExecutor(Environment env, String name) {
-        var safeName = f("Scheduled-{}-%d", WHITESPACE_PATTERN.matcher(name).replaceAll(EMPTY_STRING));
-        return env.lifecycle()
-                .scheduledExecutorService(safeName, true)
-                .build();
     }
 
     /**
@@ -103,6 +99,20 @@ public class MonitoredJobs {
                 .decisionFunction(decisionFn)
                 .build();
 
+        return registerJob(env, job, schedule, executor);
+    }
+
+    /**
+     * Using the given {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * {@link Environment}, using the given schedule.
+     *
+     * @param env      the Dropwizard environment to register the health check and schedule the job
+     * @param job      a {@link MonitoredJob} to schedule and monitor
+     * @param schedule the schedule for the job
+     * @return the given {@link MonitoredJob}
+     */
+    public static MonitoredJob registerJob(Environment env, MonitoredJob job, JobSchedule schedule) {
+        var executor = newScheduledExecutor(env, job.getName());
         return registerJob(env, job, schedule, executor);
     }
 
@@ -244,8 +254,13 @@ public class MonitoredJobs {
 
         /**
          * This is the terminal operation that builds a new {@link MonitoredJob} instance and registers it.
+         * <p>
+         * This method requires that the task, name, environment, and schedule have all been provided and otherwise
+         * throws {@link IllegalArgumentException}. All other properties are optional and will have a default
+         * supplied if necessary.
          *
          * @return the new job instance
+         * @throws IllegalArgumentException if task, name, environment, or schedule has not been specified
          * @see #registerJob(Environment, MonitoredJob, JobSchedule, ScheduledExecutorService)
          */
         public MonitoredJob registerJob() {
@@ -262,9 +277,28 @@ public class MonitoredJobs {
                     .decisionFunction(decisionFunction)
                     .environment(kiwiEnvironment)
                     .build();
-            var localExecutor = isNull(this.executor) ? buildScheduledExecutor(environment, name) : this.executor;
+            var localExecutor = isNull(this.executor) ? newScheduledExecutor(environment, name) : this.executor;
 
             return MonitoredJobs.registerJob(environment, job, schedule, localExecutor);
         }
+    }
+
+    /**
+     * Create a new {@link ScheduledExecutorService} whose lifecycle is managed by Dropwizard.
+     *
+     * @param env  the Dropwizard environment
+     * @param name the name of the executor (whitespace will be removed e.g. "My Executor" will become "MyExecutor")
+     * @return a new ScheduledExecutorService instance attached to the lifecycle of the given Dropwizard environment
+     * @see Environment#lifecycle()
+     * @see io.dropwizard.lifecycle.setup.LifecycleEnvironment#scheduledExecutorService(String)
+     */
+    private static ScheduledExecutorService newScheduledExecutor(Environment env, String name) {
+        checkArgumentNotNull(env, "Dropwizard Environment must not be null");
+        checkArgumentNotBlank(name, "name must not be blank");
+
+        var safeName = f("Scheduled-{}-%d", WHITESPACE_PATTERN.matcher(name).replaceAll(EMPTY_STRING));
+        return env.lifecycle()
+                .scheduledExecutorService(safeName, true)
+                .build();
     }
 }
