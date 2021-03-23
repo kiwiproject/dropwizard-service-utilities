@@ -5,6 +5,7 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
+import static org.kiwiproject.dropwizard.util.lifecycle.StandardLifecycles.newScheduledExecutor;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Environment;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 /**
  * A set of utilities to assist in setting up MonitoredJobs with health checks.
@@ -35,9 +35,6 @@ public class MonitoredJobs {
 
     @VisibleForTesting
     static final Set<String> JOBS = new HashSet<>();
-
-    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
-    private static final String EMPTY_STRING = "";
 
     /**
      * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
@@ -283,22 +280,4 @@ public class MonitoredJobs {
         }
     }
 
-    /**
-     * Create a new {@link ScheduledExecutorService} whose lifecycle is managed by Dropwizard.
-     *
-     * @param env  the Dropwizard environment
-     * @param name the name of the executor (whitespace will be removed e.g. "My Executor" will become "MyExecutor")
-     * @return a new ScheduledExecutorService instance attached to the lifecycle of the given Dropwizard environment
-     * @see Environment#lifecycle()
-     * @see io.dropwizard.lifecycle.setup.LifecycleEnvironment#scheduledExecutorService(String)
-     */
-    private static ScheduledExecutorService newScheduledExecutor(Environment env, String name) {
-        checkArgumentNotNull(env, "Dropwizard Environment must not be null");
-        checkArgumentNotBlank(name, "name must not be blank");
-
-        var safeName = f("Scheduled-{}-%d", WHITESPACE_PATTERN.matcher(name).replaceAll(EMPTY_STRING));
-        return env.lifecycle()
-                .scheduledExecutorService(safeName, true)
-                .build();
-    }
 }
