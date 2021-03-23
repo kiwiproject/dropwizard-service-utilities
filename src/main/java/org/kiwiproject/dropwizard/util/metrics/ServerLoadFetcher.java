@@ -64,6 +64,10 @@ public class ServerLoadFetcher {
             }
 
             return Optional.of(matcher.group(1));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.warn("Interrupted while getting server load average", e);
+            return Optional.empty();
         } catch (Exception e) {
             LOG.debug("Error getting server load average", e);
             return Optional.empty();
