@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.base.KiwiEnvironment;
+import org.kiwiproject.dropwizard.util.concurrent.TestExecutors;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
@@ -260,13 +261,12 @@ class MonitoredJobsTest {
             void whenUsingBuilderWithCustomExecutor() throws InterruptedException {
                 var count = new AtomicInteger();
                 Runnable countingTask = count::incrementAndGet;
-                var executor = Executors.newSingleThreadScheduledExecutor();
-                var fastSchedule = JobSchedule.builder()
-                        .initialDelay(Duration.seconds(0))
-                        .intervalDelay(Duration.seconds(1))
-                        .build();
+                TestExecutors.use(Executors.newSingleThreadScheduledExecutor(), executor -> {
+                    var fastSchedule = JobSchedule.builder()
+                            .initialDelay(Duration.seconds(0))
+                            .intervalDelay(Duration.seconds(1))
+                            .build();
 
-                try {
                     var job = MonitoredJobs.builder()
                             .name("FastJob1234")
                             .task(countingTask)
@@ -280,12 +280,9 @@ class MonitoredJobsTest {
                     assertThat(job.getLastSuccess()).hasValueGreaterThan(Instant.now().minusSeconds(2).toEpochMilli());
                     assertThat(job.getLastFailure()).hasValue(0);
                     assertThat(job.getFailureCount()).hasValue(0);
+
                     assertHealthCheckWasRegistered(job);
-                } finally {
-                    executor.shutdown();
-                    var terminatedOk = executor.awaitTermination(100, TimeUnit.MILLISECONDS);
-                    LOG.info("terminatedOk? {}", terminatedOk);
-                }
+                });
             }
 
             private void assertAndVerifyJob(MonitoredJob job) {
