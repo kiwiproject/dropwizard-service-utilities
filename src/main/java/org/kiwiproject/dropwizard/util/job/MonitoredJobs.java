@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A set of utilities to assist in setting up MonitoredJobs with health checks.
@@ -65,7 +65,7 @@ public class MonitoredJobs {
                                            String name,
                                            JobSchedule schedule,
                                            Runnable runnable,
-                                           Function<MonitoredJob, Boolean> decisionFn) {
+                                           Predicate<MonitoredJob> decisionFn) {
         var executor = newScheduledExecutor(env, name);
         return registerJob(env, name, schedule, runnable, decisionFn, executor);
     }
@@ -87,7 +87,7 @@ public class MonitoredJobs {
                                            String name,
                                            JobSchedule schedule,
                                            Runnable runnable,
-                                           Function<MonitoredJob, Boolean> decisionFn,
+                                           Predicate<MonitoredJob> decisionFn,
                                            ScheduledExecutorService executor) {
 
         var job = MonitoredJob.builder()
@@ -194,7 +194,7 @@ public class MonitoredJobs {
         private JobErrorHandler errorHandler;
         private Duration timeout;
         private String name;
-        private Function<MonitoredJob, Boolean> decisionFunction;
+        private Predicate<MonitoredJob> decisionFunction;
         private KiwiEnvironment kiwiEnvironment;
         private Environment environment;
         private JobSchedule schedule;
@@ -224,7 +224,7 @@ public class MonitoredJobs {
             return this;
         }
 
-        public Builder decisionFunction(Function<MonitoredJob, Boolean> decisionFunction) {
+        public Builder decisionFunction(Predicate<MonitoredJob> decisionFunction) {
             this.decisionFunction = decisionFunction;
             return this;
         }

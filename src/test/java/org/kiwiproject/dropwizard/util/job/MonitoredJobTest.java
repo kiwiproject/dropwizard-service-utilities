@@ -13,14 +13,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.kiwiproject.base.KiwiEnvironment;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 @DisplayName("MonitoredJob")
 @ExtendWith(SoftAssertionsExtension.class)
@@ -114,11 +110,8 @@ class MonitoredJobTest {
             softly.assertThat(job.getFailureCount().get()).isZero();
         }
 
-        @ParameterizedTest
-        @MethodSource("org.kiwiproject.dropwizard.util.job.MonitoredJobTest#falseAndNullDecisionFunctions")
-        void shouldSkipExecutionWhenDecisionFunctionReturnsFalseOrNull(
-                Function<MonitoredJob, Boolean> decisionFun, SoftAssertions softly) {
-
+        @Test
+        void shouldSkipExecutionWhenDecisionFunctionReturnsFalse(SoftAssertions softly) {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -129,7 +122,7 @@ class MonitoredJobTest {
                     .name("Run inactive no errors")
                     .task(taskRunCount::incrementAndGet)
                     .environment(environment)
-                    .decisionFunction(decisionFun)
+                    .decisionFunction(monitoredJob -> false)
                     .build();
 
             job.run();
@@ -212,13 +205,6 @@ class MonitoredJobTest {
 
             assertThatCode(job::run).doesNotThrowAnyException();
         }
-    }
-
-    static Stream<Function<MonitoredJob, Boolean>> falseAndNullDecisionFunctions() {
-        return Stream.of(
-                job -> false,
-                job -> null
-        );
     }
 
     private static void throwException() {
