@@ -74,7 +74,7 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
             softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
 
-            var sixtyDaysAgo = ZonedDateTime.now(ZoneId.of("UTC")).minusDays(60);
+            var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
             softly.assertThat(certInfo.getIssuedOn()).startsWith(sixtyDaysAgoString);
 
@@ -124,7 +124,7 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
             softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
 
-            var sixtyDaysAgo = ZonedDateTime.now(ZoneId.of("UTC")).minusDays(60);
+            var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
             softly.assertThat(certInfo.getIssuedOn()).startsWith(sixtyDaysAgoString);
 
@@ -207,7 +207,7 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
             softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
 
-            var sixtyDaysAgo = ZonedDateTime.now(ZoneId.of("UTC")).minusDays(60);
+            var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
             softly.assertThat(certInfo.getIssuedOn()).startsWith(sixtyDaysAgoString);
 
