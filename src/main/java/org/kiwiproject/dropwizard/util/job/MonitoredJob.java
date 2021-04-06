@@ -24,6 +24,7 @@ import java.util.function.Predicate;
  * Sets up a job from a {@link Runnable} that can be monitored through health checks to ensure it is running correctly.
  *
  * <table>
+ *     <caption>MonitoredJob properties</caption>
  *     <thead>
  *         <tr>
  *             <th>Property</th>
