@@ -44,7 +44,7 @@ public class JobErrorHandlers {
 
     private static class NoOpJobErrorHandler implements JobErrorHandler {
         @Override
-        public void handle(MonitoredJob job, Throwable throwable) {
+        public void handle(MonitoredJob job, Exception exception) {
             // no-op
         }
     }
@@ -52,8 +52,8 @@ public class JobErrorHandlers {
     @Slf4j
     private static class LoggingJobErrorHandler implements JobErrorHandler {
         @Override
-        public void handle(MonitoredJob job, Throwable throwable) {
-            LOG.warn(LOG_MESSAGE_TEMPLATE, job.getName(), throwable);
+        public void handle(MonitoredJob job, Exception exception) {
+            LOG.warn(LOG_MESSAGE_TEMPLATE, job.getName(), exception);
         }
     }
 
@@ -66,8 +66,8 @@ public class JobErrorHandlers {
         }
 
         @Override
-        public void handle(MonitoredJob job, Throwable throwable) {
-            customLogger.warn(LOG_MESSAGE_TEMPLATE, job.getName(), throwable);
+        public void handle(MonitoredJob job, Exception exception) {
+            customLogger.warn(LOG_MESSAGE_TEMPLATE, job.getName(), exception);
         }
     }
 }

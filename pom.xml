@@ -30,11 +30,11 @@
     <properties>
         <!-- Versions for required dependencies -->
         <dropwizard.version>2.0.20</dropwizard.version>
-        <dropwizard-curator.version>0.17.0</dropwizard-curator.version>
+        <dropwizard-curator.version>0.18.0</dropwizard-curator.version>
         <kiwi.version>0.21.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
         <metrics-healthchecks-severity.version>0.18.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.14.0</service-discovery-client.version>
+        <service-discovery-client.version>0.15.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
@@ -44,7 +44,7 @@
         <metrics-servlets.version>4.1.18</metrics-servlets.version>
         <metrics-jetty9>4.1.18</metrics-jetty9>
         <mongo.version>3.12.8</mongo.version>
-        <registry-aware-jersey-client>0.12.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>0.13.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 

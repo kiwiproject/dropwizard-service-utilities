@@ -170,13 +170,13 @@ public class MonitoredJob implements CatchingRunnable {
     }
 
     @Override
-    public void handleExceptionSafely(Throwable throwable) {
+    public void handleExceptionSafely(Exception exception) {
         LOG.warn("Encountered exception in job: {}", name);
         lastFailure.set(environment.currentTimeMillis());
         failureCount.incrementAndGet();
 
         if (nonNull(errorHandler)) {
-            errorHandler.handle(this, throwable);
+            errorHandler.handle(this, exception);
         }
     }
 }

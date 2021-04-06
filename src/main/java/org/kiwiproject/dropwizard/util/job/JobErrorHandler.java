@@ -6,10 +6,10 @@ package org.kiwiproject.dropwizard.util.job;
 public interface JobErrorHandler {
 
     /**
-     * Handles a {@link Throwable} that occurred during the run of the {@link MonitoredJob}.
+     * Handles an {@link Exception} that occurred during the run of the {@link MonitoredJob}.
      *
      * @param job       the job that was run
-     * @param throwable the error that occurred
+     * @param exception the error that occurred
      */
-    void handle(MonitoredJob job, Throwable throwable);
+    void handle(MonitoredJob job, Exception exception);
 }

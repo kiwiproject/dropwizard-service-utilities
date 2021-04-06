@@ -167,7 +167,7 @@ class MonitoredJobTest {
             var taskHandledCount = new AtomicInteger();
             var handler = new JobErrorHandler() {
                 @Override
-                public void handle(MonitoredJob job, Throwable throwable) {
+                public void handle(MonitoredJob job, Exception exception) {
                     taskHandledCount.incrementAndGet();
                 }
             };
@@ -192,7 +192,7 @@ class MonitoredJobTest {
         void shouldNotAllowExceptionsThrownByErrorHandlerToEscape() {
             var handler = new JobErrorHandler() {
                 @Override
-                public void handle(MonitoredJob job, Throwable throwable) {
+                public void handle(MonitoredJob job, Exception exception) {
                     throw new RuntimeException("error handling error");
                 }
             };
