@@ -52,7 +52,6 @@
         <curator.version>2.13.0</curator.version>
         <hibernate.version>5.4.28.Final</hibernate.version>
         <httpcore.version>4.4.14</httpcore.version>
-        <junit-pioneer.version>1.3.8</junit-pioneer.version>
         <kiwi-test.version>0.17.0</kiwi-test.version>
         <spring.version>5.3.4</spring.version>
 
@@ -344,32 +343,6 @@
                 <exclusion>
                     <groupId>jakarta.xml.bind</groupId>
                     <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit-pioneer</groupId>
-            <artifactId>junit-pioneer</artifactId>
-            <version>${junit-pioneer.version}</version>
-            <scope>test</scope>
-            <!-- Because Pioneer is behind Jupiter's current version -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-params</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-commons</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-launcher</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
