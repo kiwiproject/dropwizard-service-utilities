@@ -34,7 +34,7 @@
         <kiwi.version>0.23.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
         <metrics-healthchecks-severity.version>0.20.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>0.16.0</service-discovery-client.version>
+        <service-discovery-client.version>0.17.0</service-discovery-client.version>
         <zookeeper.version>3.4.14</zookeeper.version>
 
         <!-- Versions for provided dependencies -->
