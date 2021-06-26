@@ -29,7 +29,7 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard.version>2.0.22</dropwizard.version>
+        <dropwizard.version>2.0.23</dropwizard.version>
         <dropwizard-curator.version>0.21.0</dropwizard-curator.version>
         <kiwi.version>0.24.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
@@ -41,10 +41,10 @@
         <hibernate-validator.version>6.1.7.Final</hibernate-validator.version>
         <hk2-utils.version>2.6.1</hk2-utils.version>
         <jersey.version>2.33</jersey.version>
-        <metrics-servlets.version>4.1.22</metrics-servlets.version>
-        <metrics-jetty9>4.1.22</metrics-jetty9>
+        <metrics-servlets.version>4.1.23</metrics-servlets.version>
+        <metrics-jetty9>4.1.23</metrics-jetty9>
         <mongo.version>3.12.8</mongo.version>
-        <registry-aware-jersey-client>0.15.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>0.16.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
@@ -79,6 +79,10 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -227,6 +231,10 @@
             <version>${metrics-servlets.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
