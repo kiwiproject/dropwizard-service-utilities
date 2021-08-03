@@ -33,7 +33,7 @@
         <dropwizard-curator.version>0.21.0</dropwizard-curator.version>
         <kiwi.version>0.24.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
-        <metrics-healthchecks-severity.version>0.21.0</metrics-healthchecks-severity.version>
+        <metrics-healthchecks-severity.version>0.22.0</metrics-healthchecks-severity.version>
         <service-discovery-client.version>0.18.0</service-discovery-client.version>
         <zookeeper.version>3.7.0</zookeeper.version>
 
