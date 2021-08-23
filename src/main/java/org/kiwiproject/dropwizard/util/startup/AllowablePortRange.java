@@ -13,10 +13,10 @@ public class AllowablePortRange {
 
     private static final int RANGE_MULTIPLIER = 3;
 
-    int minPortNumber;
-    int maxPortNumber;
-    int numPortsInRange;
-    int maxPortCheckAttempts;
+    final int minPortNumber;
+    final int maxPortNumber;
+    final int numPortsInRange;
+    final int maxPortCheckAttempts;
 
     /**
      * Creates a new AllowablePortRange
