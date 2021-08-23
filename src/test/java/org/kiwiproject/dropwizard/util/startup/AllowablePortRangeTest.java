@@ -4,42 +4,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("PortRangeInfo")
 class AllowablePortRangeTest {
 
     @ParameterizedTest
-    @ValueSource(ints = {-1, 65_536})
-    void shouldThrowIllegalStateException_WhenMinPortIsNotValid(int port) {
-        assertThatThrownBy(() -> new AllowablePortRange(port, port + 1))
+    @ValueSource(ints = {-1, 0, 65_536})
+    void shouldThrowIllegalStateException_WhenMinPortIsNotValid(int minPort) {
+        assertThatThrownBy(() -> new AllowablePortRange(minPort, minPort + 1))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("port must be between 0 and 65535");
+                .hasMessage("minPort must be between 1 and 65534 (was: %d)", minPort);
     }
 
-    @Test
-    void shouldThrowIllegalStateException_WhenMaxPortIsNotValid() {
-        assertThatThrownBy(() -> new AllowablePortRange(9_000, 65_536))
+    @ParameterizedTest
+    @ValueSource(ints = {65_536, 100_000, 1_000_000})
+    void shouldThrowIllegalStateException_WhenMaxPortIsNotValid(int maxPort) {
+        assertThatThrownBy(() -> new AllowablePortRange(9_000, maxPort))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("port must be between 0 and 65535");
+                .hasMessage("maxPort must be between 2 and 65535 (was: %d)", maxPort);
     }
 
-    @Test
-    void shouldThrowIllegalStateException_WhenMinPortIsGreaterThanMaxPort() {
-        assertThatThrownBy(() -> new AllowablePortRange(9_000, 8_000))
+    @ParameterizedTest
+    @CsvSource({
+            "0, 0",
+            "8000, 8000",
+            "8081, 8080",
+            "9000, 8000",
+            "65535, 65535"
+    })
+    void shouldThrowIllegalStateException_WhenMaxPortIsNotGreaterThanMaxPort(int minPort, int maxPort) {
+        assertThatThrownBy(() -> new AllowablePortRange(minPort, maxPort))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("minPortNumber must be less than maxPortNumber");
+                .hasMessage("minPortNumber must be less than maxPortNumber (was: %d -> %d)", minPort, maxPort);
     }
 
-    @Test
-    void shouldCreateNewPortRangeInfo_WhenValidPortsGiven() {
-        var info = new AllowablePortRange(8_000, 9_000);
+    @ParameterizedTest
+    @CsvSource({
+            "1, 2",
+            "1, 65535",
+            "8000, 9000",
+            "9050, 9100",
+            "45000, 46000",
+            "64534, 65535",
+    })
+    void shouldCreateNewPortRangeInfo_WhenValidPortsGiven(int minPort, int maxPort) {
+        var info = new AllowablePortRange(minPort, maxPort);
 
-        assertThat(info.getMinPortNumber()).isEqualTo(8_000);
-        assertThat(info.getMaxPortNumber()).isEqualTo(9_000);
-        assertThat(info.getNumPortsInRange()).isEqualTo(1_001);
-        assertThat(info.getMaxPortCheckAttempts()).isEqualTo(3_003);
+        assertThat(info.getMinPortNumber()).isEqualTo(minPort);
+        assertThat(info.getMaxPortNumber()).isEqualTo(maxPort);
+        var expectedPortCount = 1 + (maxPort - minPort);
+        assertThat(info.getNumPortsInRange()).isEqualTo(expectedPortCount);
+        assertThat(info.getMaxPortCheckAttempts()).isEqualTo(3 * expectedPortCount);
     }
 }
