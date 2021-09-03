@@ -40,6 +40,7 @@
         <!-- Versions for provided dependencies -->
         <hibernate-validator.version>6.1.7.Final</hibernate-validator.version>
         <hk2-utils.version>2.6.1</hk2-utils.version>
+        <jakarta-el.version>3.0.4</jakarta-el.version>
         <jersey.version>2.33</jersey.version>
         <metrics-servlets.version>4.1.25</metrics-servlets.version>
         <metrics-jetty9>4.1.25</metrics-jetty9>
@@ -89,6 +90,10 @@
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>jakarta.el</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
@@ -103,6 +108,11 @@
                 <exclusion>
                     <groupId>joda-time</groupId>
                     <artifactId>joda-time</artifactId>
+                </exclusion>
+                <!-- TODO REMOVE THIS ONCE UPDATED TO dropwizard-curator 1.0.0 -->
+                <exclusion>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -201,6 +211,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>${jakarta-el.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${jersey.version}</version>
@@ -255,6 +272,13 @@
             <artifactId>registry-aware-jersey-client</artifactId>
             <version>${registry-aware-jersey-client}</version>
             <scope>provided</scope>
+            <exclusions>
+                <!-- TODO REMOVE THIS ONCE UPDATED TO registry-aware-jersey-client 1.0.0 -->
+                <exclusion>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test dependencies -->
