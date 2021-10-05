@@ -30,7 +30,7 @@
     <properties>
         <!-- Versions for required dependencies -->
         <dropwizard.version>2.0.25</dropwizard.version>
-        <dropwizard-curator.version>1.0.0</dropwizard-curator.version>
+        <dropwizard-curator.version>1.1.0</dropwizard-curator.version>
         <kiwi.version>1.0.0</kiwi.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
         <metrics-healthchecks-severity.version>1.0.0</metrics-healthchecks-severity.version>
@@ -45,7 +45,7 @@
         <metrics-servlets.version>4.1.25</metrics-servlets.version>
         <metrics-jetty9>4.1.25</metrics-jetty9>
         <mongo.version>3.12.9</mongo.version>
-        <registry-aware-jersey-client>1.0.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>1.1.0</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
@@ -104,13 +104,6 @@
             <groupId>org.kiwiproject</groupId>
             <artifactId>dropwizard-curator</artifactId>
             <version>${dropwizard-curator.version}</version>
-            <exclusions>
-                <!-- TODO REMOVE THIS ONCE UPDATE TO dropwizard-curator 1.1.0 -->
-                <exclusion>
-                    <groupId>org.kiwiproject</groupId>
-                    <artifactId>kiwi-test</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
