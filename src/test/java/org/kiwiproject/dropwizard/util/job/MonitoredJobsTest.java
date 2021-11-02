@@ -289,7 +289,11 @@ class MonitoredJobsTest {
                 assertThat(job).isNotNull();
 
                 assertHealthCheckWasRegistered(job);
-                verify(executor).scheduleWithFixedDelay(job, 10, 30, TimeUnit.SECONDS);
+
+                var expectedInitialDelay = schedule.getInitialDelay().toNanoseconds();
+                var expectedIntervalDelay = schedule.getIntervalDelay().toNanoseconds();
+
+                verify(executor).scheduleWithFixedDelay(job, expectedInitialDelay, expectedIntervalDelay, TimeUnit.NANOSECONDS);
             }
 
             private void assertHealthCheckWasRegistered(MonitoredJob job) {
