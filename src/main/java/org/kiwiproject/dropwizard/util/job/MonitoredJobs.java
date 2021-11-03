@@ -171,9 +171,14 @@ public class MonitoredJobs {
     }
 
     private static void scheduleJob(ScheduledExecutorService executor, JobSchedule schedule, MonitoredJob job) {
-        LOG.debug("Scheduling job: {} to run every: {}", job.getName(), schedule.getIntervalDelay());
-        executor.scheduleWithFixedDelay(job, schedule.getInitialDelay().toSeconds(),
-                schedule.getIntervalDelay().toSeconds(), TimeUnit.SECONDS);
+        LOG.debug("Scheduling job: {} to start after initial delay: {} and run every: {}",
+                job.getName(), schedule.getInitialDelay(), schedule.getIntervalDelay());
+
+        executor.scheduleWithFixedDelay(
+                job,
+                schedule.getInitialDelay().toNanoseconds(),
+                schedule.getIntervalDelay().toNanoseconds(),
+                TimeUnit.NANOSECONDS);
     }
 
     /**
