@@ -45,7 +45,7 @@
         <metrics-servlets.version>4.1.25</metrics-servlets.version>
         <metrics-jetty9>4.1.25</metrics-jetty9>
         <mongo.version>3.12.9</mongo.version>
-        <registry-aware-jersey-client>1.1.0</registry-aware-jersey-client>
+        <registry-aware-jersey-client>1.1.1</registry-aware-jersey-client>
 
         <!-- Versions for optional dependencies -->
 
