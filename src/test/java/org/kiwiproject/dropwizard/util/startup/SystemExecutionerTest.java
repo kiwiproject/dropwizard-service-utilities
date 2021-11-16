@@ -100,9 +100,11 @@ class SystemExecutionerTest {
                 .describedAs("Execution strategy exit() should have been called")
                 .isTrue();
 
-        assertThat(TimeUnit.NANOSECONDS.toMillis(elapsedNanos))
-                .describedAs("Elapsed millis must be greater than %d", killerSleepTimeMillis)
-                .isGreaterThan(killerSleepTimeMillis);
+        var elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
+        LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
+        assertThat(elapsedMillis)
+                .describedAs("Elapsed millis must be at least %d", killerSleepTimeMillis)
+                .isGreaterThanOrEqualTo(killerSleepTimeMillis);
 
         executorService.shutdown();
         await().atMost(ONE_SECOND).until(executorService::isShutdown);
