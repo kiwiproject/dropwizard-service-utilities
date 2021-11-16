@@ -54,7 +54,7 @@
         <hibernate.version>5.5.3.Final</hibernate.version>
         <httpcore.version>4.4.14</httpcore.version>
         <kiwi-test.version>1.1.1</kiwi-test.version>
-        <spring.version>5.3.9</spring.version>
+        <spring.version>5.3.13</spring.version>
 
         <!-- Versions for plugins -->
 
