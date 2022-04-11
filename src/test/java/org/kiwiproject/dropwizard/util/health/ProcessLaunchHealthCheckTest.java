@@ -49,7 +49,7 @@ class ProcessLaunchHealthCheckTest {
         }
 
         /**
-         * Only running on Linux and MacOS since we know for a fact that 'echo' exists there.
+         * Only running on Linux and macOS since we know for a fact that 'echo' exists there.
          */
         @Test
         @EnabledOnOs({OS.LINUX, OS.MAC})

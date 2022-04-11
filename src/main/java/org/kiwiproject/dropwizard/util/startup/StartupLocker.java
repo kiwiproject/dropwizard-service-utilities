@@ -24,7 +24,7 @@ import java.util.Optional;
  * Utility to acquire and release a lock from ZooKeeper during startup of a Dropwizard service.
  * <p>
  * This is useful if you have multiple services on the same host or container, and each service
- * needs to access resources without contention. For example, if multiple services start simultaneously
+ * needs to access resources without contention. For example, if multiple services start simultaneously,
  * and they are all attempting to obtain ports dynamically from a limited port range, you can use this
  * class to ensure only one attempts to obtain ports at a time to avoid "Address already in use" errors.
  */

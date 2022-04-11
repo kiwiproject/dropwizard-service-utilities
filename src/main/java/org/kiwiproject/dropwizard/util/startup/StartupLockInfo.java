@@ -14,7 +14,7 @@ import org.apache.curator.framework.recipes.locks.InterProcessLock;
  * <p>
  * NOTE: There is an assumption here that any users of this class will check the {@code lockState} prior to accessing other fields.
  * Not all fields are populated for every state. For instance, {@code client}, {@code lock}, and {@code lockPath} are only used when
- * lock state is {@code ACQUIRED}, where as {@code exception} is only used when lock state is {@code ACQUIRE_FAIL}.
+ * lock state is {@code ACQUIRED}, whereas {@code exception} is only used when lock state is {@code ACQUIRE_FAIL}.
  */
 @Getter
 public class StartupLockInfo {

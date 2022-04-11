@@ -68,7 +68,7 @@ public class ServicePingHealthCheck extends HealthCheck {
 
     /**
      * Creates the health check set up to ping a service defined by the given {@link ServiceIdentifier} using the given
-     * {@link RegistryAwareClient}. By default the service to be checked will be marked as REQUIRED.
+     * {@link RegistryAwareClient}. By default, the service to be checked will be marked as REQUIRED.
      *
      * @param serviceIdentifier the identifier for the service to be pinged.
      * @param client            the {@link RegistryAwareClient} to use for service lookup and to perform the request
@@ -163,7 +163,7 @@ public class ServicePingHealthCheck extends HealthCheck {
 
     /**
      * Registers a {@link ServicePingHealthCheck} for each of the given {@link ServiceIdentifier}s given, defaulting the
-     * importance to REQUIRED.
+     * importance to {@link DependencyImportance#REQUIRED REQUIRED}.
      *
      * @param healthCheckRegistry the {@link HealthCheckRegistry} to register the health checks.
      * @param client              the {@link RegistryAwareClient} to use for service lookup and to perform the request.

@@ -22,7 +22,7 @@ import javax.xml.bind.JAXBElement;
 public class StandardJacksonConfigurations {
 
     /**
-     * Registers all of the "standard" Jackson configurations on the {@link ObjectMapper} contained in the given
+     * Registers all the "standard" Jackson configurations on the {@link ObjectMapper} contained in the given
      * Dropwizard {@link Environment} according to the values in the {@link JacksonConfig}.
      * <p>
      * Please note that this <em>modifies</em> the Dropwizard {@link Environment}'s object mapper with our "standard"
