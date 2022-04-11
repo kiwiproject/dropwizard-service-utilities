@@ -6,18 +6,17 @@ import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessLock;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.kiwiproject.curator.CuratorFrameworkHelper;
 import org.kiwiproject.curator.CuratorLockHelper;
 import org.kiwiproject.dropwizard.util.startup.SystemExecutioner;
 
 /**
- * A Jetty {@link org.eclipse.jetty.util.component.LifeCycle.Listener} that releases the ZooKeeper startup lock if
+ * A Jetty {@link LifeCycle.Listener} that releases the ZooKeeper startup lock if
  * it exists. In the case of a lifecycle failure, it shuts down the system.
  */
 @Slf4j
-public class StartupWithLockJettyLifeCycleListener extends AbstractLifeCycle.AbstractLifeCycleListener {
+public class StartupWithLockJettyLifeCycleListener implements LifeCycle.Listener {
 
     private final CuratorFramework curatorFramework;
     private final InterProcessLock lock;
