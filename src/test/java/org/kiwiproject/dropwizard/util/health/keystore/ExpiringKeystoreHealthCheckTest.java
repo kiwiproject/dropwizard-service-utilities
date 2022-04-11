@@ -38,7 +38,6 @@ class ExpiringKeystoreHealthCheckTest {
 
     @Nested
     class ShouldReportUnhealthy {
-        @SuppressWarnings("unchecked")
         @Test
         void whenThereAreExpiredCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
@@ -86,7 +85,6 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(expiringCerts).isEmpty();
         }
 
-        @SuppressWarnings("unchecked")
         @Test
         void whenThereAreExpiringCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
@@ -133,7 +131,6 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(certInfo.getExpiresOn()).startsWith(expirationDateString);
         }
 
-        @SuppressWarnings("unchecked")
         @Test
         void whenAnExceptionIsThrown(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US";
@@ -173,7 +170,6 @@ class ExpiringKeystoreHealthCheckTest {
     @Nested
     class ShouldReportHealthy {
 
-        @SuppressWarnings("unchecked")
         @Test
         void whenThereAreOnlyValidCerts(SoftAssertions softly, @TempDir Path tempDir) {
             var dn = "CN=Valid Test,OU=Development,O=Project,L=There,ST=VA,C=US";
