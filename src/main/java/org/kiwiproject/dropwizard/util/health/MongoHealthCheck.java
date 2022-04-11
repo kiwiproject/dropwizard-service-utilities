@@ -31,7 +31,7 @@ public class MongoHealthCheck extends HealthCheck {
 
     @SuppressWarnings({"deprecation", "ConstantConditions"})
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         var host = db.getMongo().getAddress().toString();
         var dbName = db.getName();
 

@@ -95,7 +95,7 @@ public class ServicePingHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         WebTarget target;
 
         try {
@@ -180,7 +180,7 @@ public class ServicePingHealthCheck extends HealthCheck {
      * Registers a {@link ServicePingHealthCheck} for each of the given {@link ServiceIdentifier}s given, using the
      * given importance <em>for each</em>.
      * <p>
-     * NOTE: If different importances are required for different services, then call this method for each importance.
+     * NOTE: If different importance is required for different services, then call this method for each importance.
      *
      * @param healthCheckRegistry the {@link HealthCheckRegistry} to register the health checks.
      * @param client              the {@link RegistryAwareClient} to use for service lookup and to perform the request.

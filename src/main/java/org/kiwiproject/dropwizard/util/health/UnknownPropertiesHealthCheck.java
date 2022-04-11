@@ -29,7 +29,7 @@ public class UnknownPropertiesHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         if (handler.getUnknownPropertyCount() == 0) {
             return newHealthyResult("No unknown properties detected");
         }

@@ -69,7 +69,7 @@ public class ServerErrorHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         var meters = metrics.getMeters(METRIC_FILTER);
 
         if (isNullOrEmpty(meters) || !meters.containsKey(METER_NAME)) {

@@ -78,7 +78,7 @@ class HttpConnectionsHealthCheckTest {
             @SuppressWarnings({"unchecked", "rawtypes"})
             @Test
             void whenOneDropwizardJerseyClient_ThatIsBelowDefaultWarningThreshold() {
-                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                SortedMap<String, Gauge> gauges = KiwiMaps.newTreeMap(
                         leasedGaugeNameFor("some-client"), gaugeReturning(4),
                         maxGaugeNameFor("some-client"), gaugeReturning(10)
                 );
@@ -110,7 +110,7 @@ class HttpConnectionsHealthCheckTest {
             @SuppressWarnings({"unchecked", "rawtypes"})
             @Test
             void whenMultipleDropwizardJerseyClients_ThatAreAllBelowDefaultWarningThreshold() {
-                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                SortedMap<String, Gauge> gauges = KiwiMaps.newTreeMap(
                         leasedGaugeNameFor("some-client"), gaugeReturning(4),
                         maxGaugeNameFor("some-client"), gaugeReturning(10),
                         leasedGaugeNameFor("another-client"), gaugeReturning(2),
@@ -157,7 +157,7 @@ class HttpConnectionsHealthCheckTest {
             @SuppressWarnings({"unchecked", "rawtypes"})
             @Test
             void whenMultipleDropwizardJerseyClients_ThatOneIsAboveDefaultWarningThreshold() {
-                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                SortedMap<String, Gauge> gauges = KiwiMaps.newTreeMap(
                         leasedGaugeNameFor("some-client"), gaugeReturning(5),
                         maxGaugeNameFor("some-client"), gaugeReturning(10),
                         leasedGaugeNameFor("another-client"), gaugeReturning(2),
@@ -198,7 +198,7 @@ class HttpConnectionsHealthCheckTest {
             @SuppressWarnings({"unchecked", "rawtypes"})
             @Test
             void whenMultipleDropwizardJerseyClients_ThatAllAreAboveDefaultWarningThreshold() {
-                SortedMap<String, Gauge> gauges = (TreeMap) KiwiMaps.newTreeMap(
+                SortedMap<String, Gauge> gauges = KiwiMaps.newTreeMap(
                         leasedGaugeNameFor("some-client"), gaugeReturning(5),
                         maxGaugeNameFor("some-client"), gaugeReturning(10),
                         leasedGaugeNameFor("another-client"), gaugeReturning(9),
