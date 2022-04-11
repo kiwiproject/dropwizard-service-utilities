@@ -79,7 +79,7 @@ class KeystoreHealthResultsTest {
 
         @BeforeEach
         void setUp() {
-            var expiredCertl = BasicCertInfo.builder()
+            var expiredCert1 = BasicCertInfo.builder()
                     .subjectDN("cert-1")
                     .build();
             var expiredCert2 = BasicCertInfo.builder()
@@ -89,7 +89,7 @@ class KeystoreHealthResultsTest {
                     .path("/a/path/keystore.jks")
                     .expirationWarningThreshold(Duration.days(30))
                     .validCerts(List.of())
-                    .expiredCerts(List.of(expiredCertl, expiredCert2))
+                    .expiredCerts(List.of(expiredCert1, expiredCert2))
                     .expiringCerts(List.of())
                     .build();
         }

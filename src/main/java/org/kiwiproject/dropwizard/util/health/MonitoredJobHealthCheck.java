@@ -8,8 +8,6 @@ import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResultBuilder;
 
-import java.time.Instant;
-
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.util.Duration;
@@ -20,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.DefaultEnvironment;
 import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.dropwizard.util.job.MonitoredJob;
+
+import java.time.Instant;
 
 /**
  * Health check that monitors a {@link MonitoredJob} to ensure that it is running on schedule and not encountering
@@ -115,7 +115,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         try {
             var lastRun = job.getLastSuccess().get();
             if (!job.isActive()) {
