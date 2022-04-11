@@ -125,7 +125,7 @@ public class AdminConfigurator {
     }
 
     /**
-     * Terminal operation of this configurator that adds all of the configured features into the server setup.
+     * Terminal operation of this configurator that adds all the configured features into the server setup.
      */
     public void configure() {
         // Add "standard" tasks

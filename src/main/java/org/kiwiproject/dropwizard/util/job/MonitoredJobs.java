@@ -37,7 +37,7 @@ public class MonitoredJobs {
     static final Set<String> JOBS = new HashSet<>();
 
     /**
-     * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule and runnable.
      *
      * @param env      the Dropwizard environment to register the health check and schedule the job.
@@ -51,7 +51,7 @@ public class MonitoredJobs {
     }
 
     /**
-     * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule, runnable and decision function.
      *
      * @param env        the Dropwizard environment to register the health check and schedule the job.
@@ -71,7 +71,7 @@ public class MonitoredJobs {
     }
 
     /**
-     * Create a new {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule, runnable, decision function and
      * {@link ScheduledExecutorService}.
      *
@@ -100,7 +100,7 @@ public class MonitoredJobs {
     }
 
     /**
-     * Using the given {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * Using the given {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, using the given schedule.
      *
      * @param env      the Dropwizard environment to register the health check and schedule the job
@@ -114,7 +114,7 @@ public class MonitoredJobs {
     }
 
     /**
-     * Using a given {@link MonitoredJob}, setup the {@link MonitoredJobHealthCheck} and schedule the job on the given
+     * Using a given {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the job's name, the given schedule and the given job.
      *
      * @param env      the Dropwizard environment to register the health check and schedule the job.

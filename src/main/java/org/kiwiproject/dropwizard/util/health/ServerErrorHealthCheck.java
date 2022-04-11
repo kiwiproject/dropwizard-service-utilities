@@ -13,7 +13,7 @@ import org.kiwiproject.metrics.health.HealthStatus;
 
 /**
  * Checks for Status 5xx responses. This uses a meter which is built into Dropwizard Metrics. It is an approximation since it gives
- * a rate instead of a count for a given time duration. This check uses the 15 minute rate on 5xx responses. Thresholds can be
+ * a rate instead of a count for a given time duration. This check uses the 15-minute rate on 5xx responses. Thresholds can be
  * set for warning and critical severity. Warning threshold defaults to 1.0 and Critical defaults to 10.0.
  */
 @Slf4j

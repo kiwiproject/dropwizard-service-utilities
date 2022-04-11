@@ -27,7 +27,7 @@ public class StandardLifecycles {
     private static final String EMPTY_STRING = "";
 
     /**
-     * Logs the given server status. For example you can use this to log the successful startup of a service in
+     * Logs the given server status. For example, you can use this to log the successful startup of a service in
      * a consistent manner.
      *
      * @param status the status of the server
