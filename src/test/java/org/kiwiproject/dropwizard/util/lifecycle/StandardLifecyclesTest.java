@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.codahale.metrics.NoopMetricRegistry;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import org.kiwiproject.registry.management.dropwizard.RegistrationLifecycleListe
 import org.kiwiproject.registry.server.RegistryService;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
+import java.util.OptionalLong;
 import java.util.concurrent.ScheduledExecutorService;
 
 @DisplayName("StandardLifecycles")
@@ -73,16 +76,52 @@ class StandardLifecyclesTest {
     @Nested
     class AddProcessIdLoggingLifecycleListener {
 
-        @Test
-        void shouldAddProcessIdLoggingLifecycleListener() {
-            var environment = DropwizardMockitoMocks.mockEnvironment();
+        private Environment environment;
 
+        @BeforeEach
+        void setUp() {
+            environment = DropwizardMockitoMocks.mockEnvironment();
+        }
+
+        @Test
+        void shouldAddProcessIdLoggingLifecycleListener_FromPrimitiveLong() {
             StandardLifecycles.addProcessIdLoggingLifecycleListener(10_000L, environment);
 
+            verifyListenerAdded();
+        }
+
+        @Test
+        void shouldAddProcessIdLoggingLifecycleListener_FromWrapperLong() {
+            StandardLifecycles.addProcessIdLoggingLifecycleListener(Long.valueOf(20_000L), environment);
+
+            verifyListenerAdded();
+        }
+
+        @Test
+        void shouldAddProcessIdLoggingLifecycleListener_FromWrapperLong_EvenWhenNull() {
+            StandardLifecycles.addProcessIdLoggingLifecycleListener((Long) null, environment);
+
+            verifyListenerAdded();
+        }
+
+        @Test
+        void shouldAddProcessIdLoggingLifecycleListener_FromOptionalLong() {
+            StandardLifecycles.addProcessIdLoggingLifecycleListener(OptionalLong.of(30_000L), environment);
+
+            verifyListenerAdded();
+        }
+
+        @Test
+        void shouldAddProcessIdLoggingLifecycleListener_FromOptionalLong_EvenWhenEmpty() {
+            StandardLifecycles.addProcessIdLoggingLifecycleListener(OptionalLong.empty(), environment);
+
+            verifyListenerAdded();
+        }
+
+        private void verifyListenerAdded() {
             verify(environment.lifecycle())
                     .addServerLifecycleListener(any(ProcessIdLoggingServerLifecycleListener.class));
         }
-
     }
 
     @Nested

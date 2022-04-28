@@ -10,8 +10,16 @@ import org.junit.jupiter.api.Test;
 class ProcessIdLoggingServerLifecycleListenerTest {
 
     @Test
-    void shouldNotThrowException_WhenPidProvided() {
+    void shouldNotThrowException_WhenPidProvided_AsPrimitiveLong() {
         var listener = new ProcessIdLoggingServerLifecycleListener(10_000L);
+        var server = new Server(8080);
+
+        assertThatCode(() -> listener.serverStarted(server)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldNotThrowException_WhenPidProvided_AsWrapperLong() {
+        var listener = new ProcessIdLoggingServerLifecycleListener(Long.valueOf(20_000L));
         var server = new Server(8080);
 
         assertThatCode(() -> listener.serverStarted(server)).doesNotThrowAnyException();
