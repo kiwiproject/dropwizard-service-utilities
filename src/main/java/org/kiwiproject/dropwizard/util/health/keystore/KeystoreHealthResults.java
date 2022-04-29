@@ -15,7 +15,6 @@ import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.dropwizard.util.KiwiDropwizardDurations;
 import org.kiwiproject.metrics.health.HealthStatus;
 
-import java.time.ZoneId;
 import java.time.chrono.ChronoZonedDateTime;
 import java.util.List;
 
@@ -23,7 +22,6 @@ import java.util.List;
 @Builder
 class KeystoreHealthResults {
 
-    private static final ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
     private static final KiwiEnvironment DEFAULT_KIWI_ENVIRONMENT = new DefaultEnvironment();
 
     @NonNull
