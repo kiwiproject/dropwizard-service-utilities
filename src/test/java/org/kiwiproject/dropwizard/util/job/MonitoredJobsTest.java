@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import io.dropwizard.lifecycle.setup.ScheduledExecutorServiceBuilder;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
-import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @DisplayName("MonitoredJobs")
 @ExtendWith(SoftAssertionsExtension.class)
-@Slf4j
 class MonitoredJobsTest {
 
     private Environment env;

@@ -6,7 +6,6 @@ import static org.kiwiproject.json.KiwiJacksonSerializers.buildPropertyMaskingSa
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import io.dropwizard.Configuration;
-import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.json.JsonHelper;
 
 import javax.ws.rs.GET;
@@ -20,7 +19,6 @@ import java.util.List;
  * <p>
  * A list of regex patterns can be given in order to mask secrets in the configuration.
  */
-@Slf4j
 @Path("app/config")
 public class ConfigResource {
 
