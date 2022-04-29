@@ -13,6 +13,7 @@ import org.kiwiproject.registry.management.dropwizard.RegistrationLifecycleListe
 import org.kiwiproject.registry.server.RegistryService;
 
 import java.time.Instant;
+import java.util.OptionalLong;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 
@@ -71,6 +72,35 @@ public class StandardLifecycles {
      */
     public static void addServerConnectorLoggingLifecycleListener(Environment environment) {
         environment.lifecycle().addServerLifecycleListener(new ConnectorLoggingServerLifecycleListener());
+    }
+
+    /**
+     * Adds a lifecycle listener that logs the current process id on startup.
+     *
+     * @param processId   the process id or an empty optional if unable to find it
+     * @param environment the Dropwizard environment
+     * @implNote Yes, the generally accepted wisdom is that Optional arguments are "bad". However, in this
+     * situation we make an exception to that "rule" to support the case when a {@link Process#pid()} does not
+     * support getting the pid. Our kiwi library has a {@link org.kiwiproject.base.KiwiEnvironment#tryGetCurrentPid()}
+     * which returns {@link OptionalLong}, and this method makes it convenient to take the result of that method
+     * and supply it directly to this method without converting it.
+     */
+    public static void addProcessIdLoggingLifecycleListener(OptionalLong processId, Environment environment) {
+        if (processId.isPresent()) {
+            addProcessIdLoggingLifecycleListener(processId.getAsLong(), environment);
+        } else {
+            addProcessIdLoggingLifecycleListener((Long) null, environment);
+        }
+    }
+
+    /**
+     * Adds a lifecycle listener that logs the current process id on startup.
+     *
+     * @param processId   the process id
+     * @param environment the Dropwizard environment
+     */
+    public static void addProcessIdLoggingLifecycleListener(long processId, Environment environment) {
+        environment.lifecycle().addServerLifecycleListener(new ProcessIdLoggingServerLifecycleListener(processId));
     }
 
     /**

@@ -10,6 +10,10 @@ import org.eclipse.jetty.server.Server;
 class ProcessIdLoggingServerLifecycleListener implements ServerLifecycleListener {
     private final Long processId;
 
+    ProcessIdLoggingServerLifecycleListener(long processId) {
+        this.processId = processId;
+    }
+
     ProcessIdLoggingServerLifecycleListener(Long processId) {
         this.processId = processId;
     }
