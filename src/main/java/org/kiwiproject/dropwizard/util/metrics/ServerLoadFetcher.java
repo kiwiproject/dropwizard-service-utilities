@@ -25,7 +25,8 @@ public class ServerLoadFetcher {
      */
     public static final String NO_VALUE = "0.00, 0.00, 0.00";
 
-    private static final Pattern LOAD_AVERAGE_PATTERN = Pattern.compile("load average[s]?: (.*)");
+    private static final Pattern LOAD_AVERAGE_PATTERN =
+            Pattern.compile("load averages?: (.*)", Pattern.CASE_INSENSITIVE);
 
     private final ProcessHelper processes;
 
@@ -47,7 +48,9 @@ public class ServerLoadFetcher {
      * <p>
      * {@code 18:29:28 up 34 days, 18:25, 1 user, load averages: 0.88 0.98 1.03}
      *
-     * @return an {@link Optional} with the load average string or {@link Optional#empty()} if not found
+     * @return an {@link Optional} with the load average string; otherwise an {@link Optional#empty()} if
+     * the load average was not found or if any error occurred
+     * @implNote the pattern match is case-insensitive against the output of the uptime command
      */
     public Optional<String> get() {
         var process = processes.launch("uptime");
