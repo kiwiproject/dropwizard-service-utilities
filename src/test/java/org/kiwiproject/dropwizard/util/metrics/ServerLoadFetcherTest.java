@@ -8,7 +8,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.kiwiproject.base.process.ProcessHelper;
 
 import java.io.ByteArrayInputStream;
@@ -25,55 +28,68 @@ class ServerLoadFetcherTest {
         serverLoad = new ServerLoadFetcher(processes);
     }
 
-    @Test
-    void testGet_UsingActualProcess() {
-        var load = new ServerLoadFetcher().get().orElse(null);
-        assertThat(load)
-                .isNotNull()
-                .matches("^\\d+.\\d+[,]? \\d+.\\d+[,]? \\d+.\\d+$");
-    }
+    @Nested
+    class Get {
 
-    @Test
-    void testGet_UsingMockProcess() throws InterruptedException {
-        var output = "18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
-        var proc = mock(Process.class);
-        when(processes.launch("uptime")).thenReturn(proc);
+        @Test
+        void shouldReturnExpectedFormat_UsingActualProcess() {
+            var load = new ServerLoadFetcher().get().orElse(null);
+            assertThat(load)
+                    .isNotNull()
+                    .matches("^\\d+.\\d+,? \\d+.\\d+,? \\d+.\\d+$");
+        }
 
-        var bais = new ByteArrayInputStream(output.getBytes());
+        @ParameterizedTest
+        @CsvSource({
+                "'18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03', '0.88, 0.98, 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, Load Average: 0.88, 0.98, 1.03', '0.88, 0.98, 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, load averages: 0.88, 0.98, 1.03', '0.88, 0.98, 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, Load Averages: 0.88, 0.98, 1.03', '0.88, 0.98, 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, load averages: 0.88 0.98 1.03', '0.88 0.98 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, Load Averages: 0.88 0.98 1.03', '0.88 0.98 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, load averages: 0.88 0.98 1.03', '0.88 0.98 1.03'",
+                "'18:29:28 up 34 days, 18:25, 1 user, Load Averages: 0.88 0.98 1.03', '0.88 0.98 1.03'"
+        })
+        void shouldReturnLoadAverages_UsingMockProcess(String output, String expectedLoadAverages) throws InterruptedException {
+            var proc = mock(Process.class);
+            when(processes.launch("uptime")).thenReturn(proc);
 
-        when(proc.getInputStream()).thenReturn(bais);
-        when(proc.waitFor(anyLong(), any())).thenReturn(true);
+            var bais = new ByteArrayInputStream(output.getBytes());
 
-        var load = serverLoad.get().orElse(null);
-        assertThat(load)
-                .isNotNull()
-                .isEqualTo("0.88, 0.98, 1.03");
-    }
+            when(proc.getInputStream()).thenReturn(bais);
+            when(proc.waitFor(anyLong(), any())).thenReturn(true);
 
-    @Test
-    void testGet_WhenLoadAverageString_IsNotPresent() {
-        var output = "this is total garbage in, so garbage out";
-        var proc = mock(Process.class);
-        when(processes.launch("uptime")).thenReturn(proc);
+            var load = serverLoad.get().orElse(null);
+            assertThat(load)
+                    .isNotNull()
+                    .isEqualTo(expectedLoadAverages);
+        }
 
-        var bais = new ByteArrayInputStream(output.getBytes());
-        when(proc.getInputStream()).thenReturn(bais);
+        @Test
+        void shouldReturnEmptyOptional_WhenLoadAverageString_IsNotPresent() {
+            var output = "this is total garbage in, so garbage out";
+            var proc = mock(Process.class);
+            when(processes.launch("uptime")).thenReturn(proc);
 
-        var load = serverLoad.get().orElse(null);
-        assertThat(load).isNull();
-    }
+            var bais = new ByteArrayInputStream(output.getBytes());
+            when(proc.getInputStream()).thenReturn(bais);
 
-    @Test
-    void testGet_WhenProcessWaitTimesOut() throws InterruptedException {
-        var output = "18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
-        var proc = mock(Process.class);
-        when(processes.launch("uptime")).thenReturn(proc);
+            var load = serverLoad.get().orElse(null);
+            assertThat(load).isNull();
+        }
 
-        var bais = new ByteArrayInputStream(output.getBytes());
-        when(proc.getInputStream()).thenReturn(bais);
-        when(proc.waitFor(anyLong(), any())).thenReturn(false);
+        @Test
+        void shouldReturnEmptyOptional_WhenProcessWaitTimesOut() throws InterruptedException {
+            var output = "18:29:28 up 34 days, 18:25, 1 user, load average: 0.88, 0.98, 1.03";
+            var proc = mock(Process.class);
+            when(processes.launch("uptime")).thenReturn(proc);
 
-        var load = serverLoad.get().orElse(null);
-        assertThat(load).isNull();
+            var bais = new ByteArrayInputStream(output.getBytes());
+            when(proc.getInputStream()).thenReturn(bais);
+            when(proc.waitFor(anyLong(), any())).thenReturn(false);
+
+            var load = serverLoad.get().orElse(null);
+            assertThat(load).isNull();
+        }
     }
 }
