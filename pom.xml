@@ -30,7 +30,7 @@
     <properties>
         <!-- Versions for required dependencies -->
         <dropwizard-curator.version>1.1.7</dropwizard-curator.version>
-        <kiwi.version>2.1.0</kiwi.version>
+        <kiwi.version>2.2.0</kiwi.version>
         <kiwi-bom.version>0.18.0</kiwi-bom.version>
         <metrics-healthchecks-severity.version>1.0.7</metrics-healthchecks-severity.version>
         <service-discovery-client.version>1.1.6</service-discovery-client.version>
