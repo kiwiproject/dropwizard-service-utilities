@@ -12,15 +12,20 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.Value;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.dropwizard.util.config.JacksonConfig;
 import org.kiwiproject.dropwizard.util.health.UnknownPropertiesHealthCheck;
+import org.kiwiproject.json.JsonHelper;
 import org.kiwiproject.json.LoggingDeserializationProblemHandler;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
 import javax.validation.Validator;
+import java.time.Instant;
+import java.util.Date;
 
 @DisplayName("StandardJacksonConfigurations")
 class StandardJacksonConfigurationsTest {
@@ -61,6 +66,29 @@ class StandardJacksonConfigurationsTest {
 
             verify(mapper).configure(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
             verify(mapper).configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
+        }
+
+        @Test
+        void shouldMapTimestampsAsEpochMilliseconds() {
+            var config = new JacksonConfig();
+            var mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+
+            StandardJacksonConfigurations.registerJacksonTimestampSerialization(config, mapper);
+
+            var nowMillis = System.currentTimeMillis();
+            var testBean = new TestBean(Instant.ofEpochMilli(nowMillis), new Date(nowMillis));
+            var jsonHelper = new JsonHelper(mapper);
+            var json = jsonHelper.toJson(testBean);
+
+            var map = jsonHelper.toMap(json);
+            assertThat(map)
+                    .describedAs("The JSON converted to a Map should contain the epochMillis")
+                    .containsEntry("theInstant", nowMillis)
+                    .containsEntry("theDate", nowMillis);
+
+            var deserializedTestBean = jsonHelper.toObject(json, TestBean.class);
+            assertThat(deserializedTestBean).isEqualTo(testBean);
         }
 
         @Test
@@ -132,5 +160,11 @@ class StandardJacksonConfigurationsTest {
             verify(dropwizardMapper).addHandler(isA(LoggingDeserializationProblemHandler.class));
             verify(env.healthChecks()).register(eq("Unknown JSON Properties"), isA(UnknownPropertiesHealthCheck.class));
         }
+    }
+
+    @Value
+    public static class TestBean {
+        Instant theInstant;
+        Date theDate;
     }
 }
