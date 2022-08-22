@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,6 +26,11 @@ import org.kiwiproject.json.LoggingDeserializationProblemHandler;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
 import javax.validation.Validator;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
 import java.time.Instant;
 import java.util.Date;
 
@@ -41,6 +48,48 @@ class StandardJacksonConfigurationsTest {
             StandardJacksonConfigurations.registerJaxbSerializer(config, mapper);
 
             verify(mapper).registerModule(isA(SimpleModule.class));
+        }
+
+        @Test
+        void shouldConvertNilJAXBElements_ToNull() {
+            var config = new JacksonConfig();
+            var mapper = new ObjectMapper();
+
+            StandardJacksonConfigurations.registerJaxbSerializer(config, mapper);
+
+            var testXmlBean = newTestXmlBean(null, null);
+            var jsonHelper = new JsonHelper(mapper);
+            var json = jsonHelper.toJson(testXmlBean);
+
+            assertThat(json)
+                    .containsIgnoringWhitespaces("\"wrappedString\":null")
+                    .containsIgnoringWhitespaces("\"wrappedInteger\":null");
+
+            var map = jsonHelper.toMap(json);
+            assertThat(map)
+                    .containsEntry("wrappedString", null)
+                    .containsEntry("wrappedInteger", null);
+        }
+
+        @Test
+        void shouldConvertNonNilJAXBElements_ToTheJAXBElementGenericTypes() {
+            var config = new JacksonConfig();
+            var mapper = new ObjectMapper();
+
+            StandardJacksonConfigurations.registerJaxbSerializer(config, mapper);
+
+            var testXmlBean = newTestXmlBean("The Answer", 42);
+            var jsonHelper = new JsonHelper(mapper);
+            var json = jsonHelper.toJson(testXmlBean);
+
+            assertThat(json)
+                    .containsIgnoringWhitespaces("\"wrappedString\":\"The Answer\"")
+                    .containsIgnoringWhitespaces("\"wrappedInteger\":42");
+
+            var map = jsonHelper.toMap(json);
+            assertThat(map)
+                    .containsEntry("wrappedString", "The Answer")
+                    .containsEntry("wrappedInteger", 42);
         }
 
         @Test
@@ -77,7 +126,7 @@ class StandardJacksonConfigurationsTest {
             StandardJacksonConfigurations.registerJacksonTimestampSerialization(config, mapper);
 
             var nowMillis = System.currentTimeMillis();
-            var testBean = new TestBean(Instant.ofEpochMilli(nowMillis), new Date(nowMillis));
+            var testBean = new TestTimestampBean(Instant.ofEpochMilli(nowMillis), new Date(nowMillis));
             var jsonHelper = new JsonHelper(mapper);
             var json = jsonHelper.toJson(testBean);
 
@@ -87,7 +136,7 @@ class StandardJacksonConfigurationsTest {
                     .containsEntry("theInstant", nowMillis)
                     .containsEntry("theDate", nowMillis);
 
-            var deserializedTestBean = jsonHelper.toObject(json, TestBean.class);
+            var deserializedTestBean = jsonHelper.toObject(json, TestTimestampBean.class);
             assertThat(deserializedTestBean).isEqualTo(testBean);
         }
 
@@ -163,8 +212,35 @@ class StandardJacksonConfigurationsTest {
     }
 
     @Value
-    public static class TestBean {
+    public static class TestTimestampBean {
         Instant theInstant;
         Date theDate;
+    }
+
+    @Getter
+    @Setter
+    @XmlRootElement
+    private static class TestXmlBean {
+
+        @XmlElement
+        private String stringField;
+
+        @XmlElement
+        private Integer integerField;
+
+        @XmlElementRef(required = false)
+        private JAXBElement<String> wrappedString;
+
+        @XmlElementRef(required = false)
+        private JAXBElement<Integer> wrappedInteger;
+    }
+
+    private static TestXmlBean newTestXmlBean(String wrappedStringValue, Integer wrappedIntegerValue) {
+        var obj = new TestXmlBean();
+        obj.setStringField("test");
+        obj.setIntegerField(1);
+        obj.setWrappedString(new JAXBElement<>(new QName(""), String.class, wrappedStringValue));
+        obj.setWrappedInteger(new JAXBElement<>(new QName(""), Integer.class, wrappedIntegerValue));
+        return obj;
     }
 }
