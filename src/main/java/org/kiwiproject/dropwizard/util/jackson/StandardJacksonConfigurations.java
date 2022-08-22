@@ -49,6 +49,10 @@ public class StandardJacksonConfigurations {
      * Optionally configures a {@link LoggingDeserializationProblemHandler} to log Jackson deserialization issues. This
      * method will also optionally register a Health Check to mark the service unhealthy if there are deserialization
      * issues.
+     * <p>
+     * This method only configures the handler if {@link JacksonConfig#isIgnoreButWarnForUnknownJsonProperties()} is
+     * true. If the aforementioned property is true, this method adds the health check if
+     * {@link JacksonConfig#isRegisterHealthCheckForUnknownJsonProperties()} is true.
      *
      * @param config       a config model containing various options for configuring Jackson
      * @param mapper       the {@link ObjectMapper} to attach the handler to
@@ -70,6 +74,9 @@ public class StandardJacksonConfigurations {
 
     /**
      * Optionally configures the {@link ObjectMapper} to convert all Timestamps into milliseconds.
+     * <p>
+     * This method only configures the mapper's timestamp handling if
+     * {@link JacksonConfig#isReadAndWriteDateTimestampsAsMillis()} is true.
      *
      * @param config a config model containing various options for configuring Jackson
      * @param mapper the {@link ObjectMapper} to configure
@@ -82,10 +89,14 @@ public class StandardJacksonConfigurations {
     }
 
     /**
-     * Optionally configures the {@link ObjectMapper} to convert all nil {@link JAXBElement} into null.
+     * Optionally configures the {@link ObjectMapper} to serialize {@link JAXBElement} elements
+     * using {@link JaxbElementSerializer}. Converts nil {@link JAXBElement} into JSON null.
+     * <p>
+     * This method only configures the mapper if {@link JacksonConfig#isWriteNilJaxbElementsAsNull()} is true.
      *
      * @param config a config model containing various options for configuring Jackson
      * @param mapper the {@link ObjectMapper} to configure
+     * @see JaxbElementSerializer
      */
     public static void registerJaxbSerializer(JacksonConfig config, ObjectMapper mapper) {
         if (config.isWriteNilJaxbElementsAsNull()) {
