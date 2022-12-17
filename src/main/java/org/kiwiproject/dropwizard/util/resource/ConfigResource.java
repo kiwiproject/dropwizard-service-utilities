@@ -5,6 +5,7 @@ import static org.kiwiproject.json.KiwiJacksonSerializers.buildPropertyMaskingSa
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.dropwizard.Configuration;
 import org.kiwiproject.json.JsonHelper;
 
@@ -31,6 +32,7 @@ public class ConfigResource {
         this.jsonHelper = JsonHelper.newDropwizardJsonHelper();
 
         jsonHelper.getObjectMapper().registerModule(buildPropertyMaskingSafeSerializerModule(hiddenRegex));
+        jsonHelper.getObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
     @GET
