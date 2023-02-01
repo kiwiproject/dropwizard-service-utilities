@@ -4,11 +4,13 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.kiwiproject.base.KiwiPreconditions.requireValidNonZeroPort;
 
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Defines the allowable port range for a service to bind to, for situations where there is a restriction.
  */
 @Getter
+@ToString
 public class AllowablePortRange {
 
     private static final int RANGE_MULTIPLIER = 3;
