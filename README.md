@@ -5,6 +5,6 @@
 [![CodeQL](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/codeql.yml/badge.svg)](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/codeql.yml)
 [![javadoc](https://javadoc.io/badge2/org.kiwiproject/dropwizard-service-utilities/javadoc.svg)](https://javadoc.io/doc/org.kiwiproject/dropwizard-service-utilities)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Maven Central](https://img.shields.io/maven-central/v/org.kiwiproject/dropwizard-service-utilities)](https://search.maven.org/search?q=g:org.kiwiproject%20a:dropwizard-service-utilities)
+[![Maven Central](https://img.shields.io/maven-central/v/org.kiwiproject/dropwizard-service-utilities)](https://central.sonatype.com/artifact/org.kiwiproject/dropwizard-service-utilities/2.2.1)
 
 Set of utilities to assist in configuring a Dropwizard service
