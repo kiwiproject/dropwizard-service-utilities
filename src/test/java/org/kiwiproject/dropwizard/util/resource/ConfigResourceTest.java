@@ -114,6 +114,7 @@ class ConfigResourceTest {
 
     @Test
     @Issue("290")
+    @SuppressWarnings("unchecked")
     void shouldHandleNonSerializableBeans() {
         var configData = getAppConfig();
 
@@ -121,7 +122,6 @@ class ConfigResourceTest {
         var cacheConfig = configData.get("cacheConfig");
         var cacheConfigMap = KiwiAssertJ.assertIsTypeOrSubtype(cacheConfig, Map.class);
 
-        // noinspection unchecked
         assertThat(cacheConfigMap)
                 .describedAs("empty non-serializable bean should be an empty map")
                 .containsEntry("errorLogConsumer", Map.of());
