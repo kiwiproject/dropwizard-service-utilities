@@ -12,7 +12,6 @@ import io.dropwizard.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.KiwiEnvironment;
-import org.kiwiproject.dropwizard.util.KiwiDropwizardDurations;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 
@@ -216,7 +215,7 @@ public class MonitoredJobs {
         }
 
         public Builder timeout(io.dropwizard.util.Duration timeout) {
-            return timeout(KiwiDropwizardDurations.fromDropwizardDuration(timeout));
+            return timeout(timeout.toJavaDuration());
         }
 
         public Builder timeout(Duration timeout) {

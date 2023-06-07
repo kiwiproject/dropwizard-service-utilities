@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.kiwiproject.base.DefaultEnvironment;
 import org.kiwiproject.base.KiwiEnvironment;
-import org.kiwiproject.dropwizard.util.KiwiDropwizardDurations;
 import org.kiwiproject.metrics.health.HealthStatus;
 
 import java.time.chrono.ChronoZonedDateTime;
@@ -79,7 +78,7 @@ class KeystoreHealthResults {
 
         var nowAtUTC = kiwiEnvironment.currentZonedDateTimeUTC();
         var durationUntilExpiration = java.time.Duration.between(nowAtUTC, earliestExpirationDate);
-        var fullWarningThreshold = KiwiDropwizardDurations.fromDropwizardDuration(expirationWarningThreshold);
+        var fullWarningThreshold = expirationWarningThreshold.toJavaDuration();
 
         var halfWarningThreshold = fullWarningThreshold.dividedBy(2);
         if (durationUntilExpiration.compareTo(halfWarningThreshold) >= 0) {
