@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.kiwiproject.test.assertj.KiwiAssertJ.assertIsExactType;
 
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -129,9 +128,6 @@ class ExecutionStrategiesTest {
         return new ExecResult(process.pid(), exitValueOrNull);
     }
 
-    @Value
-    private static class ExecResult {
-        long pid;
-        Integer exitValue;
+    private record ExecResult(long pid, Integer exitValue) {
     }
 }

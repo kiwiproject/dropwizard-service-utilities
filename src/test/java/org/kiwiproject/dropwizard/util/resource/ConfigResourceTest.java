@@ -8,10 +8,10 @@ import static org.kiwiproject.test.constants.KiwiTestConstants.JSON_HELPER;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import io.dropwizard.Application;
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jackson.Jackson;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import lombok.AllArgsConstructor;
@@ -68,7 +68,7 @@ class ConfigResourceTest {
 
         // problematic interface; causes empty value in JSON, e.g. { "errorLogConsumer": }
         interface RefreshErrorLogConsumer {
-            @SuppressWarnings("unused")
+            @SuppressWarnings({"unused", "EmptyMethod"})
             void accept(Logger logger, String message, Throwable error);
         }
     }

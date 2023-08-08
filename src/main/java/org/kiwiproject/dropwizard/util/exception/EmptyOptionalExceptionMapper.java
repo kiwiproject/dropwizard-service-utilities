@@ -1,13 +1,12 @@
 package org.kiwiproject.dropwizard.util.exception;
 
 import io.dropwizard.jersey.optional.EmptyOptionalException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.kiwiproject.jaxrs.exception.JaxrsException;
 import org.kiwiproject.jaxrs.exception.JaxrsExceptionMapper;
 import org.kiwiproject.jaxrs.exception.JaxrsNotFoundException;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
 /**
  * Override default Dropwizard mapper to use kiwi's {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage}.

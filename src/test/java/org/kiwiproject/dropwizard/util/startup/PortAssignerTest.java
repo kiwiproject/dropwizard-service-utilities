@@ -13,10 +13,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.dropwizard.core.server.DefaultServerFactory;
+import io.dropwizard.core.server.SimpleServerFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.SimpleServerFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -188,7 +188,7 @@ class PortAssignerTest {
 
                 assertThatThrownBy(portAssignerBuilder::build)
                         .isInstanceOf(IllegalStateException.class)
-                        .hasMessageStartingWith("The server factory is not a io.dropwizard.server.DefaultServerFactory (it is a ")
+                        .hasMessageStartingWith("The server factory is not a %s (it is a ", DefaultServerFactory.class.getName())
                         .hasMessageEndingWith("SimpleServerFactory)");
             }
 

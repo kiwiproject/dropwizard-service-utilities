@@ -7,14 +7,13 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import jakarta.validation.Validator;
 import org.glassfish.jersey.server.ServerProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 import org.kiwiproject.validation.KiwiValidations;
-
-import javax.validation.Validator;
 
 @DisplayName("StandardEnvironmentConfigurations")
 class StandardEnvironmentConfigurationsTest {

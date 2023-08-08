@@ -57,13 +57,7 @@ public class JobErrorHandlers {
         }
     }
 
-    private static class CustomLoggerJobErrorHandler implements JobErrorHandler {
-
-        private final Logger customLogger;
-
-        private CustomLoggerJobErrorHandler(Logger customLogger) {
-            this.customLogger = customLogger;
-        }
+    private record CustomLoggerJobErrorHandler(Logger customLogger) implements JobErrorHandler {
 
         @Override
         public void handle(MonitoredJob job, Exception exception) {

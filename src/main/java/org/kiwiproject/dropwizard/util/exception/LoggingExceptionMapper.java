@@ -3,6 +3,10 @@ package org.kiwiproject.dropwizard.util.exception;
 import static java.lang.String.format;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.jaxrs.exception.JaxrsBadRequestException;
 import org.kiwiproject.jaxrs.exception.JaxrsConflictException;
@@ -10,10 +14,6 @@ import org.kiwiproject.jaxrs.exception.JaxrsException;
 import org.kiwiproject.jaxrs.exception.JaxrsExceptionMapper;
 import org.kiwiproject.jaxrs.exception.WebApplicationExceptionMapper;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -48,9 +48,9 @@ public class LoggingExceptionMapper<E extends Throwable> implements ExceptionMap
 
     @Override
     public Response toResponse(E exception) {
-        if (exception instanceof WebApplicationException) {
+        if (exception instanceof WebApplicationException webApplicationException) {
             // this shouldn't happen as we have a registered exception mapper for this class
-            return new WebApplicationExceptionMapper().toResponse((WebApplicationException) exception);
+            return new WebApplicationExceptionMapper().toResponse(webApplicationException);
         }
 
         return responseFor(exception);
@@ -68,23 +68,21 @@ public class LoggingExceptionMapper<E extends Throwable> implements ExceptionMap
     }
 
     private Response dataAccessExceptionResponse(E exception, DataExceptionCategory category) {
-        Response r;
-        switch (category) {
-            case OPTIMISTIC_LOCKING:
-                r = JaxrsExceptionMapper.buildResponse(new JaxrsConflictException(MSG_DB_OPTIMISTIC));
-                LOG.warn(MSG_DB_OPTIMISTIC, exception);
-                break;
+        return switch (category) {
+            case OPTIMISTIC_LOCKING -> buildOptimisticLockingResponse(exception);
+            case DATA_INTEGRITY -> buildDataIntegrityResponse(exception);
+        };
+    }
 
-            case DATA_INTEGRITY:
-                r = JaxrsExceptionMapper.buildResponse(new JaxrsBadRequestException(MSG_DB_INVALID));
-                LOG.warn(MSG_DB_INVALID, exception);
-                break;
+    private static <E extends Throwable> Response buildOptimisticLockingResponse(E exception) {
+        var r = JaxrsExceptionMapper.buildResponse(new JaxrsConflictException(MSG_DB_OPTIMISTIC));
+        LOG.warn(MSG_DB_OPTIMISTIC, exception);
+        return r;
+    }
 
-            default:
-                LOG.warn("DataExceptionCategory {} is not handled! Using default handler.", category);
-                r = logExceptionResponse(exception);
-        }
-
+    private static <E extends Throwable> Response buildDataIntegrityResponse(E exception) {
+        var r = JaxrsExceptionMapper.buildResponse(new JaxrsBadRequestException(MSG_DB_INVALID));
+        LOG.warn(MSG_DB_INVALID, exception);
         return r;
     }
 

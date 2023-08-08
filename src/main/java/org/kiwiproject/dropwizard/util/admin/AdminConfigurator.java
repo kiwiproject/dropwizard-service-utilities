@@ -4,8 +4,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 
 import com.codahale.metrics.MetricRegistry;
-import io.dropwizard.Configuration;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.setup.Environment;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.config.HttpHealthCheckConfig;
 import org.kiwiproject.dropwizard.util.config.KeystoreConfig;

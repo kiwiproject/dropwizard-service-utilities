@@ -2,7 +2,7 @@ package org.kiwiproject.dropwizard.util.startup;
 
 import static org.kiwiproject.base.KiwiStrings.format;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.util.Duration;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -78,7 +78,7 @@ public class StartupLocker {
 
             try {
                 tryAcquireStartupLock(lock, lockPath, lockTimeout);
-                environment.lifecycle().addLifeCycleListener(
+                environment.lifecycle().addEventListener(
                         new StartupWithLockJettyLifeCycleListener(curatorFramework, lock, lockPath, executioner));
 
                 return StartupLockInfo.builder()
@@ -120,7 +120,7 @@ public class StartupLocker {
      */
     public void addFallbackJettyStartupLifeCycleListener(StartupLockInfo lockInfo, Environment environment) {
         if (lockInfo.getLockState() != StartupLockInfo.LockState.ACQUIRED) {
-            environment.lifecycle().addLifeCycleListener(new StartupJettyLifeCycleListener(executioner));
+            environment.lifecycle().addEventListener(new StartupJettyLifeCycleListener(executioner));
         }
     }
 

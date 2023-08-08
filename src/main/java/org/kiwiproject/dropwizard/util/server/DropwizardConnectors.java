@@ -6,11 +6,11 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.dropwizard.core.server.DefaultServerFactory;
+import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.ServerFactory;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,11 +59,12 @@ public class DropwizardConnectors {
     public static DefaultServerFactory requireDefaultServerFactory(ServerFactory serverFactory) {
         checkArgumentNotNull(serverFactory, "ServerFactory is required");
 
-        if (serverFactory instanceof DefaultServerFactory) {
-            return (DefaultServerFactory) serverFactory;
+        if (serverFactory instanceof DefaultServerFactory defaultServerFactory) {
+            return defaultServerFactory;
         }
 
-        var error = format("The server factory is not a {} (it is a {})", DefaultServerFactory.class.getName(), serverFactory.getClass().getName());
+        var error = format("The server factory is not a {} (it is a {})",
+                DefaultServerFactory.class.getName(), serverFactory.getClass().getName());
         throw new IllegalStateException(error);
     }
 

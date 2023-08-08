@@ -3,7 +3,8 @@ package org.kiwiproject.dropwizard.util.jackson;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
+import jakarta.xml.bind.JAXBElement;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.config.JacksonConfig;
@@ -11,8 +12,6 @@ import org.kiwiproject.dropwizard.util.health.UnknownPropertiesHealthCheck;
 import org.kiwiproject.json.JaxbElementSerializer;
 import org.kiwiproject.json.JsonHelper;
 import org.kiwiproject.json.LoggingDeserializationProblemHandler;
-
-import javax.xml.bind.JAXBElement;
 
 /**
  * Set of opinionated "standard" utilities to configure Jackson.

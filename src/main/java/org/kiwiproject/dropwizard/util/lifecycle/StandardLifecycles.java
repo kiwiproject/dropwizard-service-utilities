@@ -4,7 +4,7 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.registry.config.ServiceInfo;
@@ -47,7 +47,7 @@ public class StandardLifecycles {
      *
      * @param registryService a pre-built {@link RegistryService} that will connect to a service discovery for
      *                        registration/un-registration
-     * @param serviceInfo     the metadata about the service (i.e. name, version, etc)
+     * @param serviceInfo     the metadata about the service (i.e. name, version, etc.)
      * @param environment     the Dropwizard environment
      */
     public static void addRegistryLifecycleListeners(RegistryService registryService,
@@ -62,7 +62,7 @@ public class StandardLifecycles {
         environment.lifecycle().addServerLifecycleListener(listener);
 
         // Handles unregistering at shutdown
-        environment.lifecycle().addLifeCycleListener(listener);
+        environment.lifecycle().addEventListener(listener);
     }
 
     /**
@@ -116,7 +116,7 @@ public class StandardLifecycles {
     /**
      * Adds a lifecycle listener to print out the status of the server with configured ports at startup.
      *
-     * @param serviceInfo the metadata about the service (i.e. name, version, etc)
+     * @param serviceInfo the metadata about the service (i.e. name, version, etc.)
      * @param environment the Dropwizard environment
      */
     public static void addServiceRunningLifecycleListener(ServiceInfo serviceInfo, Environment environment) {

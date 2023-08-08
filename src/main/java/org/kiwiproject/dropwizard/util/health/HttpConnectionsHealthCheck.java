@@ -25,12 +25,12 @@ import java.util.SortedMap;
 
 /**
  * Health check that checks the percent of leased connections against the maximum number of connections for
- * JAX-RS {@link javax.ws.rs.client.Client} instances that were created using Dropwizard's
+ * JAX-RS {@link jakarta.ws.rs.client.Client} instances that were created using Dropwizard's
  * {@code io.dropwizard.client.JerseyClientBuilder}, which creates an HTTP connection pool and registers various
  * connection metrics that we can query.
  * <p>
- * Please note, if using a default JAX-RS {@link javax.ws.rs.client.Client} created using the normal
- * {@link javax.ws.rs.client.ClientBuilder}, those clients will <em>not</em> have metrics registered and will therefore
+ * Please note, if using a default JAX-RS {@link jakarta.ws.rs.client.Client} created using the normal
+ * {@link jakarta.ws.rs.client.ClientBuilder}, those clients will <em>not</em> have metrics registered and will therefore
  * <em>not</em> be included by this check (since it won't know about them).
  */
 @Slf4j
