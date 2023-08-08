@@ -10,6 +10,7 @@ import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResu
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.ws.rs.client.WebTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.WordUtils;
 import org.kiwiproject.jaxrs.KiwiResponses;
@@ -19,7 +20,6 @@ import org.kiwiproject.jersey.client.exception.MissingServiceRuntimeException;
 import org.kiwiproject.metrics.health.HealthStatus;
 import org.kiwiproject.registry.model.Port.PortType;
 
-import javax.ws.rs.client.WebTarget;
 import java.util.stream.Stream;
 
 /**

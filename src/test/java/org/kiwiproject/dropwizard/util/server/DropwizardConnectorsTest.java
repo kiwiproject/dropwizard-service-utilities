@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.codahale.metrics.MetricRegistry;
+import io.dropwizard.core.server.DefaultServerFactory;
+import io.dropwizard.core.server.ServerFactory;
+import io.dropwizard.core.server.SimpleServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.ServerFactory;
-import io.dropwizard.server.SimpleServerFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.ThreadPool;
@@ -35,7 +35,7 @@ class DropwizardConnectorsTest {
             ServerFactory factory = new SimpleServerFactory();
             assertThatThrownBy(() -> DropwizardConnectors.requireDefaultServerFactory(factory))
                     .isExactlyInstanceOf(IllegalStateException.class)
-                    .hasMessageStartingWith("The server factory is not a io.dropwizard.server.DefaultServerFactory (it is a ")
+                    .hasMessageStartingWith("The server factory is not a %s (it is a ", DefaultServerFactory.class.getName())
                     .hasMessageEndingWith("SimpleServerFactory)");
         }
 

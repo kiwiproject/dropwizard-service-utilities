@@ -8,7 +8,7 @@ import static org.kiwiproject.base.KiwiStrings.f;
 import static org.kiwiproject.dropwizard.util.lifecycle.StandardLifecycles.newScheduledExecutor;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.KiwiEnvironment;
@@ -261,7 +261,7 @@ public class MonitoredJobs {
          * supplied if necessary.
          *
          * @return the new job instance
-         * @throws IllegalArgumentException if task, name, environment, or schedule has not been specified
+         * @throws IllegalArgumentException if the task, name, environment, or schedule has not been specified
          * @see #registerJob(Environment, MonitoredJob, JobSchedule, ScheduledExecutorService)
          */
         public MonitoredJob registerJob() {

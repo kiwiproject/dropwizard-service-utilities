@@ -1,6 +1,6 @@
 package org.kiwiproject.dropwizard.util.environment;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ServerProperties;
 import org.kiwiproject.validation.KiwiValidations;

@@ -6,6 +6,7 @@ import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertBadRequest;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertConflict;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertInternalServerErrorResponse;
 
+import jakarta.ws.rs.WebApplicationException;
 import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 
-import javax.ws.rs.WebApplicationException;
 import java.sql.SQLException;
 
 @SuppressWarnings("rawtypes")

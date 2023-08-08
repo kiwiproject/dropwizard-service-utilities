@@ -4,16 +4,14 @@ import static org.kiwiproject.base.KiwiStrings.f;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
 
-import java.util.Optional;
-
 import com.codahale.metrics.health.HealthCheck;
 import com.mongodb.client.MongoDatabase;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
+
+import java.util.Optional;
 
 /**
  * Health check that attempts to issue a 'ping' command to a Mongo database.
@@ -94,8 +92,8 @@ public class MongoHealthCheck extends HealthCheck {
      * for a boolean first.
      */
     private static boolean ok(Object okValue) {
-        if (okValue instanceof Number) {
-            return ((Number) okValue).intValue() == 1;
+        if (okValue instanceof Number number) {
+            return number.intValue() == 1;
         } else if (okValue instanceof Boolean) {
             return (boolean) okValue;
         } else {

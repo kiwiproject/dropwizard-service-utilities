@@ -4,8 +4,8 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.kiwiproject.base.KiwiStrings.format;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.server.ServerFactory;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.server.ServerFactory;
+import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.jaxrs.exception.ConstraintViolationExceptionMapper;

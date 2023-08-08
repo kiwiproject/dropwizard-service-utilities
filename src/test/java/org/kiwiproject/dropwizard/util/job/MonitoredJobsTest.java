@@ -10,8 +10,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.setup.ScheduledExecutorServiceBuilder;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.awaitility.Durations;

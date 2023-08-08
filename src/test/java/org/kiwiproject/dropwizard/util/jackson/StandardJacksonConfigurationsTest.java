@@ -13,9 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.validation.Validator;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Value;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,11 +29,6 @@ import org.kiwiproject.json.JsonHelper;
 import org.kiwiproject.json.LoggingDeserializationProblemHandler;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
-import javax.validation.Validator;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 import java.time.Instant;
 import java.util.Date;
@@ -211,10 +210,7 @@ class StandardJacksonConfigurationsTest {
         }
     }
 
-    @Value
-    public static class TestTimestampBean {
-        Instant theInstant;
-        Date theDate;
+    public record TestTimestampBean(Instant theInstant, Date theDate) {
     }
 
     @Getter

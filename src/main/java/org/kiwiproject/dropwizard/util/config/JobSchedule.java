@@ -3,14 +3,13 @@ package org.kiwiproject.dropwizard.util.config;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 
 import io.dropwizard.util.Duration;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Config object that defines a schedule for background jobs.

@@ -7,10 +7,10 @@ import static org.kiwiproject.collect.KiwiLists.first;
 import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.requireDefaultServerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.dropwizard.core.server.DefaultServerFactory;
+import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.ServerFactory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

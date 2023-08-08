@@ -1,6 +1,5 @@
 package org.kiwiproject.dropwizard.util.health.keystore;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -176,7 +175,7 @@ class KeystoreHealthResultsTest {
                             .expiresOnUTC(expirationDate)
                             .expiresOn(DateTimeFormatter.RFC_1123_DATE_TIME.format(expirationDate))
                             .build())
-                    .collect(toUnmodifiableList());
+                    .toList();
 
             return KeystoreHealthResults.builder()
                     .kiwiEnvironment(kiwiEnvironment)

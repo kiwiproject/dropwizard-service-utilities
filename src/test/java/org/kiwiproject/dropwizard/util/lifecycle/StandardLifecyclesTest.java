@@ -8,9 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.codahale.metrics.NoopMetricRegistry;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
-import io.dropwizard.setup.Environment;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,7 +52,7 @@ class StandardLifecyclesTest {
 
             StandardLifecycles.addRegistryLifecycleListeners(registryService, serviceInfo, environment);
 
-            verify(environment.lifecycle()).addLifeCycleListener(any(RegistrationLifecycleListener.class));
+            verify(environment.lifecycle()).addEventListener(any(RegistrationLifecycleListener.class));
             verify(environment.lifecycle()).addServerLifecycleListener(any(RegistrationLifecycleListener.class));
         }
     }

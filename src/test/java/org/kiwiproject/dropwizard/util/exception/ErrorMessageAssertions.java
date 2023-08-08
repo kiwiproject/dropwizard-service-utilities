@@ -3,10 +3,10 @@ package org.kiwiproject.dropwizard.util.exception;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.collect.KiwiLists.first;
 
+import jakarta.ws.rs.core.Response;
 import lombok.experimental.UtilityClass;
 import org.kiwiproject.jaxrs.exception.ErrorMessage;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 
