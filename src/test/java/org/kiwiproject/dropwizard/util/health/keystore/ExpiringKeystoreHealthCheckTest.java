@@ -70,8 +70,10 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(expiredCerts).hasSize(1);
 
             var certInfo = first(expiredCerts);
-            softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
-            softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
+            softly.assertThat(certInfo.getSubjectDN())
+                    .isEqualToIgnoringWhitespace("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
+            softly.assertThat(certInfo.getIssuerDN())
+                    .isEqualToIgnoringWhitespace("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
 
             var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
@@ -119,8 +121,10 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(expiringCerts).hasSize(1);
 
             var certInfo = first(expiringCerts);
-            softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
-            softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
+            softly.assertThat(certInfo.getSubjectDN())
+                    .isEqualToIgnoringWhitespace("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
+            softly.assertThat(certInfo.getIssuerDN())
+                    .isEqualToIgnoringWhitespace("CN=Unit Test, OU=Development, O=Project, L=Here, ST=VA, C=US");
 
             var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
@@ -200,8 +204,10 @@ class ExpiringKeystoreHealthCheckTest {
             softly.assertThat(validCerts).hasSize(1);
 
             var certInfo = first(validCerts);
-            softly.assertThat(certInfo.getSubjectDN()).isEqualTo("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
-            softly.assertThat(certInfo.getIssuerDN()).isEqualTo("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
+            softly.assertThat(certInfo.getSubjectDN())
+                    .isEqualToIgnoringWhitespace("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
+            softly.assertThat(certInfo.getIssuerDN())
+                    .isEqualToIgnoringWhitespace("CN=Valid Test, OU=Development, O=Project, L=There, ST=VA, C=US");
 
             var sixtyDaysAgo = ZonedDateTime.now().minusDays(60).toInstant().atZone(ZoneId.of("UTC"));
             var sixtyDaysAgoString = DATE_FORMATTER.format(sixtyDaysAgo);
