@@ -32,11 +32,11 @@ class BasicCertInfo {
         var certStatus = CertStatus.determineCertStatus(now, expirationThreshold, notAfter);
 
         return builder()
-                .subjectDN(x509Cert.getSubjectDN().getName())
+                .subjectDN(x509Cert.getSubjectX500Principal().getName())
                 .issuedOn(rfc1123FormatAtUTC(x509Cert.getNotBefore().toInstant()))
                 .expiresOn(rfc1123FormatAtUTC(notAfter))
                 .expiresOnUTC(notAfter.atZone(UTC_ZONE_ID))
-                .issuerDN(x509Cert.getIssuerDN().getName())
+                .issuerDN(x509Cert.getIssuerX500Principal().getName())
                 .certStatus(certStatus)
                 .build();
     }
