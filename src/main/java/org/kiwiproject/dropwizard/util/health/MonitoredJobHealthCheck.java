@@ -159,6 +159,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("jobName", job.getName())
                 .withDetail("totalErrors", job.getFailureCount())
                 .withDetail("lastFailure", job.getLastFailure())
+                .withDetail("lastJobExceptionInfo", job.getLastJobExceptionInfo())
                 .withDetail("lastSuccess", job.getLastSuccess())
                 .withDetail("lastExecutionTimeMs", job.getLastExecutionTime())
                 .withDetail("expectedFrequencyMs", expectedFrequency)
