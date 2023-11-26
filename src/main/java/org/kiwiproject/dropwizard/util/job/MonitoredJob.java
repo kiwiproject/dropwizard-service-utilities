@@ -20,6 +20,7 @@ import org.kiwiproject.base.KiwiThrowables;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 /**
@@ -117,6 +118,14 @@ public class MonitoredJob implements CatchingRunnable {
     @Getter
     private final AtomicLong lastExecutionTime = new AtomicLong();
 
+    /**
+     * If the last job failure contained an exception, this will contain a {@link JobExceptionInfo}
+     * instance containing information about it. It intentionally does not store the actual
+     * Exception instance.
+     */
+    @Getter
+    private final AtomicReference<JobExceptionInfo> lastJobExceptionInfo = new AtomicReference<>();
+
     @Builder
     private MonitoredJob(Runnable task,
                          JobErrorHandler errorHandler,
@@ -178,6 +187,9 @@ public class MonitoredJob implements CatchingRunnable {
 
         lastFailure.set(environment.currentTimeMillis());
         failureCount.incrementAndGet();
+
+        var exceptionInfo = JobExceptionInfo.from(exception);
+        lastJobExceptionInfo.set(exceptionInfo);
 
         if (nonNull(errorHandler)) {
             errorHandler.handle(this, exception);

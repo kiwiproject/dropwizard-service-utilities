@@ -84,7 +84,8 @@ class MonitoredJobTest {
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
-                    () -> assertThat(job.getFailureCount().get()).isZero()
+                    () -> assertThat(job.getFailureCount().get()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
             );
         }
 
@@ -113,7 +114,8 @@ class MonitoredJobTest {
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
-                    () -> assertThat(job.getFailureCount().get()).isZero()
+                    () -> assertThat(job.getFailureCount().get()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
             );
         }
 
@@ -139,7 +141,8 @@ class MonitoredJobTest {
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
-                    () -> assertThat(job.getFailureCount().get()).isZero()
+                    () -> assertThat(job.getFailureCount().get()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
             );
         }
 
@@ -163,7 +166,8 @@ class MonitoredJobTest {
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
-                    () -> assertThat(job.getFailureCount().get()).isOne()
+                    () -> assertThat(job.getFailureCount().get()).isOne(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException()))
             );
         }
 
@@ -197,7 +201,8 @@ class MonitoredJobTest {
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
                     () -> assertThat(job.getFailureCount().get()).isOne(),
-                    () -> assertThat(taskHandledCount.get()).isOne()
+                    () -> assertThat(taskHandledCount.get()).isOne(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException()))
             );
         }
 
@@ -247,6 +252,10 @@ class MonitoredJobTest {
     }
 
     private static void throwException() {
-        throw new RuntimeException("oops");
+        throw newSampleException();
+    }
+
+    private static RuntimeException newSampleException() {
+        return new RuntimeException("oops");
     }
 }
