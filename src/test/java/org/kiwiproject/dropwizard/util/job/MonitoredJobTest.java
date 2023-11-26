@@ -4,22 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.base.KiwiEnvironment;
+import org.kiwiproject.concurrent.AsyncException;
+import org.kiwiproject.test.junit.jupiter.ClearBoxTest;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @DisplayName("MonitoredJob")
-@ExtendWith(SoftAssertionsExtension.class)
 class MonitoredJobTest {
 
     @Nested
@@ -50,8 +51,10 @@ class MonitoredJobTest {
                     .task(() -> System.out.println("Hello"))
                     .build();
 
-            assertThat(job.getDecisionFunction()).isNotNull();
-            assertThat(job.getEnvironment()).isNotNull();
+            assertAll(
+                    () -> assertThat(job.getDecisionFunction()).isNotNull(),
+                    () -> assertThat(job.getEnvironment()).isNotNull()
+            );
         }
     }
 
@@ -59,7 +62,7 @@ class MonitoredJobTest {
     class Run {
 
         @Test
-        void shouldRunSyncWithoutErrorWhenActive(SoftAssertions softly) {
+        void shouldRunSyncWithoutErrorWhenActive() {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -76,15 +79,17 @@ class MonitoredJobTest {
 
             job.run();
 
-            softly.assertThat(taskRunCount.get()).isOne();
-            softly.assertThat(job.getLastExecutionTime().get()).isOne();
-            softly.assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2);
-            softly.assertThat(job.getLastFailure().get()).isZero();
-            softly.assertThat(job.getFailureCount().get()).isZero();
+            assertAll(
+                    () -> assertThat(taskRunCount.get()).isOne(),
+                    () -> assertThat(job.getLastExecutionTime().get()).isOne(),
+                    () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.getFailureCount().get()).isZero()
+            );
         }
 
         @Test
-        void shouldRunAsyncWithoutErrorWhenActiveAndTimeoutIsSet(SoftAssertions softly) {
+        void shouldRunAsyncWithoutErrorWhenActiveAndTimeoutIsSet() {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -103,15 +108,17 @@ class MonitoredJobTest {
             job.run();
             await().atMost(Duration.ofSeconds(2)).until(() -> taskRunCount.get() > 0);
 
-            softly.assertThat(taskRunCount.get()).isOne();
-            softly.assertThat(job.getLastExecutionTime().get()).isOne();
-            softly.assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2);
-            softly.assertThat(job.getLastFailure().get()).isZero();
-            softly.assertThat(job.getFailureCount().get()).isZero();
+            assertAll(
+                    () -> assertThat(taskRunCount.get()).isOne(),
+                    () -> assertThat(job.getLastExecutionTime().get()).isOne(),
+                    () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.getFailureCount().get()).isZero()
+            );
         }
 
         @Test
-        void shouldSkipExecutionWhenDecisionFunctionReturnsFalse(SoftAssertions softly) {
+        void shouldSkipExecutionWhenDecisionFunctionReturnsFalse() {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -127,15 +134,17 @@ class MonitoredJobTest {
 
             job.run();
 
-            softly.assertThat(taskRunCount.get()).isZero();
-            softly.assertThat(job.getLastExecutionTime().get()).isZero();
-            softly.assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime);
-            softly.assertThat(job.getLastFailure().get()).isZero();
-            softly.assertThat(job.getFailureCount().get()).isZero();
+            assertAll(
+                    () -> assertThat(taskRunCount.get()).isZero(),
+                    () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime),
+                    () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.getFailureCount().get()).isZero()
+            );
         }
 
         @Test
-        void shouldTrackErrorWhenTaskFails(SoftAssertions softly) {
+        void shouldTrackErrorWhenTaskFails() {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -150,14 +159,16 @@ class MonitoredJobTest {
 
             job.run();
 
-            softly.assertThat(job.getLastExecutionTime().get()).isZero();
-            softly.assertThat(job.getLastSuccess().get()).isZero();
-            softly.assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1);
-            softly.assertThat(job.getFailureCount().get()).isOne();
+            assertAll(
+                    () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.getLastSuccess().get()).isZero(),
+                    () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.getFailureCount().get()).isOne()
+            );
         }
 
         @Test
-        void shouldHandleErrorWhenTaskFailsAndHandlerSet(SoftAssertions softly) {
+        void shouldHandleErrorWhenTaskFailsAndHandlerSet() {
             var environment = mock(KiwiEnvironment.class);
             var mockedTime = System.currentTimeMillis();
             when(environment.currentTimeMillis())
@@ -181,11 +192,13 @@ class MonitoredJobTest {
 
             job.run();
 
-            softly.assertThat(job.getLastExecutionTime().get()).isZero();
-            softly.assertThat(job.getLastSuccess().get()).isZero();
-            softly.assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1);
-            softly.assertThat(job.getFailureCount().get()).isOne();
-            softly.assertThat(taskHandledCount.get()).isOne();
+            assertAll(
+                    () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.getLastSuccess().get()).isZero(),
+                    () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.getFailureCount().get()).isOne(),
+                    () -> assertThat(taskHandledCount.get()).isOne()
+            );
         }
 
         @Test
@@ -204,6 +217,32 @@ class MonitoredJobTest {
                     .build();
 
             assertThatCode(job::run).doesNotThrowAnyException();
+        }
+    }
+
+    /**
+     * The tests here do not make any assertions, exception that the code does not throw any exceptions.
+     * They are here to ensure that Exceptions with and without a cause are both handled.
+     * Manually inspect the log messages if you want to verify the actual contents.
+     */
+    @Nested
+    class LogExceptionInfo {
+
+        @ClearBoxTest
+        void shouldLogWhenExceptionHasNoCause() {
+            var exception = new IOException("I/O operation failed");
+
+            assertThatCode(() -> MonitoredJob.logExceptionInfo(exception, "test-job"))
+                    .doesNotThrowAnyException();
+        }
+
+        @ClearBoxTest
+        void shouldLogWhenExceptionHasRootCause() {
+            var executionException = new ExecutionException(new NullPointerException("something was null"));
+            var asyncException = new AsyncException("async execution failed", executionException, null);
+
+            assertThatCode(() -> MonitoredJob.logExceptionInfo(asyncException, "test-job"))
+                    .doesNotThrowAnyException();
         }
     }
 
