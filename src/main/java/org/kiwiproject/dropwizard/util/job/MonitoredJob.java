@@ -6,6 +6,7 @@ import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.concurrent.Async.doAsync;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.CatchingRunnable;
 import org.kiwiproject.base.DefaultEnvironment;
 import org.kiwiproject.base.KiwiEnvironment;
+import org.kiwiproject.base.KiwiThrowables;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -172,12 +174,31 @@ public class MonitoredJob implements CatchingRunnable {
 
     @Override
     public void handleExceptionSafely(Exception exception) {
-        LOG.warn("Encountered exception in job: {}", name);
+        logExceptionInfo(exception, name);
+
         lastFailure.set(environment.currentTimeMillis());
         failureCount.incrementAndGet();
 
         if (nonNull(errorHandler)) {
             errorHandler.handle(this, exception);
+        }
+    }
+
+    @VisibleForTesting
+    static void logExceptionInfo(Exception exception, String name) {
+        var exceptionType = KiwiThrowables.typeOf(exception);
+        var rootCause = KiwiThrowables.rootCauseOf(exception).orElse(null);
+
+        // If there is no cause, then the root cause is the original Exception.
+        // Customize the log message to include a root cause only when it has one.
+        if (rootCause == exception) {
+            LOG.warn("Encountered {} in job '{}'." +
+                            " Look for the exception and stack trace (probably above this message) logged by CatchingRunnable#runSafely.",
+                    exceptionType, name);
+        } else {
+            LOG.warn("Encountered {} in job '{}' with root cause {}." +
+                            " Look for the exception and stack trace (probably above this message) logged by CatchingRunnable#runSafely.",
+                    exceptionType, name, KiwiThrowables.typeOfNullable(rootCause).orElse(null));
         }
     }
 }
