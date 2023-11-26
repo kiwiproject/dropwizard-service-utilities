@@ -2,11 +2,13 @@ package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.kiwiproject.collect.KiwiLists.first;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.DYNAMIC;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.STATIC;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.NON_SECURE;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.SECURE;
+import static org.kiwiproject.test.assertj.KiwiAssertJ.assertIsExactType;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -25,6 +27,7 @@ import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @DisplayName("PortAssigner")
@@ -243,13 +246,11 @@ class PortAssignerTest {
 
             assigner.assignDynamicPorts();
 
-            var applicationConnector = first(factory.getApplicationConnectors());
-            assertThat(applicationConnector).isInstanceOf(HttpsConnectorFactory.class);
-            assertThat(((HttpsConnectorFactory) applicationConnector).getPort()).isBetween(9_000, 9_100);
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
+            assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
 
-            var adminConnector = first(factory.getAdminConnectors());
-            assertThat(adminConnector).isInstanceOf(HttpsConnectorFactory.class);
-            assertThat(((HttpsConnectorFactory) adminConnector).getPort()).isBetween(9_000, 9_100);
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
+            assertThat(adminConnector.getPort()).isBetween(9_000, 9_100);
         }
 
         @Test
@@ -266,13 +267,81 @@ class PortAssignerTest {
 
             assigner.assignDynamicPorts();
 
-            var applicationConnector = first(factory.getApplicationConnectors());
-            assertThat(applicationConnector).isInstanceOf(HttpsConnectorFactory.class);
-            assertThat(((HttpsConnectorFactory) applicationConnector).getPort()).isZero();
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
+            assertThat(applicationConnector.getPort()).isZero();
 
-            var adminConnector = first(factory.getAdminConnectors());
-            assertThat(adminConnector).isInstanceOf(HttpsConnectorFactory.class);
-            assertThat(((HttpsConnectorFactory) adminConnector).getPort()).isZero();
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
+            assertThat(adminConnector.getPort()).isZero();
+        }
+
+        @Test
+        void shouldSetSecureProperties_OnApplicationConnector_WhenAssigningSecureDynamicPorts() {
+            var factory = new DefaultServerFactory();
+            var tlsConfig = TlsContextConfiguration.builder()
+                    .keyStorePath("/data/etc/pki/acme-ks.jks")
+                    .keyStorePassword("R3ally-hArd-passw0rD")
+                    .trustStorePath("/data/etc/pki/acme-ts.jks")
+                    .supportedProtocols(List.of("TLSv1.2", "TLSv1.3"))
+                    .disableSniHostCheck(true)
+                    .build();
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .build();
+
+            assigner.assignDynamicPorts();
+
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
+
+            assertSecureConnectorProperties(applicationConnector, tlsConfig);
+        }
+
+        @Test
+        void shouldSetSecureProperties_OnAdminConnector_WhenAssigningSecureDynamicPorts() {
+            var factory = new DefaultServerFactory();
+            var tlsConfig = TlsContextConfiguration.builder()
+                    .keyStorePath("/data/etc/pki/acme-ks.jks")
+                    .keyStorePassword("R3ally-hArd-passw0rD")
+                    .trustStorePath("/data/etc/pki/acme-ts.jks")
+                    .supportedProtocols(List.of("TLSv1.2", "TLSv1.3"))
+                    .disableSniHostCheck(true)
+                    .build();
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .build();
+
+            assigner.assignDynamicPorts();
+
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
+
+            assertSecureConnectorProperties(adminConnector, tlsConfig);
+        }
+
+        private static void assertSecureConnectorProperties(HttpsConnectorFactory httpsConnectorFactory,
+                                                            TlsContextConfiguration tlsConfig) {
+
+            assertAll(
+                    () -> assertThat(httpsConnectorFactory.getKeyStorePath()).isEqualTo(tlsConfig.getKeyStorePath()),
+                    () -> assertThat(httpsConnectorFactory.getKeyStorePassword()).isEqualTo(tlsConfig.getKeyStorePassword()),
+                    () -> assertThat(httpsConnectorFactory.getKeyStoreType()).isEqualTo(tlsConfig.getKeyStoreType()),
+                    () -> assertThat(httpsConnectorFactory.getKeyStoreProvider()).isEqualTo(tlsConfig.getKeyStoreProvider()),
+                    () -> assertThat(httpsConnectorFactory.getTrustStorePath()).isEqualTo(tlsConfig.getTrustStorePath()),
+                    () -> assertThat(httpsConnectorFactory.getTrustStorePassword()).isEqualTo(tlsConfig.getTrustStorePassword()),
+                    () -> assertThat(httpsConnectorFactory.getTrustStoreType()).isEqualTo(tlsConfig.getTrustStoreType()),
+                    () -> assertThat(httpsConnectorFactory.getTrustStoreProvider()).isEqualTo(tlsConfig.getTrustStoreProvider()),
+                    () -> assertThat(httpsConnectorFactory.getJceProvider()).isEqualTo(tlsConfig.getProvider()),
+                    () -> assertThat(httpsConnectorFactory.getCertAlias()).isEqualTo(tlsConfig.getCertAlias()),
+                    () -> assertThat(httpsConnectorFactory.getSupportedProtocols()).isEqualTo(tlsConfig.getSupportedProtocols()),
+                    () -> assertThat(httpsConnectorFactory.getSupportedCipherSuites()).isEqualTo(tlsConfig.getSupportedCiphers()),
+                    () -> assertThat(httpsConnectorFactory.isDisableSniHostCheck()).isEqualTo(tlsConfig.isDisableSniHostCheck())
+            );
         }
 
         @Test
@@ -289,13 +358,11 @@ class PortAssignerTest {
 
             assigner.assignDynamicPorts();
 
-            var applicationConnector = first(factory.getApplicationConnectors());
-            assertThat(applicationConnector).isInstanceOf(HttpConnectorFactory.class);
-            assertThat(((HttpConnectorFactory) applicationConnector).getPort()).isBetween(9_000, 9_100);
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
+            assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
 
-            var adminConnector = first(factory.getAdminConnectors());
-            assertThat(adminConnector).isInstanceOf(HttpConnectorFactory.class);
-            assertThat(((HttpConnectorFactory) adminConnector).getPort()).isBetween(9_000, 9_100);
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpConnectorFactory.class);
+            assertThat(adminConnector.getPort()).isBetween(9_000, 9_100);
         }
 
         @Test
@@ -310,13 +377,11 @@ class PortAssignerTest {
 
             assigner.assignDynamicPorts();
 
-            var applicationConnector = first(factory.getApplicationConnectors());
-            assertThat(applicationConnector).isInstanceOf(HttpConnectorFactory.class);
-            assertThat(((HttpConnectorFactory) applicationConnector).getPort()).isZero();
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
+            assertThat(applicationConnector.getPort()).isZero();
 
-            var adminConnector = first(factory.getAdminConnectors());
-            assertThat(adminConnector).isInstanceOf(HttpConnectorFactory.class);
-            assertThat(((HttpConnectorFactory) adminConnector).getPort()).isZero();
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpConnectorFactory.class);
+            assertThat(adminConnector.getPort()).isZero();
         }
 
         @Test

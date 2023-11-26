@@ -74,6 +74,11 @@ public class PortAssigner {
 
     /**
      * Sets up the connectors with a dynamic available port if {@link PortAssigner} is configured for dynamic ports.
+     *
+     * @implNote When using {@link PortSecurity#SECURE}, the current implementation <strong>replaces</strong> the
+     * application and admin connector factories, which overrides any explicit configuration.
+     * Support for explicit configuration of secure connectors while still assigning dynamics ports may
+     * be implemented in the future if custom configuration is needed.
      */
     public void assignDynamicPorts() {
         if (portAssignment == PortAssignment.STATIC) {
@@ -110,9 +115,17 @@ public class PortAssigner {
         https.setPort(port);
         https.setKeyStorePath(tlsConfiguration.getKeyStorePath());
         https.setKeyStorePassword(tlsConfiguration.getKeyStorePassword());
+        https.setKeyStoreType(tlsConfiguration.getKeyStoreType());
+        https.setKeyStoreProvider(tlsConfiguration.getKeyStoreProvider());
         https.setTrustStorePath(tlsConfiguration.getTrustStorePath());
         https.setTrustStorePassword(tlsConfiguration.getTrustStorePassword());
+        https.setTrustStoreType(tlsConfiguration.getTrustStoreType());
+        https.setTrustStoreProvider(tlsConfiguration.getTrustStoreProvider());
+        https.setJceProvider(tlsConfiguration.getProvider());
+        https.setCertAlias(tlsConfiguration.getCertAlias());
         https.setSupportedProtocols(tlsConfiguration.getSupportedProtocols());
+        https.setSupportedCipherSuites(tlsConfiguration.getSupportedCiphers());
+        https.setDisableSniHostCheck(tlsConfiguration.isDisableSniHostCheck());
 
         return https;
     }
