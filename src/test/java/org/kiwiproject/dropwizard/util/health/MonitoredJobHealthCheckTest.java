@@ -1,21 +1,24 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.dropwizard.util.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.base.KiwiEnvironment;
+import org.kiwiproject.dropwizard.util.job.JobExceptionInfo;
 import org.kiwiproject.dropwizard.util.job.MonitoredJob;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.concurrent.atomic.AtomicReference;
 
 @DisplayName("MonitoredJobHealthCheck")
 class MonitoredJobHealthCheckTest {
@@ -208,6 +211,27 @@ class MonitoredJobHealthCheckTest {
         }
 
         @Test
+        void whenLastFailureContainsAnException() {
+            when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+            when(job.isActive()).thenReturn(true);
+
+            var failureOutsideThreshold = now - 1;
+            when(job.getLastFailure()).thenReturn(new AtomicLong(failureOutsideThreshold));
+            var jobExceptionInfoReference =
+                    new AtomicReference<>(JobExceptionInfo.from(new IOException("unexpected I/O disk error")));
+            when(job.getLastJobExceptionInfo()).thenReturn(jobExceptionInfoReference);
+
+            var healthCheck = MonitoredJobHealthCheck.builder()
+                    .job(job)
+                    .expectedFrequency(Duration.seconds(1))
+                    .build();
+
+            assertThatHealthCheck(healthCheck)
+                    .isUnhealthy()
+                    .hasDetail("lastJobExceptionInfo", jobExceptionInfoReference);
+        }
+
+        @Test
         void whenLastRunIsOutsideExpectedFrequency() {
             var lastSuccess = now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1;
             when(job.getLastSuccess()).thenReturn(new AtomicLong(lastSuccess));
@@ -242,7 +266,6 @@ class MonitoredJobHealthCheckTest {
                     .build();
 
             assertUnhealthyHealthCheck(healthCheck, "Encountered failure performing health check");
-
         }
 
         @Test
@@ -264,8 +287,15 @@ class MonitoredJobHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
                     .hasMessage(messageTemplate, args)
-                    .hasDetailsContainingKeys("jobName", "totalErrors", "lastFailure", "lastSuccess",
-                            "lastExecutionTimeMs", "expectedFrequencyMs", "errorWarningDurationMs")
+                    .hasDetailsContainingKeys(
+                            "jobName",
+                            "totalErrors",
+                            "lastFailure",
+                            "lastJobExceptionInfo",
+                            "lastSuccess",
+                            "lastExecutionTimeMs",
+                            "expectedFrequencyMs",
+                            "errorWarningDurationMs")
                     .hasDetail("warningThresholdMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds());
         }
     }
