@@ -56,8 +56,8 @@ public class StandardEnvironmentConfigurations {
      * @see CommonProperties#FEATURE_AUTO_DISCOVERY_DISABLE
      */
     @Beta
-    public static void disableJacksonFeatureAutoDiscovery(Environment environment) {
-        jacksonFeatureAutoDiscovery(environment, JerseyFeatureStatus.DISABLED);
+    public static void disableJerseyFeatureAutoDiscovery(Environment environment) {
+        jerseyFeatureAutoDiscovery(environment, JerseyFeatureStatus.DISABLED);
     }
 
     /**
@@ -75,7 +75,7 @@ public class StandardEnvironmentConfigurations {
      * @see CommonProperties#FEATURE_AUTO_DISCOVERY_DISABLE
      */
     @Beta
-    public static void jacksonFeatureAutoDiscovery(Environment environment, JerseyFeatureStatus featureStatus) {
+    public static void jerseyFeatureAutoDiscovery(Environment environment, JerseyFeatureStatus featureStatus) {
         var disable = (featureStatus == JerseyFeatureStatus.DISABLED);
 
         if (disable) {

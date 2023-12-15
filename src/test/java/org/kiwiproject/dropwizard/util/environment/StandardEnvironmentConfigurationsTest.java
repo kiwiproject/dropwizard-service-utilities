@@ -39,16 +39,16 @@ class StandardEnvironmentConfigurationsTest {
     }
 
     @Nested
-    class DisableJacksonFeatureAutoDiscovery {
+    class DisableJerseyFeatureAutoDiscovery {
 
         @Test
-        void shouldDisableJacksonFeatureAutoDiscovery() {
+        void shouldDisableJerseyFeatureAutoDiscovery() {
             var resourceConfig = new DropwizardResourceConfig();
             var environment = DropwizardMockitoMocks.mockEnvironment();
 
             when(environment.jersey().getResourceConfig()).thenReturn(resourceConfig);
 
-            StandardEnvironmentConfigurations.disableJacksonFeatureAutoDiscovery(environment);
+            StandardEnvironmentConfigurations.disableJerseyFeatureAutoDiscovery(environment);
 
             assertThat(resourceConfig.getProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE))
                     .isEqualTo(true);
@@ -56,7 +56,7 @@ class StandardEnvironmentConfigurationsTest {
     }
 
     @Nested
-    class JacksonFeatureAutoDiscovery {
+    class JerseyFeatureAutoDiscovery {
 
         @ParameterizedTest
         @CsvSource(textBlock = """
@@ -69,7 +69,7 @@ class StandardEnvironmentConfigurationsTest {
 
             when(environment.jersey().getResourceConfig()).thenReturn(resourceConfig);
 
-            StandardEnvironmentConfigurations.jacksonFeatureAutoDiscovery(environment, featureStatus);
+            StandardEnvironmentConfigurations.jerseyFeatureAutoDiscovery(environment, featureStatus);
 
             assertThat(resourceConfig.getProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE))
                     .isEqualTo(expectedPropertyValue);
