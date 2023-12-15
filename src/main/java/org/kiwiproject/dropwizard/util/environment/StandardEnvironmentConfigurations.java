@@ -1,5 +1,6 @@
 package org.kiwiproject.dropwizard.util.environment;
 
+import com.google.common.annotations.Beta;
 import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class StandardEnvironmentConfigurations {
      * @see ServerProperties
      * @see org.glassfish.jersey.client.ClientProperties ClientProperties
      */
+    @Beta
     public enum JerseyFeatureStatus {
         DISABLED, ENABLED
     }
@@ -53,6 +55,7 @@ public class StandardEnvironmentConfigurations {
      * @param environment the Dropwizard environment
      * @see CommonProperties#FEATURE_AUTO_DISCOVERY_DISABLE
      */
+    @Beta
     public static void disableJacksonFeatureAutoDiscovery(Environment environment) {
         jacksonFeatureAutoDiscovery(environment, JerseyFeatureStatus.DISABLED);
     }
@@ -71,6 +74,7 @@ public class StandardEnvironmentConfigurations {
      * @param featureStatus the Jersey feature status
      * @see CommonProperties#FEATURE_AUTO_DISCOVERY_DISABLE
      */
+    @Beta
     public static void jacksonFeatureAutoDiscovery(Environment environment, JerseyFeatureStatus featureStatus) {
         var disable = (featureStatus == JerseyFeatureStatus.DISABLED);
 
