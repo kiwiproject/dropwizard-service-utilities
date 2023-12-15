@@ -8,10 +8,14 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jakarta.validation.Validator;
+import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.server.ServerProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.kiwiproject.dropwizard.util.environment.StandardEnvironmentConfigurations.JerseyFeatureStatus;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 import org.kiwiproject.validation.KiwiValidations;
 
@@ -31,6 +35,44 @@ class StandardEnvironmentConfigurationsTest {
             StandardEnvironmentConfigurations.enableWadlGeneration(environment);
 
             assertThat(resourceConfig.getProperties()).contains(entry(ServerProperties.WADL_FEATURE_DISABLE, false));
+        }
+    }
+
+    @Nested
+    class DisableJacksonFeatureAutoDiscovery {
+
+        @Test
+        void shouldDisableJacksonFeatureAutoDiscovery() {
+            var resourceConfig = new DropwizardResourceConfig();
+            var environment = DropwizardMockitoMocks.mockEnvironment();
+
+            when(environment.jersey().getResourceConfig()).thenReturn(resourceConfig);
+
+            StandardEnvironmentConfigurations.disableJacksonFeatureAutoDiscovery(environment);
+
+            assertThat(resourceConfig.getProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE))
+                    .isEqualTo(true);
+        }
+    }
+
+    @Nested
+    class JacksonFeatureAutoDiscovery {
+
+        @ParameterizedTest
+        @CsvSource(textBlock = """
+                DISABLED, true,
+                ENABLED, false
+                """)
+        void shouldEnableOrDisable(JerseyFeatureStatus featureStatus, boolean expectedPropertyValue) {
+            var resourceConfig = new DropwizardResourceConfig();
+            var environment = DropwizardMockitoMocks.mockEnvironment();
+
+            when(environment.jersey().getResourceConfig()).thenReturn(resourceConfig);
+
+            StandardEnvironmentConfigurations.jacksonFeatureAutoDiscovery(environment, featureStatus);
+
+            assertThat(resourceConfig.getProperty(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE))
+                    .isEqualTo(expectedPropertyValue);
         }
     }
 
