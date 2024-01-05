@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 
 /**
  * Config object that defines a schedule for background jobs.
@@ -19,6 +20,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
+@Jacksonized
 public class JobSchedule {
 
     static final Duration DEFAULT_INITIAL_DELAY = Duration.seconds(30);
