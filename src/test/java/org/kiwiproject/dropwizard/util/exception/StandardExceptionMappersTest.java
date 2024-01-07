@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
@@ -18,6 +19,7 @@ import org.kiwiproject.jaxrs.exception.ConstraintViolationExceptionMapper;
 import org.kiwiproject.jaxrs.exception.IllegalArgumentExceptionMapper;
 import org.kiwiproject.jaxrs.exception.IllegalStateExceptionMapper;
 import org.kiwiproject.jaxrs.exception.JaxrsExceptionMapper;
+import org.kiwiproject.jaxrs.exception.NoSuchElementExceptionMapper;
 import org.kiwiproject.jaxrs.exception.WebApplicationExceptionMapper;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
@@ -46,6 +48,7 @@ class StandardExceptionMappersTest {
             verify(jersey).register(isA(WebApplicationExceptionMapper.class));
             verify(jersey).register(isA(IllegalArgumentExceptionMapper.class));
             verify(jersey).register(isA(IllegalStateExceptionMapper.class));
+            verify(jersey).register(isA(NoSuchElementExceptionMapper.class));
             verify(jersey).register(isA(JaxrsExceptionMapper.class));
 
             verify(jersey).register(any(LoggingExceptionMapper.class));
@@ -54,6 +57,8 @@ class StandardExceptionMappersTest {
             verify(jersey).register(isA(EarlyEofExceptionMapper.class));
             verify(jersey).register(isA(ConstraintViolationExceptionMapper.class));
             verify(jersey).register(isA(JerseyViolationExceptionMapper.class));
+
+            verifyNoMoreInteractions(jersey);
         }
     }
 

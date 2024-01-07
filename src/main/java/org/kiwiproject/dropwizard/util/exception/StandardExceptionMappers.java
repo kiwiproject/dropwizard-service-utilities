@@ -12,6 +12,7 @@ import org.kiwiproject.jaxrs.exception.ConstraintViolationExceptionMapper;
 import org.kiwiproject.jaxrs.exception.IllegalArgumentExceptionMapper;
 import org.kiwiproject.jaxrs.exception.IllegalStateExceptionMapper;
 import org.kiwiproject.jaxrs.exception.JaxrsExceptionMapper;
+import org.kiwiproject.jaxrs.exception.NoSuchElementExceptionMapper;
 import org.kiwiproject.jaxrs.exception.WebApplicationExceptionMapper;
 
 import java.lang.invoke.MethodHandle;
@@ -39,10 +40,11 @@ public class StandardExceptionMappers {
         jersey.register(new WebApplicationExceptionMapper());
         jersey.register(new IllegalArgumentExceptionMapper());
         jersey.register(new IllegalStateExceptionMapper());
+        jersey.register(new NoSuchElementExceptionMapper());
         jersey.register(new JaxrsExceptionMapper());
 
-        // Don't allow Dropwizard to register default exception mappers, since we might be overriding the default
-        // ConstraintViolationExceptionMapper (depending on configuration)
+        // Don't allow Dropwizard to register default exception mappers, since we are overriding
+        // its default exception mappers with replacements from kiwi
         disableDefaultExceptionMapperRegistration(serverFactory);
 
         // Register replacements for Dropwizard default exception mappers
