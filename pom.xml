@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>dropwizard-service-utilities</artifactId>
-    <version>3.3.1</version>
+    <version>3.3.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -24,7 +24,7 @@
         <connection>scm:git:https://github.com/kiwiproject/dropwizard-service-utilities.git</connection>
         <developerConnection>scm:git:git@github.com:kiwiproject/dropwizard-service-utilities.git</developerConnection>
         <url>https://github.com/kiwiproject/dropwizard-service-utilities</url>
-        <tag>v3.3.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
