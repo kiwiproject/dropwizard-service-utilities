@@ -40,7 +40,7 @@ class ConfigResourceTest {
     @Getter
     @Setter
     @AllArgsConstructor
-    static class TestConfig extends Configuration {
+    public static class TestConfig extends Configuration {
         private String someNeededProperty;
         private String someHiddenPassword;
         private CacheConfig cacheConfig;

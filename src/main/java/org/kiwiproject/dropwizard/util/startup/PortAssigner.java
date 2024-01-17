@@ -73,12 +73,22 @@ public class PortAssigner {
     }
 
     /**
-     * Sets up the connectors with a dynamic available port if {@link PortAssigner} is configured for dynamic ports.
-     *
-     * @implNote When using {@link PortSecurity#SECURE}, the current implementation <strong>replaces</strong> the
+     * Sets up the application and admin connectors with a dynamic available port
+     * if {@link PortAssigner} is configured for dynamic ports.
+     * <p>
+     * When using {@link PortSecurity#NON_SECURE HTTP},
+     * only the <em>first</em> application and admin connectors have dynamic ports assigned.
+     * If an application is using multiple connectors, it's best to avoid using this class
+     * unless you only want the first ones dynamically assigned.
+     * <p>
+     * When using {@link PortSecurity#SECURE HTTPS}, the current implementation <strong>replaces</strong> the
      * application and admin connector factories, which overrides any explicit configuration.
      * Support for explicit configuration of secure connectors while still assigning dynamics ports may
      * be implemented in the future if custom configuration is needed.
+     * <p>
+     * <strong>WARNING</strong>: If you need to change specific properties of secure ports,
+     * or need more than one secure application and/or admin port, you can't use this
+     * class, since it will replace all other ports!
      */
     public void assignDynamicPorts() {
         if (portAssignment == PortAssignment.STATIC) {
@@ -94,7 +104,7 @@ public class PortAssigner {
     }
 
     private void assignSecureDynamicPorts() {
-        LOG.debug("Secure (https): replace Dropwizard HTTP app/admin connectors with HTTPS ones using dynamic ports");
+        LOG.debug("Secure (https): *replace* Dropwizard HTTP app/admin connectors with HTTPS ones using dynamic ports");
 
         var usedPorts = new HashSet<Integer>();
 
