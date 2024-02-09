@@ -31,7 +31,7 @@
         <!-- Versions for required dependencies -->
         <dropwizard-curator.version>2.1.1</dropwizard-curator.version>
         <kiwi.version>3.3.0</kiwi.version>
-        <kiwi-bom.version>2.0.8</kiwi-bom.version>
+        <kiwi-bom.version>2.0.9</kiwi-bom.version>
         <metrics-healthchecks-severity.version>2.0.2</metrics-healthchecks-severity.version>
         <service-discovery-client.version>2.0.3</service-discovery-client.version>
 
