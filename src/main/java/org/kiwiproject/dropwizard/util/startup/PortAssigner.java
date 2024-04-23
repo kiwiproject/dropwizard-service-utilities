@@ -34,8 +34,13 @@ import java.util.stream.IntStream;
  *     <li>The default {@link PortAssignment} is {@code DYNAMIC}</li>
  *     <li>If {@code allowablePortRange} is null, then a zero will be passed to the connector leaving the dynamic port up to the server</li>
  *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
+ *     <li>{@link ServerFactory} is required, and must be an instance of {@link DefaultServerFactory}</li>
  *     <li>This class will setup at MOST one application port and one admin port. Currently you can NOT use this and have both secure and non-secure ports.</li>
  * </ul>
+ * The reason a {@link ServerFactory} is the type accepted in the builder is that Dropwizard's {@code Configuration}
+ * class returns the interface type. So, even though a {@link DefaultServerFactory} is required, client
+ * code can get the {@code ServerFactory} from the {@code Configuration} and use it directly in this class without
+ * needing an explicit type cast.
  */
 @Slf4j
 @Getter(AccessLevel.PACKAGE) // For testing
