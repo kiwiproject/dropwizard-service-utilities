@@ -1,6 +1,7 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.ONE_SECOND;
 
@@ -16,6 +17,13 @@ import java.util.concurrent.atomic.AtomicLong;
 @DisplayName("SystemExecutioner")
 @Slf4j
 class SystemExecutionerTest {
+
+    @Test
+    void shouldRequireExecutionStrategy() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new SystemExecutioner(null))
+                .withMessage("executionStrategy must not be null");
+    }
 
     @Test
     void shouldUseSystemExitStrategyByDefault() {

@@ -1,5 +1,7 @@
 package org.kiwiproject.dropwizard.util.startup;
 
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.DefaultEnvironment;
@@ -42,7 +44,7 @@ public class SystemExecutioner {
      * @param executionStrategy the strategy to use
      */
     public SystemExecutioner(ExecutionStrategy executionStrategy) {
-        this.executionStrategy = executionStrategy;
+        this.executionStrategy = requireNotNull(executionStrategy, "executionStrategy must not be null");
     }
 
     /**
