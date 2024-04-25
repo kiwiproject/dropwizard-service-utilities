@@ -593,7 +593,7 @@ class DropwizardConnectorsTest {
             APPLICATION, HTTPS, 7500
             ADMIN, HTTP, 14500
             ADMIN, HTTPS, 29500
-                """)
+            """)
         void shouldCreateNewPort(PortType portType, ConnectorType connectorType, int portNumber) {
             var port = DropwizardConnectors.newPort(portType, connectorType, portNumber);
 
