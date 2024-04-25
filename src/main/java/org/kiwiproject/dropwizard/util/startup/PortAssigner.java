@@ -9,6 +9,7 @@ import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.requir
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
+import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
 import lombok.AccessLevel;
@@ -17,7 +18,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
+import org.kiwiproject.dropwizard.util.server.DropwizardConnectors;
 import org.kiwiproject.net.LocalPortChecker;
+import org.kiwiproject.registry.model.Port;
+import org.kiwiproject.registry.model.Port.PortType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -94,22 +98,24 @@ public class PortAssigner {
      * <strong>WARNING</strong>: If you need to change specific properties of secure ports,
      * or need more than one secure application and/or admin port, you can't use this
      * class, since it will replace all other ports!
+     *
+     * @return the list of ports in the ServerFactory after assigning dynamic ports
      */
-    public void assignDynamicPorts() {
+    public List<Port> assignDynamicPorts() {
         if (portAssignment == PortAssignment.STATIC) {
             LOG.info("Static port assignment is being used, will rely on Dropwizard configuration for the connector setup");
-            return;
+            return DropwizardConnectors.getPorts(serverFactory);
         }
 
         if (portSecurity == PortSecurity.SECURE) {
-            assignSecureDynamicPorts();
+            return assignSecureDynamicPortsToNewConnectors();
         } else {
-            assignNonSecureDynamicPorts();
+            return assignDynamicPortsToExistingConnectors();
         }
     }
 
-    private void assignSecureDynamicPorts() {
-        LOG.debug("Secure (https): *replace* Dropwizard HTTP app/admin connectors with HTTPS ones using dynamic ports");
+    private List<Port> assignSecureDynamicPortsToNewConnectors() {
+        LOG.debug("Replace Dropwizard app/admin connectors with HTTPS ones using dynamic ports");
 
         var usedPorts = new HashSet<Integer>();
 
@@ -122,6 +128,11 @@ public class PortAssigner {
         var secureAdmin = newHttpsConnectorFactory(adminPort);
 
         serverFactory.setAdminConnectors(List.of(secureAdmin));
+
+        return List.of(
+            Port.of(appPort, PortType.APPLICATION, Port.Security.SECURE),
+            Port.of(adminPort, PortType.ADMIN, Port.Security.SECURE)
+        );
     }
 
     private HttpsConnectorFactory newHttpsConnectorFactory(int port) {
@@ -145,8 +156,8 @@ public class PortAssigner {
         return https;
     }
 
-    private void assignNonSecureDynamicPorts() {
-        LOG.debug("Insecure (http): modify Dropwizard HTTP app/admin connectors using dynamic ports");
+    private List<Port> assignDynamicPortsToExistingConnectors() {
+        LOG.debug("Modify existing Dropwizard HTTP(S) app/admin connectors using dynamic ports");
 
         var usedPorts = new HashSet<Integer>();
 
@@ -158,7 +169,21 @@ public class PortAssigner {
         var admin = (HttpConnectorFactory) first(serverFactory.getAdminConnectors());
         admin.setPort(adminPort);
 
-        LOG.warn("This server has been explicitly configured to run with dynamically assigned ports in NON-SECURE mode (HTTP)!");
+        LOG.info("Assigned application port as {} and admin port as {} to existing connectors",
+                applicationPort, adminPort);
+
+        return List.of(
+            Port.of(applicationPort, PortType.APPLICATION, portSecurityOf(app)),
+            Port.of(adminPort, PortType.ADMIN, portSecurityOf(admin))
+        );
+    }
+
+    private static Port.Security portSecurityOf(ConnectorFactory connectorFactory) {
+        if (connectorFactory instanceof HttpsConnectorFactory) {
+            return Port.Security.SECURE;
+        }
+
+        return Port.Security.NOT_SECURE;
     }
 
     /**

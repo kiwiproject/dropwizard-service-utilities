@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.kiwiproject.collect.KiwiLists.first;
+import static org.kiwiproject.collect.KiwiLists.second;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.DYNAMIC;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment.STATIC;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.NON_SECURE;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.SimpleServerFactory;
+import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
+import org.kiwiproject.registry.model.Port;
 
 import java.util.HashSet;
 import java.util.List;
@@ -218,13 +221,18 @@ class PortAssignerTest {
             var defaultAppConnector = first(factory.getApplicationConnectors());
             var defaultAdminConnector = first(factory.getAdminConnectors());
 
+            var originalApplicationPort = getPort(defaultAppConnector);
+            var originalAdminPort = getPort(defaultAdminConnector);
+
             var assigner = PortAssigner.builder()
                     .portAssignment(STATIC)
                     .serverFactory(factory)
                     .portSecurity(NON_SECURE)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var ports = assigner.assignDynamicPorts();
+            assertThat(first(ports).getNumber()).isEqualTo(originalApplicationPort);
+            assertThat(second(ports).getNumber()).isEqualTo(originalAdminPort);
 
             assertThat(factory.getApplicationConnectors()).containsOnly(defaultAppConnector);
             assertThat(factory.getAdminConnectors()).containsOnly(defaultAdminConnector);
@@ -244,7 +252,18 @@ class PortAssignerTest {
                     .allowablePortRange(allowedRange)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var originalApplicationPort = firstApplicationPort(factory);
+            var originalAdminPort = firstAdminPort(factory);
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber())
+                    .isNotEqualTo(originalApplicationPort)
+                    .isBetween(9_000, 9_100);
+
+            assertThat(second(ports).getNumber())
+                    .isNotEqualTo(originalAdminPort)
+                    .isBetween(9_000, 9_100);
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
             assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
@@ -265,7 +284,10 @@ class PortAssignerTest {
                     .tlsConfiguration(tlsConfig)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber()).isZero();
+            assertThat(second(ports).getNumber()).isZero();
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
             assertThat(applicationConnector.getPort()).isZero();
@@ -292,7 +314,8 @@ class PortAssignerTest {
                     .tlsConfiguration(tlsConfig)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var ports = assigner.assignDynamicPorts();
+            assertThat(ports).hasSize(2);
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
 
@@ -317,7 +340,8 @@ class PortAssignerTest {
                     .tlsConfiguration(tlsConfig)
                     .build();
 
-            assigner.assignDynamicPorts();
+           var ports = assigner.assignDynamicPorts();
+           assertThat(ports).hasSize(2);
 
             var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
 
@@ -356,13 +380,59 @@ class PortAssignerTest {
                     .allowablePortRange(allowedRange)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var originalApplicationPort = firstApplicationPort(factory);
+            var originalAdminPort = firstAdminPort(factory);
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber())
+                    .isNotEqualTo(originalApplicationPort)
+                    .isBetween(9_000, 9_100);
+
+            assertThat(second(ports).getNumber())
+                    .isNotEqualTo(originalAdminPort)
+                    .isBetween(9_000, 9_100);
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
             assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
 
             var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpConnectorFactory.class);
             assertThat(adminConnector.getPort()).isBetween(9_000, 9_100);
+        }
+
+        @Test
+        void shouldModifyExistingConnectors_WhenNonSecureSpecified() {
+            var factory = new DefaultServerFactory();
+            var httpsAppConnector = new HttpsConnectorFactory();
+            var httpsAdminConnector = new HttpsConnectorFactory();
+            factory.setApplicationConnectors(List.of(httpsAppConnector));
+            factory.setAdminConnectors(List.of(httpsAdminConnector));
+
+            var allowedRange = new AllowablePortRange(15_000, 16_000);
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(NON_SECURE)
+                    .allowablePortRange(allowedRange)
+                    .build();
+
+            var originalApplicationPort = firstApplicationPort(factory);
+            var originalAdminPort = firstAdminPort(factory);
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber())
+                    .isNotEqualTo(originalApplicationPort)
+                    .isBetween(15_000, 16_000);
+
+            assertThat(first(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+
+            assertThat(second(ports).getNumber())
+                    .isNotEqualTo(originalAdminPort)
+                    .isBetween(15_000, 16_000);
+
+            assertThat(second(ports).getSecure()).isEqualTo(Port.Security.SECURE);
         }
 
         @Test
@@ -375,7 +445,10 @@ class PortAssignerTest {
                     .portSecurity(NON_SECURE)
                     .build();
 
-            assigner.assignDynamicPorts();
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber()).isZero();
+            assertThat(second(ports).getNumber()).isZero();
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
             assertThat(applicationConnector.getPort()).isZero();
@@ -509,5 +582,19 @@ class PortAssignerTest {
                     .isInstanceOf(NoAvailablePortException.class)
                     .hasMessage("Could not find an available port between 9000 and 9001 after 6 attempts. I give up.");
         }
+    }
+
+    private static int firstApplicationPort(DefaultServerFactory serverFactory) {
+        var appConnectors = serverFactory.getApplicationConnectors();
+        return getPort(first(appConnectors));
+    }
+
+    private static int firstAdminPort(DefaultServerFactory serverFactory) {
+        var adminConnectors = serverFactory.getAdminConnectors();
+        return getPort(first(adminConnectors));
+    }
+
+    private static int getPort(ConnectorFactory connectorFactory) {
+        return ((HttpConnectorFactory) connectorFactory).getPort();
     }
 }
