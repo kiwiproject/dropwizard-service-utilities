@@ -14,7 +14,9 @@ import io.dropwizard.testing.junit5.DropwizardClientExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.DisplayName;
@@ -136,6 +138,38 @@ class ServicePingHealthCheckTest {
                     .hasMessageEndingWith("returned non-OK status 400")
                     .hasDetail("severity", HealthStatus.CRITICAL.name())
                     .hasDetail("pingUri", CLIENT.baseUri() + "/pingNotOKStatus")
+                    .hasDetail("importance", DependencyImportance.REQUIRED.name());
+        }
+
+        @Test
+        void whenExceptionThrownMakingRequest() {
+            var identifier = ServiceIdentifier.builder().serviceName("test-service").build();
+            var registryClient = mock(RegistryClient.class);
+            var client = ClientBuilders.jersey().registryClient(registryClient).build();
+
+            var port = CLIENT.baseUri().getPort();
+            var basePath = CLIENT.baseUri().getPath();
+            var instance = ServiceInstance.builder()
+                    .hostName("localhost")
+                    .ports(List.of(Port.of(port, PortType.ADMIN, Security.NOT_SECURE)))
+                    .paths(ServicePaths.builder().statusPath(basePath + "/pingException").build())
+                    .build();
+
+            when(registryClient.findServiceInstanceBy(any(InstanceQuery.class))).thenReturn(Optional.of(instance));
+
+            var healthCheck = new ServicePingHealthCheck(identifier, client) {
+                @Override
+                Response makeGetRequest(WebTarget target) {
+                    throw new ProcessingException("oops");
+                }
+            };
+
+            assertThatHealthCheck(healthCheck)
+                    .isUnhealthy()
+                    .hasMessageStartingWith("Exception pinging service test-service")
+                    .hasMessageContaining("oops")
+                    .hasDetail("severity", HealthStatus.CRITICAL.name())
+                    .hasDetail("pingUri", CLIENT.baseUri() + "/pingException")
                     .hasDetail("importance", DependencyImportance.REQUIRED.name());
         }
     }

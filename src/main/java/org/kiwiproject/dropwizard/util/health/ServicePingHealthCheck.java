@@ -11,6 +11,8 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.WordUtils;
 import org.kiwiproject.jaxrs.KiwiResponses;
@@ -107,10 +109,7 @@ public class ServicePingHealthCheck extends HealthCheck {
         var pingUri = target.getUri().toString();
 
         try {
-
-            var response = target
-                    .request()
-                    .get();
+            var response = makeGetRequest(target);
 
             return KiwiResponses.onSuccessOrFailureWithResult(response,
                     successResponse -> healthyResult(pingUri),
@@ -124,6 +123,11 @@ public class ServicePingHealthCheck extends HealthCheck {
 
             return unhealthyResult(pingUri, msg, e);
         }
+    }
+
+    @VisibleForTesting
+    Response makeGetRequest(WebTarget target) {
+        return target.request().get();
     }
 
     private WebTarget getStatusPathTarget() {
