@@ -2,6 +2,7 @@ package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.kiwiproject.test.assertj.KiwiAssertJ.assertIsExactType;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.kiwiproject.base.process.Processes;
+import org.kiwiproject.dropwizard.util.startup.ExecutionStrategies.SystemExitExecutionStrategy;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,6 +41,32 @@ class ExecutionStrategiesTest {
         var strategy = ExecutionStrategies.systemExit(42);
         var systemExitStrategy = assertIsExactType(strategy, ExecutionStrategies.SystemExitExecutionStrategy.class);
         assertThat(systemExitStrategy.getExitCode()).isEqualTo(42);
+    }
+
+    // This is silly, and is here to simply show that the return type change
+    // doesn't affect existing methods that accepts ExecutionStrategy or code
+    // that declares a field or variable as ExecutionStrategy, as 'var' using
+    // LTVI, or explicitly as the exact type. Yes, this is "just Java" and
+    // isn't really necessary, but being overly cautious anyway.
+    @Test
+    void shouldUseExitStrategyInMethodThatAcceptsExecutionStrategy() {
+        ExecutionStrategy noOpStrategy = ExecutionStrategies.noOp();
+        var exitFlaggingStrategy = ExecutionStrategies.exitFlagging();
+        SystemExitExecutionStrategy systemExitStrategy = ExecutionStrategies.systemExit(130);
+
+        assertAll(
+            () -> assertThatCode(() -> acceptStrategy(noOpStrategy)).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(exitFlaggingStrategy)).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(systemExitStrategy)).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(ExecutionStrategies.noOp())).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(ExecutionStrategies.exitFlagging())).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(ExecutionStrategies.systemExit())).doesNotThrowAnyException(),
+            () -> assertThatCode(() -> acceptStrategy(ExecutionStrategies.systemExit(127))).doesNotThrowAnyException()
+        );
+    }
+
+    private static void acceptStrategy(ExecutionStrategy strategy) {
+        LOG.info("Accepted strategy: {}", strategy);
     }
 
     @Nested
