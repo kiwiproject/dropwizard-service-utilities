@@ -14,7 +14,6 @@ import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
@@ -376,8 +375,8 @@ public class DropwizardConnectors {
      * This method assumes there will be only one connector factory for each connector type. For example, an application
      * with HTTPS application and admin ports. Or an application with HTTP application and admin ports. Or even an
      * application with both HTTPS and HTTP application and admin ports. So if the given list of connectors contains
-     * more than one connector factory of a given type, for example two HTTPS connector factories, we will always return
-     * the last one in the list. Our reasoning is that it doesn't make much sense to us for a Dropwizard (or any) web
+     * more than one connector factory of a given type, for example, two HTTPS connector factories, we will always return
+     * the last one in the list. Our reasoning is that it makes little sense to us for a Dropwizard (or any) web
      * service to run on multiple HTTPS application ports. Maybe there is some good reason to do that, but we've never
      * seen one. This is why the merge function below always returns the second factory.
      */
