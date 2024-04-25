@@ -17,7 +17,7 @@ public class ExecutionStrategies {
      *
      * @return a no-op ExecutionStrategy
      */
-    public static ExecutionStrategy noOp() {
+    public static NoOpExecutionStrategy noOp() {
         return new NoOpExecutionStrategy();
     }
 
@@ -27,7 +27,7 @@ public class ExecutionStrategies {
      *
      * @return an exit-flagging ExecutionStrategy
      */
-    public static ExecutionStrategy exitFlagging() {
+    public static ExitFlaggingExecutionStrategy exitFlagging() {
         return new ExitFlaggingExecutionStrategy();
     }
 
@@ -36,7 +36,7 @@ public class ExecutionStrategies {
      *
      * @return a strategy that uses {@link System#exit(int)} that sets the exit code to 1 (one)
      */
-    public static ExecutionStrategy systemExit() {
+    public static SystemExitExecutionStrategy systemExit() {
         return new SystemExitExecutionStrategy();
     }
 
@@ -46,7 +46,7 @@ public class ExecutionStrategies {
      * @param exitCode the exit code that will be supplied to {@link System#exit(int)}
      * @return a strategy that uses {@link System#exit(int)} that uses the given exit code
      */
-    public static ExecutionStrategy systemExit(int exitCode) {
+    public static SystemExitExecutionStrategy systemExit(int exitCode) {
         return new SystemExitExecutionStrategy(exitCode);
     }
 
