@@ -1,0 +1,13 @@
+---
+name: My Test App
+
+dynamicPorts:
+  useDynamicPorts: false
+  useSecureDynamicPorts: false
+  minDynamicPort: 27000
+  maxDynamicPort: 29000
+  tls:
+    keyStorePath: /data/etc/pki/my-ks.jks
+    keyStorePassword: my-ks-pwd
+    trustStorePath: /data/etc/pki/my-ts.jks
+    trustStorePassword: my-ts-pwd
