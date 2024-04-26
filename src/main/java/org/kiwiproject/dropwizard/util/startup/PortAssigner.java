@@ -1,6 +1,7 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import static java.util.Objects.isNull;
+import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 import static org.kiwiproject.collect.KiwiLists.first;
@@ -50,12 +51,58 @@ import java.util.stream.IntStream;
 @Getter(AccessLevel.PACKAGE) // For testing
 public class PortAssigner {
 
+    /**
+     * An enum that represents static or dynamic port assignment.
+     */
     public enum PortAssignment {
-        STATIC, DYNAMIC
+        STATIC, DYNAMIC;
+
+        /**
+         * Return {@link #DYNAMIC} when the given value is true, otherwise {@link #STATIC}.
+         *
+         * @param value the boolean value to convert
+         * @return the equivalent {@link PortAssignment} instance
+         */
+        public static PortAssignment fromBooleanDynamicWhenTrue(boolean value) {
+            return value ? DYNAMIC : STATIC;
+        }
     }
 
+    /**
+     * An enum that represents whether a port is secure (HTTPS) or not secure (HTTP).
+     */
     public enum PortSecurity {
-        SECURE, NON_SECURE
+        SECURE, NON_SECURE;
+
+        /**
+         * Return {@link #SECURE} when the given value is true, otherwise {@link #NON_SECURE}.
+         *
+         * @param value the boolean value to convert
+         * @return the equivalent {@link PortSecurity} instance
+         */
+        public static PortSecurity fromBooleanSecureWhenTrue(boolean value) {
+            return value ? SECURE : NON_SECURE;
+        }
+
+        /**
+         * Return the instance of this enum which is equivalent to the given {@link Port.Security}.
+         *
+         * @param security the {@link Port.Security} value to convert
+         * @return
+         */
+        public static PortSecurity fromSecurity(Port.Security security) {
+            checkArgumentNotNull(security, "security must not be null");
+            return (security == Port.Security.SECURE) ? SECURE : NON_SECURE;
+        }
+
+        /**
+         * Convert this instance to a {@link Port.Security} instance.
+         *
+         * @return the equivalent {@link Port.Security} instance
+         */
+        public Port.Security toSecurity() {
+            return (this == PortSecurity.SECURE) ? Port.Security.SECURE : Port.Security.NOT_SECURE;
+        }
     }
 
     private final LocalPortChecker localPortChecker;
