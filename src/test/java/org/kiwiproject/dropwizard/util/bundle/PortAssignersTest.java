@@ -16,10 +16,26 @@ class PortAssignersTest {
         true, DYNAMIC
         false, STATIC
         """)
-    void shouldCreatePortAssignment(boolean useDynamicPorts,
-                                    PortAssigner.PortAssignment expectedPortAssignment) {
+    void shouldCreatePortAssignmentFromDynamicPortsConfiguration(boolean useDynamicPorts,
+                                                                 PortAssigner.PortAssignment expectedPortAssignment) {
 
         var dynamicPortsConfig = DynamicPortsConfiguration.builder()
+                .useDynamicPorts(useDynamicPorts)
+                .build();
+
+        assertThat(PortAssigners.portAssignmentFrom(dynamicPortsConfig))
+                .isEqualTo(expectedPortAssignment);
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+        true, DYNAMIC
+        false, STATIC
+        """)
+    void shouldCreatePortAssignmentFromStartupLockConfiguration(boolean useDynamicPorts,
+                                                                PortAssigner.PortAssignment expectedPortAssignment) {
+
+        var dynamicPortsConfig = StartupLockConfiguration.builder()
                 .useDynamicPorts(useDynamicPorts)
                 .build();
 

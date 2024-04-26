@@ -1,0 +1,10 @@
+---
+name: My Test App
+
+startupLock:
+  useDynamicPorts: false
+  zkStartupLockPath: /service/startup/locks
+  zkStartupLockTimeout: 45 seconds
+  curator:
+    zkConnectString: zk1.test.acme.com:2181,zk2.test.acme.com:2181,zk3.test.acme.com:2181
+    sessionTimeout: 30 seconds
