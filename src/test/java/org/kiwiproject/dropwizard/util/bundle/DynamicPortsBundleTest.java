@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.kiwiproject.collect.KiwiLists.first;
 
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +17,6 @@ import org.kiwiproject.registry.model.Port.PortType;
 
 import java.util.List;
 import java.util.Map;
-
-import io.dropwizard.testing.junit5.DropwizardAppExtension;
-import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 
 @DisplayName("DynamicPortsBundle")
 @ExtendWith(DropwizardExtensionsSupport.class)

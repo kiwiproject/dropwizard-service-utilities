@@ -4,16 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import io.dropwizard.core.Configuration;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.test.util.Fixtures;
 import org.kiwiproject.yaml.YamlHelper;
-
-import io.dropwizard.core.Configuration;
 
 @DisplayName("DynamicPortsConfiguration")
 class DynamicPortsConfigurationTest {

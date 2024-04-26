@@ -1,12 +1,10 @@
 package org.kiwiproject.dropwizard.util.bundle;
 
-import lombok.Getter;
-
-import org.kiwiproject.net.LocalPortChecker;
-
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
+import lombok.Getter;
+import org.kiwiproject.net.LocalPortChecker;
 
 public class MyDynamicPortsApp extends Application<MyDynamicPortsConfig> {
 
