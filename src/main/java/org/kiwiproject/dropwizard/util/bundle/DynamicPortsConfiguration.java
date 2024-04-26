@@ -72,10 +72,18 @@ public class DynamicPortsConfiguration {
                                      Integer maxDynamicPort,
                                      @Nullable TlsContextConfiguration tlsContextConfiguration) {
 
-        this.useDynamicPorts = isNull(useDynamicPorts) || useDynamicPorts;
-        this.useSecureDynamicPorts = isNull(useSecureDynamicPorts) || useSecureDynamicPorts;
-        this.minDynamicPort = isNull(minDynamicPort) ? DEFAULT_MIN_DYNAMIC_PORT : minDynamicPort;
-        this.maxDynamicPort = isNull(maxDynamicPort) ? DEFAULT_MAX_DYNAMIC_PORT : maxDynamicPort;
+        this.useDynamicPorts = toBooleanOrTrue(useDynamicPorts);
+        this.useSecureDynamicPorts = toBooleanOrTrue(useSecureDynamicPorts);
+        this.minDynamicPort = toIntOrDefault(minDynamicPort, DEFAULT_MIN_DYNAMIC_PORT);
+        this.maxDynamicPort = toIntOrDefault(maxDynamicPort, DEFAULT_MAX_DYNAMIC_PORT);
         this.tlsContextConfiguration = tlsContextConfiguration;
+    }
+
+    private static boolean toBooleanOrTrue(@Nullable Boolean booleanObject) {
+        return isNull(booleanObject) ? true : booleanObject.booleanValue();
+    }
+
+    private static int toIntOrDefault(@Nullable Integer integerObject, int defaultValue) {
+        return isNull(integerObject) ? defaultValue : integerObject.intValue();
     }
 }
