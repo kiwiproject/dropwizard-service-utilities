@@ -1,0 +1,6 @@
+---
+name: My Test App
+
+startupLock:
+  zkStartupLockPath: /service/startup-locks
+  zkStartupLockTimeout: 5 seconds

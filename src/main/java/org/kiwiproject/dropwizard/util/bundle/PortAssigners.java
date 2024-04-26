@@ -13,6 +13,11 @@ class PortAssigners {
                 PortAssigner.PortAssignment.DYNAMIC : PortAssigner.PortAssignment.STATIC;
     }
 
+    static PortAssigner.PortAssignment portAssignmentFrom(StartupLockConfiguration startupLockConfig) {
+        return startupLockConfig.isUseDynamicPorts() ?
+                PortAssigner.PortAssignment.DYNAMIC : PortAssigner.PortAssignment.STATIC;
+    }
+
     static AllowablePortRange allowablePortRangeFrom(DynamicPortsConfiguration dynamicPortsConfig) {
         return new AllowablePortRange(dynamicPortsConfig.getMinDynamicPort(), dynamicPortsConfig.getMaxDynamicPort());
     }
