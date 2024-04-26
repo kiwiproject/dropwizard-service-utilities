@@ -4,18 +4,18 @@ import lombok.experimental.UtilityClass;
 
 import org.kiwiproject.dropwizard.util.startup.AllowablePortRange;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner;
+import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment;
+import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity;
 
 @UtilityClass
 class PortAssigners {
 
-    static PortAssigner.PortAssignment portAssignmentFrom(DynamicPortsConfiguration dynamicPortsConfig) {
-        return dynamicPortsConfig.isUseDynamicPorts() ?
-                PortAssigner.PortAssignment.DYNAMIC : PortAssigner.PortAssignment.STATIC;
+    static PortAssignment portAssignmentFrom(DynamicPortsConfiguration dynamicPortsConfig) {
+        return PortAssignment.fromBooleanDynamicWhenTrue(dynamicPortsConfig.isUseDynamicPorts());
     }
 
-    static PortAssigner.PortAssignment portAssignmentFrom(StartupLockConfiguration startupLockConfig) {
-        return startupLockConfig.isUseDynamicPorts() ?
-                PortAssigner.PortAssignment.DYNAMIC : PortAssigner.PortAssignment.STATIC;
+    static PortAssignment portAssignmentFrom(StartupLockConfiguration startupLockConfig) {
+        return PortAssignment.fromBooleanDynamicWhenTrue(startupLockConfig.isUseDynamicPorts());
     }
 
     static AllowablePortRange allowablePortRangeFrom(DynamicPortsConfiguration dynamicPortsConfig) {
@@ -23,7 +23,6 @@ class PortAssigners {
     }
 
     static PortAssigner.PortSecurity portSecurityFrom(DynamicPortsConfiguration dynamicPortsConfig) {
-        return dynamicPortsConfig.isUseSecureDynamicPorts() ?
-                PortAssigner.PortSecurity.SECURE : PortAssigner.PortSecurity.NON_SECURE;
+        return PortSecurity.fromBooleanSecureWhenTrue(dynamicPortsConfig.isUseSecureDynamicPorts());
     }
 }

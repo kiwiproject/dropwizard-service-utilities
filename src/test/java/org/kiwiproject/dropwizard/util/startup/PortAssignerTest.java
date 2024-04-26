@@ -1,6 +1,7 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.kiwiproject.collect.KiwiLists.first;
@@ -24,8 +25,12 @@ import io.dropwizard.jetty.HttpsConnectorFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
+import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment;
+import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity;
 import org.kiwiproject.net.LocalPortChecker;
 import org.kiwiproject.registry.model.Port;
 
@@ -596,5 +601,56 @@ class PortAssignerTest {
 
     private static int getPort(ConnectorFactory connectorFactory) {
         return ((HttpConnectorFactory) connectorFactory).getPort();
+    }
+
+    @Nested
+    class PortAssignmentEnum {
+
+        @ParameterizedTest
+        @CsvSource(textBlock = """
+            true, DYNAMIC
+            false, STATIC
+            """)
+        void shouldCreateFromBooleanValues(boolean value, PortAssignment expectedPortAssignment) {
+            assertThat(PortAssignment.fromBooleanDynamicWhenTrue(value)).isEqualTo(expectedPortAssignment);
+        }
+    }
+
+    @Nested
+    class PortSecurityEnum {
+
+        @ParameterizedTest
+        @CsvSource(textBlock = """
+            true, SECURE
+            false, NON_SECURE
+            """)
+        void shouldCreateFromBooleanValues(boolean value, PortSecurity expectedPortSecurity) {
+            assertThat(PortSecurity.fromBooleanSecureWhenTrue(value)).isEqualTo(expectedPortSecurity);
+        }
+
+        @ParameterizedTest
+        @CsvSource(textBlock = """
+            SECURE, SECURE
+            NOT_SECURE, NON_SECURE
+            """)
+        void shouldCreateFromSecurityEnumInPortClass(Port.Security security, PortSecurity expectedPortSecurity) {
+            assertThat(PortSecurity.fromSecurity(security)).isEqualTo(expectedPortSecurity);
+        }
+
+        @Test
+        void shouldRequireNonNullSecurityEnumValue() {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> PortSecurity.fromSecurity(null))
+                    .withMessage("security must not be null");
+        }
+
+        @ParameterizedTest
+        @CsvSource(textBlock = """
+            SECURE, SECURE
+            NON_SECURE, NOT_SECURE
+            """)
+        void shouldConvertToSecurityEnumInPortClass(PortSecurity portSecurity, Port.Security expectedSecurity) {
+            assertThat(portSecurity.toSecurity()).isEqualTo(expectedSecurity);
+        }
     }
 }
