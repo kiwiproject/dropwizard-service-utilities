@@ -27,17 +27,23 @@ public class DynamicPortsConfiguration {
 
     /**
      * Whether to assign ports randomly between {@code minDynamicPort} and {@code maxDynamicPort}.
+     * <p>
+     * The default value is true.
      */
     private boolean useDynamicPorts;
 
     /**
      * Whether to start the service securely (require HTTPS connections to this service)
      * when assigning ports dynamically, i.e., when {@code useDynamicPorts} is enabled.
+     * <p>
+     * The default value is true.
      */
     private boolean useSecureDynamicPorts;
 
     /**
      * The lowest port that can be assigned when {@code useDynamicPorts} is enabled.
+     * <p>
+     * The default value is 1024 (the first port after the well-known ports).
      */
     @Positive
     @Max(DEFAULT_MAX_DYNAMIC_PORT)
@@ -45,6 +51,8 @@ public class DynamicPortsConfiguration {
 
     /**
      * The highest port that can be assigned when {@code useDynamicPorts} is enabled.
+     * <p>
+     * The default value is 65353 (the highest available port).
      */
     @Positive
     @Max(DEFAULT_MAX_DYNAMIC_PORT)
@@ -52,6 +60,10 @@ public class DynamicPortsConfiguration {
 
     /**
      * Used when {@code useSecureDynamicPorts} is true (and using dynamic ports).
+     * <p>
+     * The default value is {@code null}, which will only work when using
+     * non-secure (HTTP) ports. Otherwise, a valid TLS configuration must
+     * be provided.
      */
     @Nullable
     @JsonProperty("tls")
