@@ -132,12 +132,12 @@ public class DropwizardConnectors {
     }
 
     /**
-     * Get the single application port. If there is more than one, throw an exception.
+     * Get the single application port. If there is not exactly one, throw an exception.
      *
      * @param <C> the type of the Dropwizard Configuration
      * @param configuration the Dropwizard configuration
      * @return the single application port
-     * @throws IllegalStateException if there is more than one application port
+     * @throws IllegalStateException if there is not exactly one application port
      */
     public static <C extends Configuration> Port getOnlyApplicationPort(C configuration) {
         var serverFactory = requireDefaultServerFactory(configuration);
@@ -145,7 +145,7 @@ public class DropwizardConnectors {
     }
 
     /**
-     *  Get the single application port. If there is more than one, throw an exception.
+     *  Get the single application port. If there is not exactly one, throw an exception.
      *
      * @param serverFactory the {@link DefaultServerFactory} to get the single application port from
      * @return the application port
@@ -180,12 +180,12 @@ public class DropwizardConnectors {
     }
 
     /**
-     * Get the single admin port. If there is more than one, throw an exception.
+     * Get the single admin port. If there is not exactly one, throw an exception.
      *
      * @param <C> the type of the Dropwizard Configuration
      * @param configuration the Dropwizard configuration
      * @return the admin port
-     * @throws IllegalStateException if there is more than one admin port
+     * @throws IllegalStateException if there is not exactly one admin port
      */
     public static <C extends Configuration> Port getOnlyAdminPort(C configuration) {
         var serverFactory = requireDefaultServerFactory(configuration);
@@ -193,11 +193,11 @@ public class DropwizardConnectors {
     }
 
     /**
-     * Get the single admin port. If there is more than one, throw an exception.
+     * Get the single admin port. If there is not exactly one, throw an exception.
      *
      * @param serverFactory the {@link DefaultServerFactory} to get single admin port from
      * @return the admin port
-     * @throws IllegalStateException if there is more than one admin port
+     * @throws IllegalStateException if there is not exactly one admin port
      */
     public static Port getOnlyAdminPort(DefaultServerFactory serverFactory) {
         var adminPorts = getAdminPorts(serverFactory);
