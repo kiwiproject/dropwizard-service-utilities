@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.curator.CuratorFrameworkHelper;
 import org.kiwiproject.curator.CuratorLockHelper;
 import org.kiwiproject.curator.zookeeper.ZooKeeperAvailabilityChecker;
+import org.kiwiproject.dropwizard.util.startup.PortAssigner;
 import org.kiwiproject.dropwizard.util.startup.StartupLocker;
 import org.kiwiproject.dropwizard.util.startup.SystemExecutioner;
 
@@ -34,10 +35,10 @@ import java.nio.file.Paths;
  * The original need to lock around dynamic port assignment is also the reason why
  * {@link StartupLockConfiguration} has a {@code useDynamicPorts} property, which is
  * then provided to {@link StartupLocker}. In a future release, we may begin to decouple
- * dynamic port assignment and this startup lock, for example by providing a way that
+ * dynamic port assignment and this startup lock. For example, by providing a way that
  * users can specify whether the lock should be attempted or not via a boolean property
  * or function. The decoupling would also apply to {@link StartupLocker} so that the
- * boolean property or function is provided instead of {@link PortAssignment} in
+ * boolean property or function is provided instead of {@link PortAssigner.PortAssignment} in
  * the {@link StartupLocker#acquireStartupLock acquireStartupLock} method.
  */
 @Slf4j
