@@ -1,9 +1,9 @@
 package org.kiwiproject.dropwizard.util.bundle;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.Objects.requireNonNullElseGet;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.kiwiproject.base.KiwiBooleans.toBooleanOrTrue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.util.Duration;
@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.kiwiproject.curator.config.CuratorConfig;
 
 import java.beans.ConstructorProperties;
@@ -63,6 +62,7 @@ public class StartupLockConfiguration {
      * <p>
      * The default value is {@link #DEFAULT_ZK_STARTUP_LOCK_TIMEOUT}.
      */
+    @SuppressWarnings("DefaultAnnotationParam")
     @NotNull
     @MinDuration(value = 1, unit = TimeUnit.SECONDS)
     private Duration zkStartupLockTimeout;
@@ -98,7 +98,4 @@ public class StartupLockConfiguration {
         this.curatorConfig = requireNonNullElseGet(curatorConfig, CuratorConfig::new);
     }
 
-    private static boolean toBooleanOrTrue(@Nullable Boolean booleanObject) {
-        return isNull(booleanObject) ? true : booleanObject.booleanValue();
-    }
 }
