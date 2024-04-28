@@ -1,20 +1,18 @@
 package org.kiwiproject.dropwizard.util.bundle;
 
-import static java.util.Objects.isNull;
+import static org.kiwiproject.base.KiwiBooleans.toBooleanOrTrue;
+import static org.kiwiproject.base.KiwiIntegers.toIntOrDefault;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.kiwiproject.config.TlsContextConfiguration;
 
 import java.beans.ConstructorProperties;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Positive;
 
 /**
  * Configuration class for dynamic ports used by {@link DynamicPortsBundle}.
@@ -91,11 +89,4 @@ public class DynamicPortsConfiguration {
         this.tlsContextConfiguration = tlsContextConfiguration;
     }
 
-    private static boolean toBooleanOrTrue(@Nullable Boolean booleanObject) {
-        return isNull(booleanObject) ? true : booleanObject.booleanValue();
-    }
-
-    private static int toIntOrDefault(@Nullable Integer integerObject, int defaultValue) {
-        return isNull(integerObject) ? defaultValue : integerObject.intValue();
-    }
 }

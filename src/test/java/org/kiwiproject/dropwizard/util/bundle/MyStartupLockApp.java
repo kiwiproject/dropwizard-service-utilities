@@ -20,14 +20,13 @@ import org.kiwiproject.dropwizard.util.startup.SystemExecutioner;
 public class MyStartupLockApp extends Application<MyStartupLockConfig> {
 
     @Getter
-    final ExecutionStrategies.ExitFlaggingExecutionStrategy executionStrategy =
-            (ExecutionStrategies.ExitFlaggingExecutionStrategy) ExecutionStrategies.exitFlagging();
+    final ExecutionStrategies.ExitFlaggingExecutionStrategy executionStrategy = ExecutionStrategies.exitFlagging();
 
     @Getter
     final SystemExecutioner systemExecutioner = new SystemExecutioner(executionStrategy);
 
     @Getter
-    StartupLocker startupLocker;
+    final StartupLocker startupLocker;
 
     public MyStartupLockApp() {
         startupLocker = mock(StartupLocker.class);

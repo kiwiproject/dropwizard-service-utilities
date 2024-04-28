@@ -24,10 +24,7 @@ class JobErrorHandlersTest {
     void shouldCreateLoggingHandler() {
         var handler = JobErrorHandlers.loggingHandler();
 
-        var job = MonitoredJob.builder()
-                .name("test task")
-                .task(() -> LOG.info("Executing task"))
-                .build();
+        var job = newTestJob();
 
         assertThatCode(() -> handler.handle(job, new RuntimeException("an oop happened")))
                 .doesNotThrowAnyException();
@@ -38,15 +35,19 @@ class JobErrorHandlersTest {
         var logger = mock(Logger.class);
         var handler = JobErrorHandlers.loggingHandler(logger);
 
-        var job = MonitoredJob.builder()
-                .name("test task")
-                .task(() -> LOG.info("Executing task"))
-                .build();
+        var job = newTestJob();
 
         var exception = new RuntimeException("an oop happened");
         assertThatCode(() -> handler.handle(job, exception))
                 .doesNotThrowAnyException();
 
         verify(logger).warn("Job '{}' threw an exception", "test task", exception);
+    }
+
+    private static MonitoredJob newTestJob() {
+        return MonitoredJob.builder()
+                .name("test task")
+                .task(() -> LOG.info("Executing task"))
+                .build();
     }
 }

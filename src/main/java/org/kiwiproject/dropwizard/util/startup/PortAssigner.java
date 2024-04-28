@@ -88,7 +88,7 @@ public class PortAssigner {
          * Return the instance of this enum which is equivalent to the given {@link Port.Security}.
          *
          * @param security the {@link Port.Security} value to convert
-         * @return
+         * @return the equivalent {@link PortSecurity} instance
          */
         public static PortSecurity fromSecurity(Port.Security security) {
             checkArgumentNotNull(security, "security must not be null");
