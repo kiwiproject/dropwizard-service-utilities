@@ -3,6 +3,8 @@ package org.kiwiproject.dropwizard.util.exception;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.dropwizard.util.exception.ErrorMessageAssertions.assertAndGetErrorMessage;
 import static org.kiwiproject.test.constants.KiwiTestConstants.OBJECT_MAPPER;
+import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertBadRequest;
+import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertInternalServerErrorResponse;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -25,13 +27,20 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = createJsonException();
         var response = mapper.toResponse(jsonException);
-        var errorMessage = assertAndGetErrorMessage(response);
+        assertBadRequest(response);
 
+        var errorMessage = assertAndGetErrorMessage(response);
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
 
     private JsonProcessingException createJsonException() {
-        String badJson = "{ \"first\": \"Bob\" \"last\": \"Jones\" )"; // missing comma before 'last' property
+        // missing comma before 'last' property
+        var badJson = """
+            {
+                "first": "Bob"
+                "last": "Jones"
+            }
+            """;
         try {
             OBJECT_MAPPER.readValue(badJson, Person.class);
         } catch (JsonProcessingException e) {
@@ -45,8 +54,9 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = new JsonGenerationException("Problem generating", mock(JsonGenerator.class));
         var response = mapper.toResponse(jsonException);
-        var errorMessage = assertAndGetErrorMessage(response);
+        assertInternalServerErrorResponse(response);
 
+        var errorMessage = assertAndGetErrorMessage(response);
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
 
@@ -57,8 +67,9 @@ class JsonProcessingExceptionMapperTest {
                 "Problem generating", mock(JavaType.class));
 
         var response = mapper.toResponse(jsonException);
-        var errorMessage = assertAndGetErrorMessage(response);
+        assertInternalServerErrorResponse(response);
 
+        var errorMessage = assertAndGetErrorMessage(response);
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
 
@@ -67,8 +78,9 @@ class JsonProcessingExceptionMapperTest {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = new JsonParseException(mock(JsonParser.class), "No suitable constructor found for Foo");
         var response = mapper.toResponse(jsonException);
-        var errorMessage = assertAndGetErrorMessage(response);
+        assertInternalServerErrorResponse(response);
 
+        var errorMessage = assertAndGetErrorMessage(response);
         assertThat(errorMessage.getMessage()).isEqualTo(jsonException.getOriginalMessage());
     }
 
