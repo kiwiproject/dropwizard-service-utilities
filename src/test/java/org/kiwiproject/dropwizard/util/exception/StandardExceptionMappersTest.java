@@ -1,15 +1,20 @@
 package org.kiwiproject.dropwizard.util.exception;
 
+import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import io.dropwizard.core.server.AbstractServerFactory;
 import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
+import io.dropwizard.core.server.SimpleServerFactory;
 import io.dropwizard.core.setup.Environment;
 import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.DisplayName;
@@ -63,6 +68,117 @@ class StandardExceptionMappersTest {
     }
 
     @Nested
+    class DisableDefaultExceptionMapperRegistration {
+
+        @Test
+        void shouldDisableForDefaultServerFactory() {
+            var serverFactory = checkAbstractServerFactoryPrecondition(new DefaultServerFactory());
+
+            StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory);
+
+            assertThat(serverFactory.getRegisterDefaultExceptionMappers()).isFalse();
+        }
+
+        @Test
+        void shouldDisableForSimpleServerFactory() {
+            var serverFactory = checkAbstractServerFactoryPrecondition(new SimpleServerFactory());
+
+            StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory);
+
+            assertThat(serverFactory.getRegisterDefaultExceptionMappers()).isFalse();
+        }
+
+        private static AbstractServerFactory checkAbstractServerFactoryPrecondition(AbstractServerFactory serverFactory) {
+            assertThat(serverFactory.getRegisterDefaultExceptionMappers())
+                    .describedAs("precondition failed: expected registerDefaultExceptionMappers=true")
+                    .isTrue();
+
+            return serverFactory;
+        }
+
+        @Test
+        void shouldDisableForCustomServerFactory_WhichSupportsDisabling() {
+            var serverFactory = new SupportedCustomServerFactory();
+
+            StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory);
+
+            assertAll(
+                () -> assertThat(serverFactory.registerDefaultExceptionMappersCalled).isTrue(),
+                () -> assertThat(serverFactory.argumentHadCorrectValue).isTrue()
+            );
+        }
+
+        @Test
+        void shouldThrowIllegalState_IfServerFactoryDoesNotSupportDisabling() {
+            var serverFactory = new UnsupportedCustomServerFactory();
+
+            assertThatIllegalStateException()
+                    .isThrownBy(() -> StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory));
+        }
+
+        @Test
+        void shouldThrowIllegalState_IfServerFactoryHasCorrectlyNamedMethodThatAcceptsPrimitiveBoolean() {
+            var serverFactory = new UnsupportedPrimitiveBooleanCustomServerFactory();
+
+            assertThatIllegalStateException()
+                    .isThrownBy(() -> StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory));
+        }
+    }
+
+    public static class SupportedCustomServerFactory implements ServerFactory {
+
+        boolean registerDefaultExceptionMappersCalled;
+        boolean argumentHadCorrectValue;
+
+        public void setRegisterDefaultExceptionMappers(Boolean registerDefaultExceptionMappers) {
+            registerDefaultExceptionMappersCalled = true;
+            argumentHadCorrectValue = nonNull(registerDefaultExceptionMappers) && !registerDefaultExceptionMappers;
+        }
+
+        @Override
+        public Server build(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+
+        @Override
+        public void configure(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+    }
+
+    public static class UnsupportedCustomServerFactory implements ServerFactory {
+
+        @Override
+        public Server build(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+
+        @Override
+        public void configure(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+    }
+
+    public static class UnsupportedPrimitiveBooleanCustomServerFactory implements ServerFactory {
+
+        boolean registerDefaultExceptionMappersCalled;
+
+        public void setRegisterDefaultExceptionMappers(boolean registerDefaultExceptionMappers) {
+            registerDefaultExceptionMappersCalled = true;
+        }
+
+        @Override
+        public Server build(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+
+        @Override
+        public void configure(Environment environment) {
+            throw new UnsupportedOperationException("Should never be called by tests");
+        }
+    }
+
+    @Nested
     class FindRegistrationSetter {
 
         @Test
@@ -81,7 +197,7 @@ class StandardExceptionMappersTest {
             assertThatThrownBy(() -> StandardExceptionMappers.findRegistrationSetter(serverFactory))
                     .isExactlyInstanceOf(IllegalStateException.class)
                     .hasMessageStartingWith("ServerFactory class")
-                    .hasMessageEndingWith("must respond to 'setRegisterDefaultExceptionMappers' to disable default exception mapper registration!");
+                    .hasMessageEndingWith("must respond to 'setRegisterDefaultExceptionMappers(Boolean)' to disable default exception mapper registration!");
         }
 
         @Test
@@ -113,7 +229,7 @@ class StandardExceptionMappersTest {
             MethodHandle registrationSetter = StandardExceptionMappers.findRegistrationSetter(serverFactory);
             assertThatThrownBy(() -> StandardExceptionMappers.invokeRegistrationSetter(registrationSetter, serverFactory))
                     .isExactlyInstanceOf(IllegalStateException.class)
-                    .hasMessageStartingWith("Unable to invoke 'setRegisterDefaultExceptionMappers' using handle")
+                    .hasMessageStartingWith("Unable to invoke 'setRegisterDefaultExceptionMappers(Boolean.FALSE)' using handle")
                     .hasMessageEndingWith("Cannot disable default exception mapper registration!");
         }
 

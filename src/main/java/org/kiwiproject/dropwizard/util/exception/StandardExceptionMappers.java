@@ -4,6 +4,7 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.kiwiproject.base.KiwiStrings.format;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.dropwizard.core.server.AbstractServerFactory;
 import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
@@ -29,9 +30,13 @@ public class StandardExceptionMappers {
 
     /**
      * Registers the "standard" set of exception mappers.
+     * <p>
+     * This uses {@link #disableDefaultExceptionMapperRegistration(ServerFactory)} to prevent
+     * Dropwizard from registering any of its exception mappers.
      *
      * @param serverFactory the serverFactory so that the default exception mappers can be disabled
      * @param environment   the Dropwizard environment
+     * @see #disableDefaultExceptionMapperRegistration(ServerFactory)
      */
     public static void register(ServerFactory serverFactory, Environment environment) {
         var jersey = environment.jersey();
@@ -56,10 +61,37 @@ public class StandardExceptionMappers {
         jersey.register(new JerseyViolationExceptionMapper());
     }
 
-    private static void disableDefaultExceptionMapperRegistration(ServerFactory serverFactory) {
+    /**
+     * Disable registration of Dropwizard exception mappers if the {@link ServerFactory} supports it
+     * via a {@code setRegisterDefaultExceptionMappers} method which accepts a {@link Boolean} (the
+     * wrapper type, not a primitive {@code boolean}).
+     * <p>
+     * Both Dropwizard implementations, {@link io.dropwizard.core.server.DefaultServerFactory DefaultServerFactory}
+     * and {@link io.dropwizard.core.server.SimpleServerFactory SimpleServerFactory}, support this option
+     * since they extend {@link io.dropwizard.core.server.AbstractServerFactory AbstractServerFactory}.
+     * <p>
+     * This should only be used if you do not want any of Dropwizard's default exception mappers to be
+     * registered. The {@link io.dropwizard.core.setup.ExceptionMapperBinder ExceptionMapperBinder} registers
+     * Dropwizard's default set of exception mappers.
+     * <p>
+     * Also see
+     * <a href="https://www.dropwizard.io/en/stable/manual/core.html#overriding-default-exception-mappers">
+     * Overriding Default Exception Mappers
+     * </a>
+     * in the Dropwizard reference manual.
+     *
+     * @param serverFactory
+     * @see io.dropwizard.core.setup.ExceptionMapperBinder
+     * @see io.dropwizard.core.server.AbstractServerFactory#setRegisterDefaultExceptionMappers(Boolean)
+     */
+    public static void disableDefaultExceptionMapperRegistration(ServerFactory serverFactory) {
         LOG.info("Disabling Dropwizard registration of default exception mappers");
-        var methodHandle = findRegistrationSetter(serverFactory);
-        invokeRegistrationSetter(methodHandle, serverFactory);
+        if (serverFactory instanceof AbstractServerFactory baseFactory) {
+            baseFactory.setRegisterDefaultExceptionMappers(false);
+        } else {
+            var methodHandle = findRegistrationSetter(serverFactory);
+            invokeRegistrationSetter(methodHandle, serverFactory);
+        }
     }
 
     @VisibleForTesting
@@ -69,7 +101,7 @@ public class StandardExceptionMappers {
                     REGISTER_DEFAULT_EXCEPTION_MAPPERS_SETTER, methodType(Void.TYPE, Boolean.class));
         } catch (NoSuchMethodException | IllegalAccessException ex) {
             throw new IllegalStateException(
-                    format("ServerFactory class ({}) must respond to '{}' to disable default exception mapper registration!",
+                    format("ServerFactory class ({}) must respond to '{}(Boolean)' to disable default exception mapper registration!",
                             serverFactory.getClass(), REGISTER_DEFAULT_EXCEPTION_MAPPERS_SETTER),
                     ex);
         }
@@ -81,7 +113,7 @@ public class StandardExceptionMappers {
             methodHandle.invoke(serverFactory, Boolean.FALSE);
         } catch (Throwable throwable) {
             throw new IllegalStateException(
-                    format("Unable to invoke '{}' using handle {} on {}. Cannot disable default exception mapper registration!",
+                    format("Unable to invoke '{}(Boolean.FALSE)' using handle {} on {}. Cannot disable default exception mapper registration!",
                             REGISTER_DEFAULT_EXCEPTION_MAPPERS_SETTER, methodHandle, serverFactory),
                     throwable);
         }
