@@ -24,7 +24,7 @@ import org.kiwiproject.json.RuntimeJsonException;
 import java.io.IOException;
 
 @DisplayName("RuntimeJsonExceptionMapper")
-public class RuntimeJsonExceptionMapperTest {
+class RuntimeJsonExceptionMapperTest {
 
     private RuntimeJsonExceptionMapper mapper;
 
