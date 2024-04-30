@@ -1,9 +1,11 @@
 package org.kiwiproject.dropwizard.util.exception;
 
+import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
@@ -100,7 +102,10 @@ class StandardExceptionMappersTest {
 
             StandardExceptionMappers.disableDefaultExceptionMapperRegistration(serverFactory);
 
-            assertThat(serverFactory.registerDefaultExceptionMappersCalled).isTrue();
+            assertAll(
+                () -> assertThat(serverFactory.registerDefaultExceptionMappersCalled).isTrue(),
+                () -> assertThat(serverFactory.argumentHadCorrectValue).isTrue()
+            );
         }
 
         @Test
@@ -123,9 +128,11 @@ class StandardExceptionMappersTest {
     public static class SupportedCustomServerFactory implements ServerFactory {
 
         boolean registerDefaultExceptionMappersCalled;
+        boolean argumentHadCorrectValue;
 
         public void setRegisterDefaultExceptionMappers(Boolean registerDefaultExceptionMappers) {
             registerDefaultExceptionMappersCalled = true;
+            argumentHadCorrectValue = nonNull(registerDefaultExceptionMappers) && !registerDefaultExceptionMappers;
         }
 
         @Override
