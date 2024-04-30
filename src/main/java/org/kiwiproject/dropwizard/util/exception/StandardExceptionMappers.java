@@ -47,6 +47,7 @@ public class StandardExceptionMappers {
         jersey.register(new IllegalStateExceptionMapper());
         jersey.register(new NoSuchElementExceptionMapper());
         jersey.register(new JaxrsExceptionMapper());
+        jersey.register(new RuntimeJsonExceptionMapper());
 
         // Don't allow Dropwizard to register default exception mappers, since we are overriding
         // its default exception mappers with replacements from kiwi
