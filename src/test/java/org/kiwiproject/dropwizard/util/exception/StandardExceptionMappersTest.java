@@ -55,6 +55,7 @@ class StandardExceptionMappersTest {
             verify(jersey).register(isA(IllegalStateExceptionMapper.class));
             verify(jersey).register(isA(NoSuchElementExceptionMapper.class));
             verify(jersey).register(isA(JaxrsExceptionMapper.class));
+            verify(jersey).register(isA(RuntimeJsonExceptionMapper.class));
 
             verify(jersey).register(any(LoggingExceptionMapper.class));
             verify(jersey).register(isA(JsonProcessingExceptionMapper.class));
