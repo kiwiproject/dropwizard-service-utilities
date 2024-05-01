@@ -30,7 +30,10 @@ public class StandardExceptionMappers {
     private static final String REGISTER_DEFAULT_EXCEPTION_MAPPERS_SETTER = "setRegisterDefaultExceptionMappers";
 
     /**
-     * Registers the "standard" set of exception mappers.
+     * Registers a "standard" set of exception mappers.
+     * <p>
+     * These include the exception mappers from kiwi as well as the replacement
+     * Dropwizard exception mappers.
      * <p>
      * This uses {@link #disableDefaultExceptionMapperRegistration(ServerFactory)} to prevent
      * Dropwizard from registering any of its exception mappers.
@@ -44,6 +47,26 @@ public class StandardExceptionMappers {
         // its default exception mappers with replacements from kiwi
         disableDefaultExceptionMapperRegistration(serverFactory);
 
+        register(environment);
+    }
+
+    /**
+     * Registers a "standard" set of exception mappers.
+     * <p>
+     * These include the exception mappers from kiwi as well as the replacement
+     * Dropwizard exception mappers.
+     * <p>
+     * Unlike {@link #register(ServerFactory, Environment)}, this method does <em><not</em>
+     * disable the default Dropwizard exception mappers registered by
+     * {@link io.dropwizard.core.setup.ExceptionMapperBinder ExceptionMapperBinder}. Instead,
+     * it relies on the registered mappers <em>replacing</em> the default Dropwizard ones.
+     *
+     * @param environment the Dropwizard environment
+     * @see #registerKiwiExceptionMappers(Environment)
+     * @see #registerKiwiExceptionMappers(JerseyEnvironment)
+     * @see <a href="https://www.dropwizard.io/en/stable/manual/core.html#overriding-default-exception-mappers">Overriding Default Exception Mappers</a>
+     */
+    public static void register(Environment environment) {
         registerKiwiExceptionMappers(environment);
         registerReplacementDropwizardExceptionMappers(environment);
     }
