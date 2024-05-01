@@ -45,21 +45,14 @@ public class StandardExceptionMappers {
         disableDefaultExceptionMapperRegistration(serverFactory);
 
         registerKiwiExceptionMappers(environment);
-
-        // Register replacements for Dropwizard default exception mappers
-        var jersey = environment.jersey();
-        jersey.register(new EarlyEofExceptionMapper());
-        jersey.register(new EmptyOptionalExceptionMapper());
-        jersey.register(new JerseyViolationExceptionMapper());
-        jersey.register(new JsonProcessingExceptionMapper());
-        jersey.register(new LoggingExceptionMapper<>() {});
-        jersey.register(new RuntimeJsonExceptionMapper());
+        registerReplacementDropwizardExceptionMappers(environment);
     }
 
     /**
      * Register exception mappers from the <a href="https://github.com/kiwiproject/kiwi">kiwi</a> library.
      *
      * @param environment the {@link Environment}
+     * @see #registerKiwiExceptionMappers(JerseyEnvironment)
      */
     public static void registerKiwiExceptionMappers(Environment environment) {
         registerKiwiExceptionMappers(environment.jersey());
@@ -77,6 +70,44 @@ public class StandardExceptionMappers {
         jersey.register(new JaxrsExceptionMapper());
         jersey.register(new NoSuchElementExceptionMapper());
         jersey.register(new WebApplicationExceptionMapper());
+    }
+
+    /**
+     * Register exception mappers that replace (most of) the default Dropwizard exception mappers
+     * that are registered by {@link io.dropwizard.core.setup.ExceptionMapperBinder ExceptionMapperBinder}.
+     *
+     * @param environment the {@link Environment}
+     * @see #registerReplacementDropwizardExceptionMappers(JerseyEnvironment)
+     * @see io.dropwizard.core.setup.ExceptionMapperBinder
+     */
+    public static void registerReplacementDropwizardExceptionMappers(Environment environment) {
+        registerReplacementDropwizardExceptionMappers(environment.jersey());
+    }
+
+    /**
+     * Register exception mappers that replace (most of) the default Dropwizard exception mappers
+     * that are registered by {@link io.dropwizard.core.setup.ExceptionMapperBinder ExceptionMapperBinder}.
+     * <p>
+     * The exception is the {@link IllegalStateExceptionMapper} which is provided by kiwi and is registered
+     * in {@link #registerKiwiExceptionMappers(JerseyEnvironment)}.
+     * <p>
+     * Also see
+     * <a href="https://www.dropwizard.io/en/stable/manual/core.html#overriding-default-exception-mappers">
+     * Overriding Default Exception Mappers
+     * </a>
+     * in the Dropwizard reference manual.
+     *
+     * @param jersey the {@link JerseyEnvironment}
+     * @see io.dropwizard.core.setup.ExceptionMapperBinder
+     */
+    public static void registerReplacementDropwizardExceptionMappers(JerseyEnvironment jersey) {
+        jersey.register(new EarlyEofExceptionMapper());
+        jersey.register(new EmptyOptionalExceptionMapper());
+        jersey.register(new JerseyViolationExceptionMapper());
+        jersey.register(new JsonProcessingExceptionMapper());
+        jersey.register(new LoggingExceptionMapper<>() {
+        });
+        jersey.register(new RuntimeJsonExceptionMapper());
     }
 
     /**
