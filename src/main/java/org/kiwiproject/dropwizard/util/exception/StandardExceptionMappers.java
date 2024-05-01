@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.core.server.AbstractServerFactory;
 import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.jaxrs.exception.ConstraintViolationExceptionMapper;
@@ -39,27 +40,43 @@ public class StandardExceptionMappers {
      * @see #disableDefaultExceptionMapperRegistration(ServerFactory)
      */
     public static void register(ServerFactory serverFactory, Environment environment) {
-        var jersey = environment.jersey();
-
-        // Register our custom exception mappers
-        jersey.register(new WebApplicationExceptionMapper());
-        jersey.register(new IllegalArgumentExceptionMapper());
-        jersey.register(new IllegalStateExceptionMapper());
-        jersey.register(new NoSuchElementExceptionMapper());
-        jersey.register(new JaxrsExceptionMapper());
-        jersey.register(new RuntimeJsonExceptionMapper());
-
         // Don't allow Dropwizard to register default exception mappers, since we are overriding
         // its default exception mappers with replacements from kiwi
         disableDefaultExceptionMapperRegistration(serverFactory);
 
+        registerKiwiExceptionMappers(environment);
+
         // Register replacements for Dropwizard default exception mappers
-        jersey.register(new LoggingExceptionMapper<>() {});
-        jersey.register(new JsonProcessingExceptionMapper());
-        jersey.register(new EmptyOptionalExceptionMapper());
+        var jersey = environment.jersey();
         jersey.register(new EarlyEofExceptionMapper());
-        jersey.register(new ConstraintViolationExceptionMapper());
+        jersey.register(new EmptyOptionalExceptionMapper());
         jersey.register(new JerseyViolationExceptionMapper());
+        jersey.register(new JsonProcessingExceptionMapper());
+        jersey.register(new LoggingExceptionMapper<>() {});
+        jersey.register(new RuntimeJsonExceptionMapper());
+    }
+
+    /**
+     * Register exception mappers from the <a href="https://github.com/kiwiproject/kiwi">kiwi</a> library.
+     *
+     * @param environment the {@link Environment}
+     */
+    public static void registerKiwiExceptionMappers(Environment environment) {
+        registerKiwiExceptionMappers(environment.jersey());
+    }
+
+    /**
+     * Register exception mappers from the <a href="https://github.com/kiwiproject/kiwi">kiwi</a> library.
+     *  
+     * @param jersey the {@link JerseyEnvironment}
+     */
+    public static void registerKiwiExceptionMappers(JerseyEnvironment jersey) {
+        jersey.register(new ConstraintViolationExceptionMapper());
+        jersey.register(new IllegalArgumentExceptionMapper());
+        jersey.register(new IllegalStateExceptionMapper());
+        jersey.register(new JaxrsExceptionMapper());
+        jersey.register(new NoSuchElementExceptionMapper());
+        jersey.register(new WebApplicationExceptionMapper());
     }
 
     /**
