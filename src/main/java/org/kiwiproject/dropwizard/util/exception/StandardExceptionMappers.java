@@ -81,7 +81,7 @@ public class StandardExceptionMappers {
      * </a>
      * in the Dropwizard reference manual.
      *
-     * @param serverFactory
+     * @param serverFactory the serverFactory on which to disable default exception mappers
      * @see io.dropwizard.core.setup.ExceptionMapperBinder
      * @see io.dropwizard.core.server.AbstractServerFactory#setRegisterDefaultExceptionMappers(Boolean)
      */
