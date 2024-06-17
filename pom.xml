@@ -39,7 +39,7 @@
         <registry-aware-jersey-client>2.0.5</registry-aware-jersey-client>
 
         <!-- Versions for test dependencies -->
-        <kiwi-test.version>3.3.0</kiwi-test.version>
+        <kiwi-test.version>3.4.0</kiwi-test.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>kiwiproject_dropwizard-service-utilities</sonar.projectKey>
