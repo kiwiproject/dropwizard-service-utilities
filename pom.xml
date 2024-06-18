@@ -32,11 +32,11 @@
         <dropwizard-curator.version>2.1.2</dropwizard-curator.version>
         <kiwi.version>4.0.0</kiwi.version>
         <kiwi-bom.version>2.0.12</kiwi-bom.version>
-        <metrics-healthchecks-severity.version>2.0.3</metrics-healthchecks-severity.version>
+        <metrics-healthchecks-severity.version>2.0.4</metrics-healthchecks-severity.version>
         <service-discovery-client.version>2.1.1</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
-        <registry-aware-jersey-client>2.0.5</registry-aware-jersey-client>
+        <registry-aware-jersey-client.version>2.0.5</registry-aware-jersey-client.version>
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>3.4.0</kiwi-test.version>
@@ -56,7 +56,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>dropwizard-curator</artifactId>
+                <version>${dropwizard-curator.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.kiwiproject</groupId>
                 <artifactId>kiwi</artifactId>
@@ -67,6 +73,24 @@
                 <groupId>org.kiwiproject</groupId>
                 <artifactId>kiwi-test</artifactId>
                 <version>${kiwi-test.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>metrics-healthchecks-severity</artifactId>
+                <version>${metrics-healthchecks-severity.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>registry-aware-jersey-client</artifactId>
+                <version>${registry-aware-jersey-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>service-discovery-client</artifactId>
+                <version>${service-discovery-client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -81,7 +105,6 @@
         <dependency>
             <groupId>org.kiwiproject</groupId>
             <artifactId>dropwizard-curator</artifactId>
-            <version>${dropwizard-curator.version}</version>
         </dependency>
 
         <dependency>
@@ -92,13 +115,11 @@
         <dependency>
             <groupId>org.kiwiproject</groupId>
             <artifactId>metrics-healthchecks-severity</artifactId>
-            <version>${metrics-healthchecks-severity.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.kiwiproject</groupId>
             <artifactId>service-discovery-client</artifactId>
-            <version>${service-discovery-client.version}</version>
         </dependency>
         
         <dependency>
@@ -136,7 +157,6 @@
         <dependency>
             <groupId>org.kiwiproject</groupId>
             <artifactId>registry-aware-jersey-client</artifactId>
-            <version>${registry-aware-jersey-client}</version>
             <scope>provided</scope>
         </dependency>
 
