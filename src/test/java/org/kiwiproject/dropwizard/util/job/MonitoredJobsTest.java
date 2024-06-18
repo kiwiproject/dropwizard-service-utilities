@@ -259,7 +259,7 @@ class MonitoredJobsTest {
             void whenUsingBuilderWithCustomExecutor() throws InterruptedException {
                 var count = new AtomicInteger();
                 Runnable countingTask = count::incrementAndGet;
-                TestExecutors.use(Executors.newSingleThreadScheduledExecutor(), executor -> {
+                TestExecutors.use(Executors.newSingleThreadScheduledExecutor(), singleThreadExecutor -> {
                     var fastSchedule = JobSchedule.builder()
                             .initialDelay(Duration.seconds(0))
                             .intervalDelay(Duration.seconds(1))
@@ -270,7 +270,7 @@ class MonitoredJobsTest {
                             .task(countingTask)
                             .environment(env)
                             .schedule(fastSchedule)
-                            .executor(executor)
+                            .executor(singleThreadExecutor)
                             .registerJob();
 
                     await().atMost(Durations.TWO_SECONDS).until(() -> count.get() >= 1);
