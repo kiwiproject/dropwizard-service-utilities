@@ -164,6 +164,7 @@ class StandardExceptionMappersTest {
 
         boolean registerDefaultExceptionMappersCalled;
 
+        @SuppressWarnings("unused")  // there is nothing to do with the parameter, but it must exist
         public void setRegisterDefaultExceptionMappers(boolean registerDefaultExceptionMappers) {
             registerDefaultExceptionMappersCalled = true;
         }
