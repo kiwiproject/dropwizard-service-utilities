@@ -83,7 +83,7 @@ class MonitoredJobsTest {
             void whenInitialDelayIsMissing() {
                 var jobName = "MissingInitialDelay";
 
-                var schedule = JobSchedule.builder()
+                schedule = JobSchedule.builder()
                         .initialDelay(null)
                         .intervalDelay(Duration.seconds(1))
                         .build();
@@ -191,7 +191,7 @@ class MonitoredJobsTest {
             @Test
             void whenArgumentsAreValid_DefaultingExecutor() {
                 var monitoredJob = MonitoredJobs.registerJob(env, "ValidJob", schedule, task,
-                        (job) -> true);
+                        job -> true);
 
                 assertAndVerifyJob(monitoredJob);
             }
@@ -199,7 +199,7 @@ class MonitoredJobsTest {
             @Test
             void whenArgumentsAreValid() {
                 var monitoredJob = MonitoredJobs.registerJob(env, "ValidJob", schedule, task,
-                        (job) -> true, executor);
+                        job -> true, executor);
 
                 assertAndVerifyJob(monitoredJob);
             }
