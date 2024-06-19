@@ -36,7 +36,7 @@
         <service-discovery-client.version>2.1.1</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
-        <registry-aware-jersey-client.version>2.0.5</registry-aware-jersey-client.version>
+        <registry-aware-jersey-client.version>2.0.6</registry-aware-jersey-client.version>
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>3.4.0</kiwi-test.version>
