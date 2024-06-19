@@ -56,7 +56,7 @@ public class StandardExceptionMappers {
      * These include the exception mappers from kiwi as well as the replacement
      * Dropwizard exception mappers.
      * <p>
-     * Unlike {@link #register(ServerFactory, Environment)}, this method does <em><not</em>
+     * Unlike {@link #register(ServerFactory, Environment)}, this method does <em>not</em>
      * disable the default Dropwizard exception mappers registered by
      * {@link io.dropwizard.core.setup.ExceptionMapperBinder ExceptionMapperBinder}. Instead,
      * it relies on the registered mappers <em>replacing</em> the default Dropwizard ones.
