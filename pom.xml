@@ -40,6 +40,7 @@
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>3.4.0</kiwi-test.version>
+        <mockwebserver.version>4.12.0</mockwebserver.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>kiwiproject_dropwizard-service-utilities</sonar.projectKey>
@@ -121,7 +122,7 @@
             <groupId>org.kiwiproject</groupId>
             <artifactId>service-discovery-client</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -191,7 +192,14 @@
             <artifactId>kiwi-test</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>${mockwebserver.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
