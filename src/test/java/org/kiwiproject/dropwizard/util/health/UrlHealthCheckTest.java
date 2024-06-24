@@ -1,8 +1,5 @@
 package org.kiwiproject.dropwizard.util.health;
 
-import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.client.Client;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.dropwizard.util.okhttp3.mockwebserver.RecordedRequests.assertNoMoreRequests;
 import static org.kiwiproject.dropwizard.util.okhttp3.mockwebserver.RecordedRequests.takeRequiredRequest;
@@ -12,6 +9,8 @@ import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,7 +29,6 @@ import org.kiwiproject.metrics.health.HealthCheckResults;
 import org.kiwiproject.metrics.health.HealthStatus;
 import org.kiwiproject.registry.client.NoOpRegistryClient;
 
-import java.io.IOException;
 import java.time.Instant;
 
 @DisplayName("UrlHealthCheck")
@@ -62,7 +60,7 @@ class UrlHealthCheckTest {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         KiwiIO.closeQuietly(server);
         client.close();
     }
