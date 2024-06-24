@@ -1,6 +1,6 @@
 package org.kiwiproject.dropwizard.util.health;
 
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotBlank;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.jaxrs.KiwiResponses.successfulAlwaysClosing;
@@ -9,7 +9,6 @@ import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResu
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.annotations.VisibleForTesting;
-
 import jakarta.ws.rs.client.Client;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.DefaultEnvironment;
@@ -55,7 +54,7 @@ public class UrlHealthCheck extends HealthCheck {
      * {@code true}.
      * <p>
      * This is useful when there are multiple instances of a service, and you only want
-     * one of them to execute the health check, for example the "leader" when using a
+     * one of them to execute the health check, for example, the "leader" when using a
      * "Leader Latch" pattern.
      *
      * @param client the HTTP client to use when connecting to the URL
@@ -108,7 +107,7 @@ public class UrlHealthCheck extends HealthCheck {
     private boolean shouldExecute() {
         try {
             var result = executionCondition.get();
-            return isNull(result) ? false : result;
+            return nonNull(result) && result;
         } catch (Exception e) {
             LOG.error("executionCondition threw an exception. Assuming the health check should execute.", e);
             return true;
