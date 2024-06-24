@@ -8,7 +8,6 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A {@link HealthCheck} that caches the result of another HealthCheck
  * for a certain period of time.
  * <p>
- * Use this if a HealthCheck is expensive to compute and you want to minimize
+ * Use this if a HealthCheck is expensive to compute, and you want to minimize
  * the execution cost. For example, a HealthCheck that makes network calls might
  * be a good candidate for caching if health checks are executed frequently.
  */
@@ -42,7 +41,7 @@ public class CachingHealthCheck extends HealthCheck {
      * A name for this CachingHealthCheck.
      * <p>
      * Usually this should be the name given to the wrapped HealthCheck
-     * so that it can be easily distingushed from others.
+     * so that it can be easily distinguished from others.
      */
     @Getter
     @Accessors(fluent = true)
@@ -168,7 +167,7 @@ public class CachingHealthCheck extends HealthCheck {
     }
 
     private TimestampedResult executeHealthCheck() {
-        // The default HealhCheck#execute implementation catches Exception, but it
+        // The default HealthCheck#execute implementation catches Exception, but it
         // is not final and can therefore be overridden. So, we will be conservative
         // and assume an Exception could be thrown in a subclass.
 
