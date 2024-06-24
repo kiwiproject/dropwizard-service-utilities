@@ -14,10 +14,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiwiproject.curator.config.CuratorConfig;
+import org.kiwiproject.dropwizard.util.startup.ExecutionStrategies.SystemExitExecutionStrategy;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner;
 import org.kiwiproject.dropwizard.util.startup.StartupLockInfo;
 import org.kiwiproject.dropwizard.util.startup.SystemExecutioner;
-import org.kiwiproject.dropwizard.util.startup.ExecutionStrategies.SystemExitExecutionStrategy;
 import org.mockito.ArgumentCaptor;
 
 import java.net.InetAddress;

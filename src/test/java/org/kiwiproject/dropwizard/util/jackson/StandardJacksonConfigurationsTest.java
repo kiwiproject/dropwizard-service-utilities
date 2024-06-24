@@ -29,9 +29,10 @@ import org.kiwiproject.json.JsonHelper;
 import org.kiwiproject.json.LoggingDeserializationProblemHandler;
 import org.kiwiproject.test.dropwizard.mockito.DropwizardMockitoMocks;
 
-import javax.xml.namespace.QName;
 import java.time.Instant;
 import java.util.Date;
+
+import javax.xml.namespace.QName;
 
 @DisplayName("StandardJacksonConfigurations")
 class StandardJacksonConfigurationsTest {

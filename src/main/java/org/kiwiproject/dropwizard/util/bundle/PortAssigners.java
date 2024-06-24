@@ -1,7 +1,6 @@
 package org.kiwiproject.dropwizard.util.bundle;
 
 import lombok.experimental.UtilityClass;
-
 import org.kiwiproject.dropwizard.util.startup.AllowablePortRange;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment;

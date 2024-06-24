@@ -4,12 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * Some test utilities for getting {@link RecordedRequest} instances from a {@link MockWebServer}.

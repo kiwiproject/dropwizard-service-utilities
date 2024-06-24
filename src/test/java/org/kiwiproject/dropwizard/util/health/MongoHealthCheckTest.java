@@ -8,11 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.mongodb.client.MongoDatabase;
-
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -25,6 +21,9 @@ import org.kiwiproject.collect.KiwiMaps;
 import org.kiwiproject.metrics.health.HealthStatus;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.OngoingStubbing;
+
+import java.util.List;
+import java.util.Optional;
 
 @DisplayName("MongoHealthCheck")
 class MongoHealthCheckTest {
