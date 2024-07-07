@@ -33,7 +33,7 @@
         <kiwi.version>4.1.0</kiwi.version>
         <kiwi-bom.version>2.0.13</kiwi-bom.version>
         <metrics-healthchecks-severity.version>2.0.5</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>2.1.1</service-discovery-client.version>
+        <service-discovery-client.version>2.1.2</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
         <registry-aware-jersey-client.version>2.0.6</registry-aware-jersey-client.version>
