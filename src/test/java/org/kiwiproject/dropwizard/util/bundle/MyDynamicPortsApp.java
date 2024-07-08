@@ -38,5 +38,6 @@ public class MyDynamicPortsApp extends Application<MyDynamicPortsConfig> {
 
     @Override
     public void run(MyDynamicPortsConfig configuration, Environment environment) {
+        // intentionally empty
     }
 }
