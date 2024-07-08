@@ -1,9 +1,9 @@
 package org.kiwiproject.dropwizard.util.health;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.kiwiproject.dropwizard.util.okhttp3.mockwebserver.RecordedRequests.assertNoMoreRequests;
-import static org.kiwiproject.dropwizard.util.okhttp3.mockwebserver.RecordedRequests.takeRequiredRequest;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.kiwiproject.test.okhttp3.mockwebserver.RecordedRequests.assertNoMoreRequests;
+import static org.kiwiproject.test.okhttp3.mockwebserver.RecordedRequests.takeRequiredRequest;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
