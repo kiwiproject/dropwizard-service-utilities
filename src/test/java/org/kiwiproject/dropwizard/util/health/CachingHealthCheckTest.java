@@ -13,15 +13,11 @@ import static org.mockito.Mockito.when;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.base.KiwiEnvironment;
-import org.kiwiproject.io.KiwiIO;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -31,22 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @DisplayName("CachingHealthCheck")
 class CachingHealthCheckTest {
 
-    private MockWebServer server;
     private HappyHealthCheck happyHealthCheck;
     private KiwiEnvironment kiwiEnvironment;
 
     @BeforeEach
-    void setUp() throws IOException {
-        server = new MockWebServer();
-        server.start();
-
+    void setUp() {
         kiwiEnvironment = mock(KiwiEnvironment.class);
         happyHealthCheck = new HappyHealthCheck();
-    }
-
-    @AfterEach
-    void tearDown() {
-        KiwiIO.closeQuietly(server);
     }
 
     @Test
