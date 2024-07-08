@@ -75,9 +75,6 @@ class ConfigResourceTest {
 
     public static class TestApp extends Application<TestConfig> {
 
-        public TestApp() {
-        }
-
         @Override
         public void run(TestConfig config, Environment environment) {
             environment.jersey().register(new ConfigResource(config, List.of(".*Password")));

@@ -77,7 +77,7 @@ class StartupLockerTest {
     class AcquireStartupLock {
 
         // NOTE: This is not static because there isn't a way to reset the lifecycle listeners for each test
-        final DropwizardClientExtension CLIENT_EXTENSION = new DropwizardClientExtension();
+        final DropwizardClientExtension clientExtension = new DropwizardClientExtension();
 
         private StartupLocker.StartupLockerBuilder startupLockerBuilder;
 
@@ -147,7 +147,7 @@ class StartupLockerTest {
             var locker = startupLockerBuilder.build();
             var curatorConfig = CuratorConfig.copyOfWithZkConnectString(new CuratorConfig(), ZK_TEST_SERVER.getConnectString());
             var lockInfo = locker.acquireStartupLock(LOCK_PATH, Duration.milliseconds(100), DYNAMIC,
-                    curatorConfig, CLIENT_EXTENSION.getEnvironment());
+                    curatorConfig, clientExtension.getEnvironment());
 
             assertThat(lockInfo.getLockState()).isEqualTo(StartupLockInfo.LockState.ACQUIRED);
             assertThat(lockInfo.getInfoMessage()).isEqualTo("Lock acquired");
@@ -156,7 +156,7 @@ class StartupLockerTest {
             assertThat(lockInfo.getException()).isNull();
             assertThat(lockInfo.getClient()).isNotNull();
 
-            var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
+            var listeners = DropwizardAppTests.lifeCycleListenersOf(clientExtension.getEnvironment().lifecycle());
             assertThat(listeners).hasAtLeastOneElementOfType(StartupWithLockJettyLifeCycleListener.class);
         }
     }
@@ -165,7 +165,7 @@ class StartupLockerTest {
     class AddFallbackJettyStartupLifeCycleListener {
 
         // NOTE: This is not static because there isn't a way to reset the lifecycle listeners for each test
-        final DropwizardClientExtension CLIENT_EXTENSION = new DropwizardClientExtension();
+        final DropwizardClientExtension clientExtension = new DropwizardClientExtension();
 
         @Test
         void shouldNotAddListener_WhenLockInfoIsAcquired() {
@@ -181,9 +181,9 @@ class StartupLockerTest {
                     .infoMessage("Lock acquired")
                     .build();
 
-            locker.addFallbackJettyStartupLifeCycleListener(lockInfo, CLIENT_EXTENSION.getEnvironment());
+            locker.addFallbackJettyStartupLifeCycleListener(lockInfo, clientExtension.getEnvironment());
 
-            var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
+            var listeners = DropwizardAppTests.lifeCycleListenersOf(clientExtension.getEnvironment().lifecycle());
             assertThat(listeners).doesNotHaveAnyElementsOfTypes(StartupJettyLifeCycleListener.class);
         }
 
@@ -198,9 +198,9 @@ class StartupLockerTest {
                     .exception(new RuntimeException("Oops"))
                     .build();
 
-            locker.addFallbackJettyStartupLifeCycleListener(info, CLIENT_EXTENSION.getEnvironment());
+            locker.addFallbackJettyStartupLifeCycleListener(info, clientExtension.getEnvironment());
 
-            var listeners = DropwizardAppTests.lifeCycleListenersOf(CLIENT_EXTENSION.getEnvironment().lifecycle());
+            var listeners = DropwizardAppTests.lifeCycleListenersOf(clientExtension.getEnvironment().lifecycle());
             assertThat(listeners).hasAtLeastOneElementOfType(StartupJettyLifeCycleListener.class);
         }
     }

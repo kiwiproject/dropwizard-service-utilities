@@ -67,5 +67,6 @@ public class MyStartupLockApp extends Application<MyStartupLockConfig> {
 
     @Override
     public void run(MyStartupLockConfig configuration, Environment environment) {
+        // intentionally empty
     }
 }
