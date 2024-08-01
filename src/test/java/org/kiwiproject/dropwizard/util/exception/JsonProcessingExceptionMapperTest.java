@@ -23,6 +23,11 @@ import org.junit.jupiter.api.Test;
 class JsonProcessingExceptionMapperTest {
 
     @Test
+    void shouldExposeDefaultErrorMessage() {
+        assertThat(JsonProcessingExceptionMapper.DEFAULT_MSG).isEqualTo(JsonExceptionMappers.DEFAULT_MSG);
+    }
+
+    @Test
     void shouldProcessJsonProcessingException() {
         var mapper = new JsonProcessingExceptionMapper();
         var jsonException = createJsonException();

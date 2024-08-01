@@ -34,6 +34,11 @@ class RuntimeJsonExceptionMapperTest {
     }
 
     @Test
+    void shouldExposeDefaultErrorMessage() {
+        assertThat(RuntimeJsonExceptionMapper.DEFAULT_MSG).isEqualTo(JsonExceptionMappers.DEFAULT_MSG);
+    }
+
+    @Test
     void shouldProcessExceptionHavingCauseOfJsonProcessingException() {
         var runtimeJsonException = createRuntimeJsonException();
         var jsonException = (JsonProcessingException) runtimeJsonException.getCause();
