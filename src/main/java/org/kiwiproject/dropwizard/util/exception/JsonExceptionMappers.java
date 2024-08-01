@@ -29,7 +29,7 @@ class JsonExceptionMappers {
                 LOG.error("Unable to deserialize the specific type", exception);
                 e = new JaxrsException(exception);
             } else {
-                LOG.debug(DEFAULT_MSG, exception);
+                LOG.warn(DEFAULT_MSG, exception);
                 e = new JaxrsBadRequestException(message, exception);
             }
         }
