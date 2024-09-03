@@ -54,7 +54,7 @@ class UrlHealthCheckTest {
                 .hostnameVerifier(new NoopHostnameVerifier())
                 .build();
 
-        description = RandomStringUtils.randomAlphabetic(15);
+        description = RandomStringUtils.secure().nextAlphabetic(15);
         url = server.url(STATUS_PATH).toString();
         kiwiEnvironment = mock(KiwiEnvironment.class);
     }
