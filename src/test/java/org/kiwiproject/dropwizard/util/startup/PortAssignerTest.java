@@ -13,8 +13,6 @@ import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.
 import static org.kiwiproject.test.assertj.KiwiAssertJ.assertIsExactType;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.dropwizard.core.server.DefaultServerFactory;
@@ -29,14 +27,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
+import org.kiwiproject.dropwizard.util.startup.FreePortFinder.ServicePorts;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity;
 import org.kiwiproject.net.LocalPortChecker;
 import org.kiwiproject.registry.model.Port;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @DisplayName("PortAssigner")
 class PortAssignerTest {
@@ -153,6 +150,21 @@ class PortAssignerTest {
         }
 
         @Nested
+        class FreePortFinderField {
+
+            @Test
+            void shouldDefaultToRandomFreePortFinder() {
+                var assigner = PortAssigner.builder()
+                        .portSecurity(NON_SECURE)
+                        .serverFactory(new DefaultServerFactory())
+                        .build();
+
+                assertThat(assigner.getFreePortFinder())
+                        .isExactlyInstanceOf(RandomFreePortFinder.class);
+            }
+        }
+
+        @Nested
         class AllowablePortRangeField {
 
             @Test
@@ -247,7 +259,9 @@ class PortAssignerTest {
         void shouldSetupSecureDynamicPorts_WhenSecureSpecified() {
             var factory = new DefaultServerFactory();
             var tlsConfig = TlsContextConfiguration.builder().build();
-            var allowedRange = new AllowablePortRange(9_000, 9_100);
+            var minPortNumber = 9_000;
+            var maxPortNumber = 9_100;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
 
             var assigner = PortAssigner.builder()
                     .portAssignment(DYNAMIC)
@@ -264,17 +278,17 @@ class PortAssignerTest {
 
             assertThat(first(ports).getNumber())
                     .isNotEqualTo(originalApplicationPort)
-                    .isBetween(9_000, 9_100);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             assertThat(second(ports).getNumber())
                     .isNotEqualTo(originalAdminPort)
-                    .isBetween(9_000, 9_100);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
-            assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
+            assertThat(applicationConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
 
             var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
-            assertThat(adminConnector.getPort()).isBetween(9_000, 9_100);
+            assertThat(adminConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
         }
 
         @Test
@@ -376,7 +390,9 @@ class PortAssignerTest {
         @Test
         void shouldSetupNonSecureDynamicPorts_WhenNonSecureSpecified() {
             var factory = new DefaultServerFactory();
-            var allowedRange = new AllowablePortRange(9_000, 9_100);
+            var minPortNumber = 9_000;
+            var maxPortNumber = 9_100;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
 
             var assigner = PortAssigner.builder()
                     .portAssignment(DYNAMIC)
@@ -392,17 +408,17 @@ class PortAssignerTest {
 
             assertThat(first(ports).getNumber())
                     .isNotEqualTo(originalApplicationPort)
-                    .isBetween(9_000, 9_100);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             assertThat(second(ports).getNumber())
                     .isNotEqualTo(originalAdminPort)
-                    .isBetween(9_000, 9_100);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
-            assertThat(applicationConnector.getPort()).isBetween(9_000, 9_100);
+            assertThat(applicationConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
 
             var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpConnectorFactory.class);
-            assertThat(adminConnector.getPort()).isBetween(9_000, 9_100);
+            assertThat(adminConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
         }
 
         @Test
@@ -413,7 +429,9 @@ class PortAssignerTest {
             factory.setApplicationConnectors(List.of(httpsAppConnector));
             factory.setAdminConnectors(List.of(httpsAdminConnector));
 
-            var allowedRange = new AllowablePortRange(15_000, 16_000);
+            var minPortNumber = 15_000;
+            var maxPortNumber = 16_000;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
 
             var assigner = PortAssigner.builder()
                     .portAssignment(DYNAMIC)
@@ -429,13 +447,13 @@ class PortAssignerTest {
 
             assertThat(first(ports).getNumber())
                     .isNotEqualTo(originalApplicationPort)
-                    .isBetween(15_000, 16_000);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             assertThat(first(ports).getSecure()).isEqualTo(Port.Security.SECURE);
 
             assertThat(second(ports).getNumber())
                     .isNotEqualTo(originalAdminPort)
-                    .isBetween(15_000, 16_000);
+                    .isBetween(minPortNumber, maxPortNumber);
 
             assertThat(second(ports).getSecure()).isEqualTo(Port.Security.SECURE);
         }
@@ -465,7 +483,9 @@ class PortAssignerTest {
         @Test
         void shouldThrowNoAvailablePortException_WhenNoPortsAvailable() {
             var factory = new DefaultServerFactory();
-            var allowedRange = new AllowablePortRange(9_000, 9_100);
+            var minPortNumber = 9_000;
+            var maxPortNumber = 9_100;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
 
             var localPortChecker = mock(LocalPortChecker.class);
             when(localPortChecker.isPortAvailable(anyInt())).thenReturn(false);
@@ -480,112 +500,36 @@ class PortAssignerTest {
 
             assertThatThrownBy(assigner::assignDynamicPorts)
                     .isInstanceOf(NoAvailablePortException.class)
-                    .hasMessage("Could not find an available port between 9000 and 9100 after 303 attempts. I give up.");
-        }
-    }
-
-    @Nested
-    class FindFreePort {
-
-        @Test
-        void shouldReturnZero_WhenAllowablePortRangeIsNull() {
-            var assigner = PortAssigner.builder()
-                    .portSecurity(NON_SECURE)
-                    .serverFactory(new DefaultServerFactory())
-                    .build();
-
-            var port = assigner.findFreePort(Set.of());
-
-            assertThat(port).isZero();
+                    .hasMessage("Could not find an available port between %d and %d after 303 attempts. I give up.",
+                            minPortNumber, maxPortNumber);
         }
 
         @Test
-        void shouldFindFirstPortAvailableAndNotUsed() {
-            var range = new AllowablePortRange(9_000, 9_010);
-            var checker = mock(LocalPortChecker.class);
-            when(checker.isPortAvailable(anyInt())).thenReturn(true);
+        void shouldAllowCustomFreePortFinder() {
+            var factory = new DefaultServerFactory();
+            var localPortChecker = mock(LocalPortChecker.class);
+            when(localPortChecker.isPortAvailable(anyInt())).thenReturn(true);
+
+            var applicationPort = 42_000;
+            var adminPort = 42_001;
 
             var assigner = PortAssigner.builder()
                     .portSecurity(NON_SECURE)
-                    .serverFactory(new DefaultServerFactory())
-                    .allowablePortRange(range)
-                    .localPortChecker(checker)
+                    .serverFactory(factory)
+                    .localPortChecker(localPortChecker)
+                    .freePortFinder(ignoredPortRange -> new ServicePorts(applicationPort, adminPort))
                     .build();
 
-            var usedPorts = new HashSet<Integer>();
-            var port = assigner.findFreePort(usedPorts);
+            var ports = assigner.assignDynamicPorts();
 
-            assertThat(port).isBetween(9_000, 9_010);
-            verify(checker).isPortAvailable(anyInt());
-        }
+            assertThat(first(ports).getNumber()).isEqualTo(applicationPort);
+            assertThat(second(ports).getNumber()).isEqualTo(adminPort);
 
-        @Test
-        void shouldFindPortAvailableAndNotUsed_AfterCheckingOneFirst() {
-            var range = new AllowablePortRange(9_000, 9_001);
-            var checker = mock(LocalPortChecker.class);
-            when(checker.isPortAvailable(anyInt()))
-                    .thenReturn(false)
-                    .thenReturn(true);
+            var applicationConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpConnectorFactory.class);
+            assertThat(applicationConnector.getPort()).isEqualTo(applicationPort);
 
-            var assigner = PortAssigner.builder()
-                    .portSecurity(NON_SECURE)
-                    .serverFactory(new DefaultServerFactory())
-                    .allowablePortRange(range)
-                    .localPortChecker(checker)
-                    .build();
-
-            var usedPorts = new HashSet<Integer>();
-            var port = assigner.findFreePort(usedPorts);
-
-            assertThat(port).isBetween(9_000, 9_001);
-            verify(checker, times(2)).isPortAvailable(anyInt());
-        }
-
-        @SuppressWarnings("unchecked")
-        @Test
-        void shouldFindPortAvailableAndNotUsed_AfterFindingUsedOneFirst() {
-            var range = new AllowablePortRange(9_000, 9_001);
-            var checker = mock(LocalPortChecker.class);
-            when(checker.isPortAvailable(anyInt())).thenReturn(true);
-
-            var assigner = PortAssigner.builder()
-                    .portSecurity(NON_SECURE)
-                    .serverFactory(new DefaultServerFactory())
-                    .allowablePortRange(range)
-                    .localPortChecker(checker)
-                    .build();
-
-            var usedPorts = mock(HashSet.class);
-            when(usedPorts.contains(anyInt()))
-                    .thenReturn(true)
-                    .thenReturn(false);
-
-            var port = assigner.findFreePort(usedPorts);
-
-            assertThat(port).isBetween(9_000, 9_001);
-            verify(checker, times(2)).isPortAvailable(anyInt());
-            verify(usedPorts, times(2)).contains(anyInt());
-            verify(usedPorts).add(anyInt());
-        }
-
-        @Test
-        void shouldThrowNoAvailablePortException_WhenNoPortsCanBeFound() {
-            var range = new AllowablePortRange(9_000, 9_001);
-            var checker = mock(LocalPortChecker.class);
-            when(checker.isPortAvailable(anyInt())).thenReturn(false);
-
-            var assigner = PortAssigner.builder()
-                    .portSecurity(NON_SECURE)
-                    .serverFactory(new DefaultServerFactory())
-                    .allowablePortRange(range)
-                    .localPortChecker(checker)
-                    .build();
-
-            var usedPorts = new HashSet<Integer>();
-
-            assertThatThrownBy(() -> assigner.findFreePort(usedPorts))
-                    .isInstanceOf(NoAvailablePortException.class)
-                    .hasMessage("Could not find an available port between 9000 and 9001 after 6 attempts. I give up.");
+            var adminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpConnectorFactory.class);
+            assertThat(adminConnector.getPort()).isEqualTo(adminPort);
         }
     }
 
@@ -637,6 +581,7 @@ class PortAssignerTest {
             assertThat(PortSecurity.fromSecurity(security)).isEqualTo(expectedPortSecurity);
         }
 
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         @Test
         void shouldRequireNonNullSecurityEnumValue() {
             assertThatIllegalArgumentException()
