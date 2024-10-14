@@ -50,7 +50,7 @@ public class DynamicPortsConfiguration {
     /**
      * The highest port that can be assigned when {@code useDynamicPorts} is enabled.
      * <p>
-     * The default value is 65353 (the highest available port).
+     * The default value is 65,355 (the highest available port).
      */
     @Positive
     @Max(DEFAULT_MAX_DYNAMIC_PORT)

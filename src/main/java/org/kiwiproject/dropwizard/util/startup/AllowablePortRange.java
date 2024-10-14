@@ -23,9 +23,10 @@ public class AllowablePortRange {
     /**
      * Creates a new AllowablePortRange
      *
-     * @param minPortNumber The minimum port allowed in the range
-     * @param maxPortNumber The maximum port allowed in the range
-     * @throws IllegalStateException if the minPortNumber is greater than or equal to the maxPortNumber or if either port is not valid
+     * @param minPortNumber The minimum port allowed in the range (inclusive)
+     * @param maxPortNumber The maximum port allowed in the range (inclusive)
+     * @throws IllegalStateException if the minPortNumber is greater than or equal to the maxPortNumber,
+     * or if either port is not valid
      */
     public AllowablePortRange(int minPortNumber, int maxPortNumber) {
         checkState(minPortNumber < maxPortNumber,
