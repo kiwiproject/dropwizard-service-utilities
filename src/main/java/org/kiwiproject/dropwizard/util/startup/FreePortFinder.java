@@ -1,10 +1,8 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
-
 import io.dropwizard.jackson.Discoverable;
+import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 
 /**
  * Defines a contract for finding application and admin ports for a service.

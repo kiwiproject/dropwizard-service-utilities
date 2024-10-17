@@ -5,7 +5,6 @@ import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;

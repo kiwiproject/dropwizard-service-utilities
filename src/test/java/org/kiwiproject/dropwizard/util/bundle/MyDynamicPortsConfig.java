@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
-
 import org.kiwiproject.dropwizard.util.startup.FreePortFinder;
 
 @Getter
