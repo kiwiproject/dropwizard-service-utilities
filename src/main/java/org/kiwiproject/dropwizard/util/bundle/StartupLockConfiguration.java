@@ -36,7 +36,7 @@ public class StartupLockConfiguration {
     public static final Duration DEFAULT_ZK_STARTUP_LOCK_TIMEOUT = Duration.minutes(1);
 
     /**
-     * Whether ports are being assigned randomly during startup.
+     * Whether ports are being assigned dynamically during startup.
      * <p>
      * The default value is true.
      * <p>

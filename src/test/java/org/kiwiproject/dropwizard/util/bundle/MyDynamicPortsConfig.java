@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
 
+import org.kiwiproject.dropwizard.util.startup.FreePortFinder;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,4 +17,7 @@ public class MyDynamicPortsConfig extends Configuration {
 
     @With
     private boolean useDynamicPorts = true;
+
+    @With
+    private FreePortFinder freePortFinder;
 }

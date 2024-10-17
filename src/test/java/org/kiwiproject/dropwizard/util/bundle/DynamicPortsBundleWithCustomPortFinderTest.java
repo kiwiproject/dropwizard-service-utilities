@@ -10,22 +10,25 @@ import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kiwiproject.dropwizard.util.startup.AdjacentFreePortFinder;
 
-@DisplayName("DynamicPortsBundle")
+@DisplayName("DynamicPortsBundle (when using custom port finder)")
 @ExtendWith(DropwizardExtensionsSupport.class)
-class DynamicPortsBundleTest {
+public class DynamicPortsBundleWithCustomPortFinderTest {
 
-    static final DropwizardAppExtension<MyDynamicPortsConfig> APP =
-            new DropwizardAppExtension<>(MyDynamicPortsApp.class);
+    static final DropwizardAppExtension<MyDynamicPortsConfig> APP = new DropwizardAppExtension<>(
+        MyDynamicPortsApp.class,
+        new MyDynamicPortsConfig().withFreePortFinder(new AdjacentFreePortFinder()));
 
     @Test
-    void shouldAssignPortsInSpecifiedRange() {
+    void shouldAssignAdjacentPortsInSpecifiedRange() {
         assertExpectedApplicationPort(APP);
-        assertExpectedAdminPort(APP);
+        assertExpectedAdminPort(APP);;
 
         assertAll(
             () -> assertThat(APP.getLocalPort()).isBetween(MyDynamicPortsApp.MIN_DYNAMIC_PORT, MyDynamicPortsApp.MAX_DYNAMIC_PORT),
-            () -> assertThat(APP.getAdminPort()).isBetween(MyDynamicPortsApp.MIN_DYNAMIC_PORT, MyDynamicPortsApp.MAX_DYNAMIC_PORT)
+            () -> assertThat(APP.getAdminPort()).isBetween(MyDynamicPortsApp.MIN_DYNAMIC_PORT, MyDynamicPortsApp.MAX_DYNAMIC_PORT),
+            () -> assertThat(APP.getAdminPort()).isEqualTo(APP.getLocalPort() + 1)
         );
     }
 }

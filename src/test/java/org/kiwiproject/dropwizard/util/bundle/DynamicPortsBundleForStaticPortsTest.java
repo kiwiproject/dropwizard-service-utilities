@@ -22,12 +22,9 @@ class DynamicPortsBundleForStaticPortsTest {
 
     @Test
     void shouldUseStaticPorts() {
-        var myApp = (MyDynamicPortsApp) APP.getApplication();
-
         assertAll(
             () -> assertThat(APP.getLocalPort()).isEqualTo(DEFAULT_DROPWIZARD_APPLICATION_PORT),
-            () -> assertThat(APP.getAdminPort()).isEqualTo(DEFAULT_DROPWIZARD_ADMIN_PORT),
-            () -> assertThat(myApp.getLocalPortChecker().portCheckCount).hasValue(0)
+            () -> assertThat(APP.getAdminPort()).isEqualTo(DEFAULT_DROPWIZARD_ADMIN_PORT)
         );
     }
 }

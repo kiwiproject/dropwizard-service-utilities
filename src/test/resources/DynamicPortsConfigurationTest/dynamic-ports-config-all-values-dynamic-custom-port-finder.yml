@@ -5,9 +5,10 @@ dynamicPorts:
   useDynamicPorts: true
   useSecureDynamicPorts: true
   freePortFinder:
-    type: adjacent
-  minDynamicPort: 27000
-  maxDynamicPort: 29000
+    type: lowHigh
+    bannedPorts: [ 42, 48 ]
+  minDynamicPort: 30
+  maxDynamicPort: 50
   tls:
     keyStorePath: /data/etc/pki/my-ks.jks
     keyStorePassword: my-ks-pwd

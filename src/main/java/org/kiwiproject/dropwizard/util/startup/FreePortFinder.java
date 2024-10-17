@@ -1,5 +1,11 @@
 package org.kiwiproject.dropwizard.util.startup;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
+
+import io.dropwizard.jackson.Discoverable;
+
 /**
  * Defines a contract for finding application and admin ports for a service.
  * <p>
@@ -7,15 +13,15 @@ package org.kiwiproject.dropwizard.util.startup;
  * lambda expressions, method references, or constructor references.
  */
 @FunctionalInterface
-public interface FreePortFinder {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = RandomFreePortFinder.class)
+public interface FreePortFinder extends Discoverable {
 
     /**
      * Find application and admin ports.
      *
      * @param portRange the allowable port range
      * @return a new {@link ServicePorts} instance
-     * @throws org.kiwiproject.dropwizard.util.exception.NoAvailablePortException if no open port was found
-     *                                                                            in the allowable port range
+     * @throws NoAvailablePortException if no open ports were found in the allowable port range
      */
     ServicePorts find(AllowablePortRange portRange);
 

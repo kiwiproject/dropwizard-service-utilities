@@ -1,0 +1,6 @@
+---
+
+description: Demonstrates the adjacent free port finder
+
+freePortFinder:
+  type: adjacent

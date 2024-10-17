@@ -1,0 +1,6 @@
+---
+
+description: Demonstrates the incrementing free port finder
+
+freePortFinder:
+  type: incrementing

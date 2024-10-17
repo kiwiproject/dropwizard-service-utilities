@@ -4,6 +4,8 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
@@ -13,6 +15,7 @@ import org.kiwiproject.net.LocalPortChecker;
  * by traversing through each port number sequentially, and ensuring
  * that the ports are adjacent.
  */
+@JsonTypeName("adjacent")
 @Slf4j
 public class AdjacentFreePortFinder implements FreePortFinder {
 
