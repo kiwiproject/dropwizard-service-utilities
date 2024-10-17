@@ -56,7 +56,7 @@ public class IncrementingFreePortFinder implements FreePortFinder {
 
         var ports = IntStream.iterate(
                         portRange.getMinPortNumber(),
-                        port -> isBelowMaxPort(portRange, port),
+                        port -> isBelowOrEqualToMaxPort(portRange, port),
                         port -> port + 1)
                 .filter(localPortChecker::isPortAvailable)
                 .limit(2)
@@ -72,7 +72,7 @@ public class IncrementingFreePortFinder implements FreePortFinder {
         throw new NoAvailablePortException(message);
     }
 
-    private static boolean isBelowMaxPort(AllowablePortRange portRange, int port) {
-        return port < portRange.getMaxPortNumber();
+    private static boolean isBelowOrEqualToMaxPort(AllowablePortRange portRange, int port) {
+        return port <= portRange.getMaxPortNumber();
     }
 }
