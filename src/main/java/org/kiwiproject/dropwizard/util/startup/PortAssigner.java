@@ -111,7 +111,7 @@ public class PortAssigner {
     private final PortSecurity portSecurity;
 
     @Builder
-    private PortAssigner(TlsContextConfiguration tlsConfiguration,
+    private PortAssigner(@Nullable TlsContextConfiguration tlsConfiguration,
                          @Nullable PortAssignment portAssignment,
                          @Nullable FreePortFinder freePortFinder,
                          @Nullable AllowablePortRange allowablePortRange,
