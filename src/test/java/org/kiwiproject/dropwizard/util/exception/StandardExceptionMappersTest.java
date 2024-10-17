@@ -131,6 +131,7 @@ class StandardExceptionMappersTest {
         boolean registerDefaultExceptionMappersCalled;
         boolean argumentHadCorrectValue;
 
+        @SuppressWarnings("unused")  // this is called via reflection
         public void setRegisterDefaultExceptionMappers(Boolean registerDefaultExceptionMappers) {
             registerDefaultExceptionMappersCalled = true;
             argumentHadCorrectValue = nonNull(registerDefaultExceptionMappers) && !registerDefaultExceptionMappers;
