@@ -139,7 +139,7 @@ public class CachingHealthCheck extends HealthCheck {
      * Otherwise, return the last Result.
      */
     @Override
-    protected Result check() throws Exception {
+    protected Result check() {
         var nowEpochMillis = kiwiEnvironment.currentTimeMillis();
         var lastResult = lastResultReference.get();
         var millisSinceLastCheck = nowEpochMillis - lastResult.epochMillis();
