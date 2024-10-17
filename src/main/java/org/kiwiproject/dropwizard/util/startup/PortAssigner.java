@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.kiwiproject.config.TlsContextConfiguration;
 import org.kiwiproject.dropwizard.util.server.DropwizardConnectors;
-import org.kiwiproject.net.LocalPortChecker;
 import org.kiwiproject.registry.model.Port;
 import org.kiwiproject.registry.model.Port.PortType;
 
@@ -104,7 +103,6 @@ public class PortAssigner {
         }
     }
 
-    private final LocalPortChecker localPortChecker;
     private final TlsContextConfiguration tlsConfiguration;
     private final PortAssignment portAssignment;
     private final FreePortFinder freePortFinder;
@@ -113,21 +111,18 @@ public class PortAssigner {
     private final PortSecurity portSecurity;
 
     @Builder
-    private PortAssigner(LocalPortChecker localPortChecker,
-                         TlsContextConfiguration tlsConfiguration,
-                         PortAssignment portAssignment,
-                         FreePortFinder freePortFinder,
+    private PortAssigner(@Nullable TlsContextConfiguration tlsConfiguration,
+                         @Nullable PortAssignment portAssignment,
+                         @Nullable FreePortFinder freePortFinder,
                          @Nullable AllowablePortRange allowablePortRange,
                          ServerFactory serverFactory,
-                         PortSecurity portSecurity) {
+                         @Nullable PortSecurity portSecurity) {
 
-        this.localPortChecker = Optional.ofNullable(localPortChecker).orElse(new LocalPortChecker());
         this.portSecurity = Optional.ofNullable(portSecurity).orElse(PortSecurity.SECURE);
         this.tlsConfiguration = (this.portSecurity == PortSecurity.SECURE) ?
                 requireNotNull(tlsConfiguration, "tlsConfiguration must not be null when using secure ports") : null;
         this.portAssignment = Optional.ofNullable(portAssignment).orElse(PortAssignment.DYNAMIC);
-        this.freePortFinder = Optional.ofNullable(freePortFinder)
-                .orElseGet(() -> new RandomFreePortFinder(this.localPortChecker));
+        this.freePortFinder = Optional.ofNullable(freePortFinder).orElseGet(RandomFreePortFinder::new);
         this.allowablePortRange = allowablePortRange;
         this.serverFactory = requireDefaultServerFactory(serverFactory);
     }

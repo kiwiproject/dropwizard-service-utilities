@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.format;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
@@ -18,6 +19,7 @@ import java.util.stream.IntStream;
 /**
  * Finds random application and admin ports in an {@link AllowablePortRange}.
  */
+@JsonTypeName("random")
 @Slf4j
 public class RandomFreePortFinder implements FreePortFinder {
 

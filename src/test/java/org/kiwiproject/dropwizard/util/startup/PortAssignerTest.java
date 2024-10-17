@@ -11,7 +11,7 @@ import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignmen
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.NON_SECURE;
 import static org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity.SECURE;
 import static org.kiwiproject.test.assertj.KiwiAssertJ.assertIsExactType;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +30,6 @@ import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.dropwizard.util.startup.FreePortFinder.ServicePorts;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortAssignment;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner.PortSecurity;
-import org.kiwiproject.net.LocalPortChecker;
 import org.kiwiproject.registry.model.Port;
 
 import java.util.List;
@@ -40,31 +39,6 @@ class PortAssignerTest {
 
     @Nested
     class Builder {
-
-        @Nested
-        class LocalPortCheckerField {
-            @Test
-            void shouldCreateDefault_IfNotProvided() {
-                var assigner = PortAssigner.builder()
-                        .portSecurity(NON_SECURE)
-                        .serverFactory(new DefaultServerFactory())
-                        .build();
-
-                assertThat(assigner.getLocalPortChecker()).isNotNull();
-            }
-
-            @Test
-            void shouldUseProvided() {
-                var checker = new LocalPortChecker();
-                var assigner = PortAssigner.builder()
-                        .localPortChecker(checker)
-                        .portSecurity(NON_SECURE)
-                        .serverFactory(new DefaultServerFactory())
-                        .build();
-
-                assertThat(assigner.getLocalPortChecker()).isSameAs(checker);
-            }
-        }
 
         @Nested
         class PortSecurityField {
@@ -487,28 +461,26 @@ class PortAssignerTest {
             var maxPortNumber = 9_100;
             var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
 
-            var localPortChecker = mock(LocalPortChecker.class);
-            when(localPortChecker.isPortAvailable(anyInt())).thenReturn(false);
+            var freePortFinder = mock(FreePortFinder.class);
+            when(freePortFinder.find(any()))
+                    .thenThrow(new NoAvailablePortException("Did not find any open ports!"));
 
             var assigner = PortAssigner.builder()
                     .portAssignment(DYNAMIC)
                     .serverFactory(factory)
                     .portSecurity(NON_SECURE)
                     .allowablePortRange(allowedRange)
-                    .localPortChecker(localPortChecker)
+                    .freePortFinder(freePortFinder)
                     .build();
 
             assertThatThrownBy(assigner::assignDynamicPorts)
                     .isInstanceOf(NoAvailablePortException.class)
-                    .hasMessage("Could not find an available port between %d and %d after 303 attempts. I give up.",
-                            minPortNumber, maxPortNumber);
+                    .hasMessage("Did not find any open ports!");
         }
 
         @Test
         void shouldAllowCustomFreePortFinder() {
             var factory = new DefaultServerFactory();
-            var localPortChecker = mock(LocalPortChecker.class);
-            when(localPortChecker.isPortAvailable(anyInt())).thenReturn(true);
 
             var applicationPort = 42_000;
             var adminPort = 42_001;
@@ -516,7 +488,6 @@ class PortAssignerTest {
             var assigner = PortAssigner.builder()
                     .portSecurity(NON_SECURE)
                     .serverFactory(factory)
-                    .localPortChecker(localPortChecker)
                     .freePortFinder(ignoredPortRange -> new ServicePorts(applicationPort, adminPort))
                     .build();
 

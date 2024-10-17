@@ -6,16 +6,15 @@ import static org.kiwiproject.dropwizard.util.bundle.PortAssigners.portSecurityF
 import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.getAdminPorts;
 import static org.kiwiproject.dropwizard.util.server.DropwizardConnectors.getApplicationPorts;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.dropwizard.util.startup.PortAssigner;
-import org.kiwiproject.net.LocalPortChecker;
 
 /**
- * Dropwizard bundle that assigns random ports dynamically during application initialization.
+ * Dropwizard bundle that assigns ports dynamically during application initialization.
+ * See {@link DynamicPortsConfiguration} for the various configuration options.
  * <p>
  * Port assignment occurs before the Dropwizard application starts the Jetty server.
  * <p>
@@ -41,10 +40,10 @@ public abstract class DynamicPortsBundle<C extends Configuration>
         var portAssigner = PortAssigner.builder()
                 .portAssignment(portAssignment)
                 .allowablePortRange(portRange)
-                .localPortChecker(getLocalPortChecker())
                 .portSecurity(portSecurity)
                 .serverFactory(configuration.getServerFactory())
                 .tlsConfiguration(dynamicPortsConfig.getTlsContextConfiguration())
+                .freePortFinder(dynamicPortsConfig.getFreePortFinder())
                 .build();
 
         portAssigner.assignDynamicPorts();
@@ -53,10 +52,5 @@ public abstract class DynamicPortsBundle<C extends Configuration>
                 dynamicPortsConfig.isUseDynamicPorts(),
                 getApplicationPorts(configuration),
                 getAdminPorts(configuration));
-    }
-
-    @VisibleForTesting
-    LocalPortChecker getLocalPortChecker() {
-        return new LocalPortChecker();
     }
 }

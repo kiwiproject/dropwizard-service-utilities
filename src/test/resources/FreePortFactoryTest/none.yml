@@ -1,0 +1,5 @@
+---
+
+# There MUST be something in here or else Dropwizard blows up when parsing the configuration!
+
+description: Demonstrates free port finder from the field default value

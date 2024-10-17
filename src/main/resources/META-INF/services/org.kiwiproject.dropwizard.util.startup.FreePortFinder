@@ -1,0 +1,3 @@
+org.kiwiproject.dropwizard.util.startup.AdjacentFreePortFinder
+org.kiwiproject.dropwizard.util.startup.IncrementingFreePortFinder
+org.kiwiproject.dropwizard.util.startup.RandomFreePortFinder

@@ -4,6 +4,7 @@ import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotNull;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
 
@@ -13,6 +14,7 @@ import java.util.stream.IntStream;
  * Finds application and admin ports in an {@link AllowablePortRange}
  * by traversing through each port number sequentially.
  */
+@JsonTypeName("incrementing")
 public class IncrementingFreePortFinder implements FreePortFinder {
 
     private final LocalPortChecker localPortChecker;
