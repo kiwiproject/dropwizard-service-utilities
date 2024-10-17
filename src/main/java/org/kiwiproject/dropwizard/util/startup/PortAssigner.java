@@ -122,8 +122,7 @@ public class PortAssigner {
         this.tlsConfiguration = (this.portSecurity == PortSecurity.SECURE) ?
                 requireNotNull(tlsConfiguration, "tlsConfiguration must not be null when using secure ports") : null;
         this.portAssignment = Optional.ofNullable(portAssignment).orElse(PortAssignment.DYNAMIC);
-        this.freePortFinder = Optional.ofNullable(freePortFinder)
-                .orElseGet(() -> new RandomFreePortFinder());
+        this.freePortFinder = Optional.ofNullable(freePortFinder).orElseGet(RandomFreePortFinder::new);
         this.allowablePortRange = allowablePortRange;
         this.serverFactory = requireDefaultServerFactory(serverFactory);
     }

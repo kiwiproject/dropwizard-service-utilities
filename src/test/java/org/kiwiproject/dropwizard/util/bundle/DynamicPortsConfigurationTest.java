@@ -164,7 +164,7 @@ class DynamicPortsConfigurationTest {
             var applicationPort = IntStream.iterate(minPort, port-> port + 1)
                     .filter(localPortChecker::isPortAvailable)
                     .findFirst()
-                    .orElseThrow(() -> new NoAvailablePortException("cannot find an application port"));                    ;
+                    .orElseThrow(() -> new NoAvailablePortException("cannot find an application port"));
 
             var maxPort = portRange.getMaxPortNumber();
             var adminPort = IntStream.iterate(maxPort, port -> port - 1)

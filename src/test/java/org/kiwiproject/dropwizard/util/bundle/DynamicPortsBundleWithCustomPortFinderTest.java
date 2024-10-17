@@ -14,7 +14,7 @@ import org.kiwiproject.dropwizard.util.startup.AdjacentFreePortFinder;
 
 @DisplayName("DynamicPortsBundle (when using custom port finder)")
 @ExtendWith(DropwizardExtensionsSupport.class)
-public class DynamicPortsBundleWithCustomPortFinderTest {
+class DynamicPortsBundleWithCustomPortFinderTest {
 
     static final DropwizardAppExtension<MyDynamicPortsConfig> APP = new DropwizardAppExtension<>(
         MyDynamicPortsApp.class,
@@ -23,7 +23,7 @@ public class DynamicPortsBundleWithCustomPortFinderTest {
     @Test
     void shouldAssignAdjacentPortsInSpecifiedRange() {
         assertExpectedApplicationPort(APP);
-        assertExpectedAdminPort(APP);;
+        assertExpectedAdminPort(APP);
 
         assertAll(
             () -> assertThat(APP.getLocalPort()).isBetween(MyDynamicPortsApp.MIN_DYNAMIC_PORT, MyDynamicPortsApp.MAX_DYNAMIC_PORT),
