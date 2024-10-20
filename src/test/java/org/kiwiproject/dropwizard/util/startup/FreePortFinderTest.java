@@ -1,26 +1,17 @@
 package org.kiwiproject.dropwizard.util.startup;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.kiwiproject.test.constants.KiwiTestConstants.OBJECT_MAPPER;
 
-import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
-import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.core.Configuration;
 import io.dropwizard.jackson.DiscoverableSubtypeResolver;
-import io.dropwizard.jersey.validation.Validators;
-import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.kiwiproject.test.dropwizard.configuration.DropwizardConfigurations;
 
 @DisplayName("FreePortFinder")
 class FreePortFinderTest {
-
-    private static final Validator VALIDATOR = Validators.newValidator();
-
-    private static final YamlConfigurationFactory<CustomConfig> CONFIG_FACTORY =
-            new YamlConfigurationFactory<>(CustomConfig.class, VALIDATOR, OBJECT_MAPPER, "dw");
 
     @Test
     void shouldFindDiscoverableFreePortFinderTypes() {
@@ -57,11 +48,8 @@ class FreePortFinderTest {
     }
 
     private static CustomConfig parse(String configPath) {
-        try {
-            return CONFIG_FACTORY.build(new ResourceConfigurationSourceProvider(), "FreePortFactoryTest/" + configPath);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return DropwizardConfigurations.newConfiguration(
+                CustomConfig.class, "FreePortFactoryTest/" + configPath);
     }
 
     @Getter
