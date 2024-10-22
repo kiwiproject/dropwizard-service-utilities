@@ -66,6 +66,8 @@ public abstract class StartupLockBundle<C extends Configuration>
                 startupLockConfig.getCuratorConfig(),
                 environment);
 
+        LOG.debug("For lock {}, state is {} ({})", lockPath, lockInfo.getLockState(), lockInfo.getInfoMessage());
+
         LOG.trace("Add fallback startup listener");
         startupLocker.addFallbackJettyStartupLifeCycleListener(lockInfo, environment);
 

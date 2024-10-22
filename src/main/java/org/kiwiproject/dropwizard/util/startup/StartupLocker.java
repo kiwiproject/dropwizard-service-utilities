@@ -100,6 +100,8 @@ public class StartupLocker {
             }
         }
 
+        LOG.info("Lock was not attempted because no ZooKeeper servers were available for connect string: {}",
+                curatorConfig.getZkConnectString());
         return StartupLockInfo.builder()
                 .lockState(StartupLockInfo.LockState.NOT_ATTEMPTED)
                 .infoMessage(format("No ZooKeepers are available from connect string [{}]", curatorConfig.getZkConnectString()))
