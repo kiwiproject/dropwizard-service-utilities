@@ -29,7 +29,7 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard-curator.version>2.1.5</dropwizard-curator.version>
+        <dropwizard-curator.version>2.1.6</dropwizard-curator.version>
         <kiwi.version>4.5.2</kiwi.version>
         <kiwi-bom.version>2.0.18</kiwi-bom.version>
         <metrics-healthchecks-severity.version>2.0.7</metrics-healthchecks-severity.version>
