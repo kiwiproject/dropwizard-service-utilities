@@ -1,7 +1,7 @@
 package org.kiwiproject.dropwizard.util.health;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.kiwiproject.test.okhttp3.mockwebserver.RecordedRequestAssertions.assertThatRecordedRequest;
 import static org.kiwiproject.test.okhttp3.mockwebserver.RecordedRequests.assertNoMoreRequests;
 import static org.kiwiproject.test.okhttp3.mockwebserver.RecordedRequests.takeRequiredRequest;
 import static org.mockito.Mockito.mock;
@@ -168,8 +168,9 @@ class UrlHealthCheckTest {
 
     private void verifyRequest() {
         var request = takeRequiredRequest(server);
-        assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getPath()).isEqualTo(STATUS_PATH);
+        assertThatRecordedRequest(request)
+                .isGET()
+                .hasPath(STATUS_PATH);
 
         assertNoMoreRequests(server);
     }
