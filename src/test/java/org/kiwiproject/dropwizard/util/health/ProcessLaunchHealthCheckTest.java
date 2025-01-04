@@ -6,7 +6,6 @@ import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultA
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Charsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 
 @DisplayName("ProcessLaunchHealthCheck")
 class ProcessLaunchHealthCheckTest {
@@ -94,7 +94,7 @@ class ProcessLaunchHealthCheckTest {
     }
 
     private InputStream toInputStream(String value) {
-        return new ByteArrayInputStream(value.getBytes(Charsets.UTF_8));
+        return new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
     }
 }
 
