@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>3.0.20</version>
+        <version>3.0.21</version>
     </parent>
 
     <artifactId>dropwizard-service-utilities</artifactId>
@@ -29,14 +29,14 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard-curator.version>2.1.6</dropwizard-curator.version>
-        <kiwi.version>4.5.2</kiwi.version>
-        <kiwi-bom.version>2.0.18</kiwi-bom.version>
-        <metrics-healthchecks-severity.version>2.0.7</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>2.1.4</service-discovery-client.version>
+        <dropwizard-curator.version>2.1.7</dropwizard-curator.version>
+        <kiwi.version>4.6.1</kiwi.version>
+        <kiwi-bom.version>2.0.20</kiwi-bom.version>
+        <metrics-healthchecks-severity.version>2.0.8</metrics-healthchecks-severity.version>
+        <service-discovery-client.version>2.1.5</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
-        <registry-aware-jersey-client.version>2.1.1</registry-aware-jersey-client.version>
+        <registry-aware-jersey-client.version>2.1.2</registry-aware-jersey-client.version>
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>3.8.0</kiwi-test.version>
