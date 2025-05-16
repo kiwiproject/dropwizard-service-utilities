@@ -1,5 +1,5 @@
 # Dropwizard Service Utilities
-[![Build](https://github.com/kiwiproject/dropwizard-service-utilities/workflows/build/badge.svg)](https://github.com/kiwiproject/dropwizard-service-utilities/actions?query=workflow%3Abuild)
+[![Build](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/build.yml?query=branch%3Amain)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_dropwizard-service-utilities&metric=alert_status)](https://sonarcloud.io/dashboard?id=kiwiproject_dropwizard-service-utilities)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_dropwizard-service-utilities&metric=coverage)](https://sonarcloud.io/dashboard?id=kiwiproject_dropwizard-service-utilities)
 [![CodeQL](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/codeql.yml/badge.svg)](https://github.com/kiwiproject/dropwizard-service-utilities/actions/workflows/codeql.yml)
