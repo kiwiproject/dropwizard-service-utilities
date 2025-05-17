@@ -6,7 +6,7 @@ import static org.kiwiproject.base.KiwiStrings.format;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.kiwiproject.dropwizard.util.exception.NoAvailablePortException;
 import org.kiwiproject.net.LocalPortChecker;
 

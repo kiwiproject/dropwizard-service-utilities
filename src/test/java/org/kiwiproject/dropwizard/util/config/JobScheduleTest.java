@@ -9,7 +9,7 @@ import static org.kiwiproject.test.constants.KiwiTestConstants.JSON_HELPER;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
