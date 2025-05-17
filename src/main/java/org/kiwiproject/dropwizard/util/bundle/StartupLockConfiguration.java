@@ -62,7 +62,6 @@ public class StartupLockConfiguration {
      * <p>
      * The default value is {@link #DEFAULT_ZK_STARTUP_LOCK_TIMEOUT}.
      */
-    @SuppressWarnings("DefaultAnnotationParam")
     @NotNull
     @MinDuration(value = 1, unit = TimeUnit.SECONDS)
     private Duration zkStartupLockTimeout;
