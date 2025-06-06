@@ -3,6 +3,7 @@ package org.kiwiproject.dropwizard.util.health;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
+import static org.kiwiproject.time.KiwiDurationFormatters.formatDropwizardDurationWords;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -206,8 +207,10 @@ class MonitoredJobHealthCheckTest {
                     .expectedFrequency(Duration.seconds(1))
                     .build();
 
-            assertUnhealthyHealthCheck(healthCheck, "An error has occurred at: {}, which is within the threshold of: {}",
-                    Instant.ofEpochMilli(now-1).toString(), MonitoredJobHealthCheck.DEFAULT_WARNING_DURATION);
+            assertUnhealthyHealthCheck(healthCheck, 
+            "An error has occurred at: {}, which is within the threshold of: {}",
+                    Instant.ofEpochMilli(failureOutsideThreshold).toString(), 
+                    formatDropwizardDurationWords(MonitoredJobHealthCheck.DEFAULT_WARNING_DURATION));
         }
 
         @Test
@@ -249,8 +252,10 @@ class MonitoredJobHealthCheckTest {
                     .environment(env)
                     .build();
 
-            assertUnhealthyHealthCheck(healthCheck, "Last successful execution was: {}, which is older than the threshold of: {} seconds",
-                    Instant.ofEpochMilli(lastSuccess).toString(), MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toSeconds());
+            assertUnhealthyHealthCheck(healthCheck, 
+            "Last successful execution was: {}, which is older than the threshold of: {}",
+                    Instant.ofEpochMilli(lastSuccess).toString(), 
+                    formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
 
         }
 

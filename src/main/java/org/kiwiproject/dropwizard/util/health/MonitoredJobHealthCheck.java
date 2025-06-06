@@ -7,6 +7,8 @@ import static org.kiwiproject.base.KiwiStrings.f;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResultBuilder;
+import static org.kiwiproject.time.KiwiDurationFormatters.formatDropwizardDurationWords;
+import static org.kiwiproject.time.KiwiDurationFormatters.formatMillisecondDurationWords;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.annotations.VisibleForTesting;
@@ -90,11 +92,13 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     private final MonitoredJob job;
     private final long expectedFrequency;
     private final Duration errorWarningDuration;
+    private final String errorWarningDurationString;
     private final long errorWarningMilliseconds;
     private final double thresholdFactor;
     private final long lowerTimeBound;
     private final KiwiEnvironment kiwiEnvironment;
     private final long warningThreshold;
+    private final String warningThresholdString;
 
     @Builder
     private MonitoredJobHealthCheck(MonitoredJob job,
@@ -107,11 +111,13 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         this.job = requireNotNull(job, "job is required");
         this.expectedFrequency = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
         this.errorWarningDuration = isNull(errorWarningDuration) ? DEFAULT_WARNING_DURATION : errorWarningDuration;
+        this.errorWarningDurationString = formatDropwizardDurationWords(this.errorWarningDuration);
         this.errorWarningMilliseconds = this.errorWarningDuration.toMilliseconds();
         this.thresholdFactor = isNull(thresholdFactor) ? DEFAULT_THRESHOLD_FACTOR : thresholdFactor;
         this.kiwiEnvironment = isNull(environment) ? new DefaultEnvironment() : environment;
         this.lowerTimeBound = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
         this.warningThreshold = getWarningThreshold();
+        this.warningThresholdString = formatMillisecondDurationWords(this.warningThreshold);
     }
 
     @Override
@@ -126,12 +132,12 @@ public class MonitoredJobHealthCheck extends HealthCheck {
             var lastFailure = job.getLastFailure().get();
             if ((now - lastFailure) < errorWarningMilliseconds) {
                 return buildUnhealthyResult(f("An error has occurred at: {}, which is within the threshold of: {}",
-                        instantToStringOrNever(job.getLastFailure().get()), errorWarningDuration));
+                        instantToStringOrNever(job.getLastFailure().get()), errorWarningDurationString));
             }
 
             if ((now - getTimeOrServerStart(lastRun)) > warningThreshold) {
-                return buildUnhealthyResult(f("Last successful execution was: {}, which is older than the threshold of: {} seconds",
-                        instantToStringOrNever(lastRun), Duration.milliseconds(warningThreshold).toSeconds()));
+                return buildUnhealthyResult(f("Last successful execution was: {}, which is older than the threshold of: {}",
+                        instantToStringOrNever(lastRun), warningThresholdString));
             }
 
             return buildHealthyResult(f("Last successful execution was: {}", instantToStringOrNever(lastRun)));
