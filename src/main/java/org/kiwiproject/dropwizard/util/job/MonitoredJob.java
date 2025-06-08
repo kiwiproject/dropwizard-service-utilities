@@ -12,8 +12,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.kiwiproject.base.CatchingRunnable;
 import org.kiwiproject.base.DefaultEnvironment;
+import org.kiwiproject.base.KiwiDeprecated;
 import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.base.KiwiThrowables;
 
@@ -85,37 +87,58 @@ public class MonitoredJob implements CatchingRunnable {
 
     private final Duration timeout;
 
+    /**
+     * The name of this job.
+     */
     @Getter
     private final String name;
 
+    /**
+     * The decision function this job will use to determine whether to execute.
+     */
     @Getter(AccessLevel.PACKAGE)
     private final Predicate<MonitoredJob> decisionFunction;
 
+    /**
+     * The {@link KiwiEnvironment} to use.
+     */
     @Getter(AccessLevel.PACKAGE)
     private final KiwiEnvironment environment;
 
     /**
-     * Millis since epoch when job was last successful. Will be zero if job has never run or never succeeded.
+     * Millis since the epoch when the job was last successful. Will be zero if the job has never run or never succeeded.
      */
-    @Getter
+    @Getter(onMethod_ = {
+            @Deprecated(since = "4.1.0", forRemoval = true),
+            @KiwiDeprecated(replacedBy = "#lastSuccessMillis()", removeAt = "5.0.0")
+    })
     private final AtomicLong lastSuccess = new AtomicLong();
 
     /**
-     * Millis since epoch when job last failed. Will be zero if job has never run or never failed.
+     * Millis since the epoch when the job last failed. Will be zero if the job has never run or never failed.
      */
-    @Getter
+    @Getter(onMethod_ = {
+            @Deprecated(since = "4.1.0", forRemoval = true),
+            @KiwiDeprecated(replacedBy = "#lastFailureMillis()", removeAt = "5.0.0")
+    })
     private final AtomicLong lastFailure = new AtomicLong();
 
     /**
-     * Number of times job has failed. Will be zero if job has never run or never failed.
+     * Number of times the job has failed. Will be zero if the job has never run or never failed.
      */
-    @Getter
+    @Getter(onMethod_ = {
+            @Deprecated(since = "4.1.0", forRemoval = true),
+            @KiwiDeprecated(replacedBy = "#failureCount()", removeAt = "5.0.0")
+    })
     private final AtomicLong failureCount = new AtomicLong();
 
     /**
-     * Millis since epoch when job was last executed. Will be zero if job has never run.
+     * Millis since the epoch when the job was last executed. Will be zero if the job has never run.
      */
-    @Getter
+    @Getter(onMethod_ = {
+            @Deprecated(since = "4.1.0", forRemoval = true),
+            @KiwiDeprecated(replacedBy = "#lastExecutionTimeMillis()", removeAt = "5.0.0")
+    })
     private final AtomicLong lastExecutionTime = new AtomicLong();
 
     /**
@@ -123,7 +146,10 @@ public class MonitoredJob implements CatchingRunnable {
      * instance containing information about it. It intentionally does not store the actual
      * Exception instance.
      */
-    @Getter
+    @Getter(onMethod_ = {
+            @Deprecated(since = "4.1.0", forRemoval = true),
+            @KiwiDeprecated(replacedBy = "#lastJobExceptionInfo()", removeAt = "5.0.0")
+    })
     private final AtomicReference<JobExceptionInfo> lastJobExceptionInfo = new AtomicReference<>();
 
     @Builder
@@ -166,7 +192,7 @@ public class MonitoredJob implements CatchingRunnable {
     /**
      * Checks if the job should be active and execute by delegating to the decision function.
      * <p>
-     * This is useful if the same job runs in separate JVMs but only a single one of the jobs should run at a time.
+     * This is useful if the same job runs in separate JVMs, but only a single one of the jobs should run at a time.
      * For example, suppose there are multiple instances of a service that has a data cleanup job that runs
      * occasionally, but you only want one of the active instances to actually run the cleanup job. In this
      * situation, you could provide a decision function that uses a
@@ -212,5 +238,53 @@ public class MonitoredJob implements CatchingRunnable {
                             " Look for the exception and stack trace (probably above this message) logged by CatchingRunnable#runSafely.",
                     exceptionType, name, KiwiThrowables.typeOfNullable(rootCause).orElse(null));
         }
+    }
+
+    /**
+     * Millis since the epoch when the job was last successful. Will be zero if the job has never run or never succeeded.
+     *
+     * @return millis since the epoch when the job was last successful, or zero
+     */
+    public long lastSuccessMillis() {
+        return lastSuccess.get();
+    }
+
+    /**
+     * Millis since the epoch when the job last failed. Will be zero if the job has never run or never failed.
+     *
+     * @return millis since the epoch when the job last failed, or zero
+     */
+    public long lastFailureMillis() {
+        return lastFailure.get();
+    }
+
+    /**
+     * Number of times the job has failed. Will be zero if the job has never run or never failed.
+     *
+     * @return number of times the job has failed, or zero
+     */
+    public long failureCount() {
+        return failureCount.get();
+    }
+
+    /**
+     * Millis since the epoch when the job was last executed. Will be zero if the job has never run.
+     *
+     * @return millis since the epoch when the job was last executed, or zero
+     */
+    public long lastExecutionTimeMillis() {
+        return lastExecutionTime.get();
+    }
+
+    /**
+     * If the last job failure contained an exception, this will return a {@link JobExceptionInfo}
+     * instance containing information about it. It intentionally does not store the actual
+     * Exception instance. Otherwise, it returns {@code null}.
+     *
+     * @return the last exception if the job failed and contained an exception, or {@code null}
+     */
+    @Nullable
+    public JobExceptionInfo lastJobExceptionInfo() {
+        return lastJobExceptionInfo.get();
     }
 }

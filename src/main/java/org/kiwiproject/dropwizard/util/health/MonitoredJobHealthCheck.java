@@ -123,16 +123,16 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     @Override
     protected Result check() {
         try {
-            var lastRun = job.getLastSuccess().get();
+            var lastRun = job.lastSuccessMillis();
             if (!job.isActive()) {
                 return buildHealthyResult(f("Job is inactive. (last run: {})", instantToStringOrNever(lastRun)));
             }
 
             var now = kiwiEnvironment.currentTimeMillis();
-            var lastFailure = job.getLastFailure().get();
+            var lastFailure = job.lastFailureMillis();
             if ((now - lastFailure) < errorWarningMilliseconds) {
                 return buildUnhealthyResult(f("An error has occurred at: {}, which is within the threshold of: {}",
-                        instantToStringOrNever(job.getLastFailure().get()), errorWarningDurationString));
+                        instantToStringOrNever(lastFailure), errorWarningDurationString));
             }
 
             if ((now - getTimeOrServerStart(lastRun)) > warningThreshold) {
@@ -163,11 +163,11 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         return resultBuilder
                 .withMessage(message)
                 .withDetail("jobName", job.getName())
-                .withDetail("totalErrors", job.getFailureCount())
-                .withDetail("lastFailure", job.getLastFailure())
-                .withDetail("lastJobExceptionInfo", job.getLastJobExceptionInfo())
-                .withDetail("lastSuccess", job.getLastSuccess())
-                .withDetail("lastExecutionTimeMs", job.getLastExecutionTime())
+                .withDetail("totalErrors", job.failureCount())
+                .withDetail("lastFailure", job.lastFailureMillis())
+                .withDetail("lastJobExceptionInfo", job.lastJobExceptionInfo())
+                .withDetail("lastSuccess", job.lastSuccessMillis())
+                .withDetail("lastExecutionTimeMs", job.lastExecutionTimeMillis())
                 .withDetail("expectedFrequencyMs", expectedFrequency)
                 .withDetail("warningThresholdMs", getWarningThreshold())
                 .withDetail("errorWarningDurationMs", errorWarningMilliseconds);

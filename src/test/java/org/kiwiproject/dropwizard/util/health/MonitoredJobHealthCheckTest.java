@@ -18,8 +18,6 @@ import org.kiwiproject.dropwizard.util.job.MonitoredJob;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 @DisplayName("MonitoredJobHealthCheck")
 class MonitoredJobHealthCheckTest {
@@ -86,7 +84,7 @@ class MonitoredJobHealthCheckTest {
 
             @Test
             void andHasRunBefore() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+                when(job.lastSuccessMillis()).thenReturn(now);
                 when(job.isActive()).thenReturn(false);
 
                 assertHealthyHealthCheck(healthCheck, "Job is inactive. (last run: {})",
@@ -95,7 +93,7 @@ class MonitoredJobHealthCheckTest {
 
             @Test
             void andHasNeverRun() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong());
+                when(job.lastSuccessMillis()).thenReturn(0L);
                 when(job.isActive()).thenReturn(false);
 
                 assertHealthyHealthCheck(healthCheck, "Job is inactive. (last run: never)");
@@ -118,20 +116,20 @@ class MonitoredJobHealthCheckTest {
 
             @Test
             void becauseJobHasNeverFailed() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+                when(job.lastSuccessMillis()).thenReturn(now);
                 when(job.isActive()).thenReturn(true);
-                when(job.getLastFailure()).thenReturn(new AtomicLong());
+                when(job.lastFailureMillis()).thenReturn(0L);
 
                 assertHealthyHealthCheck(healthCheck, "Last successful execution was: {}", Instant.ofEpochMilli(now).toString());
             }
 
             @Test
             void becauseJobFailedOutsideOfThreshold() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+                when(job.lastSuccessMillis()).thenReturn(now);
                 when(job.isActive()).thenReturn(true);
 
                 var failureOutsideThreshold = now - MonitoredJobHealthCheck.DEFAULT_WARNING_DURATION.toMilliseconds() - 1;
-                when(job.getLastFailure()).thenReturn(new AtomicLong(failureOutsideThreshold));
+                when(job.lastFailureMillis()).thenReturn(failureOutsideThreshold);
 
                 assertHealthyHealthCheck(healthCheck, "Last successful execution was: {}", Instant.ofEpochMilli(now).toString());
             }
@@ -142,9 +140,9 @@ class MonitoredJobHealthCheckTest {
 
             @Test
             void becauseLastRunIsCloseEnough() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+                when(job.lastSuccessMillis()).thenReturn(now);
                 when(job.isActive()).thenReturn(true);
-                when(job.getLastFailure()).thenReturn(new AtomicLong());
+                when(job.lastFailureMillis()).thenReturn(0L);
 
                 var env = mock(KiwiEnvironment.class);
                 when(env.currentTimeMillis())
@@ -162,9 +160,9 @@ class MonitoredJobHealthCheckTest {
 
             @Test
             void becauseCheckRanRightAfterStartup_BeforeFirstRun() {
-                when(job.getLastSuccess()).thenReturn(new AtomicLong());
+                when(job.lastSuccessMillis()).thenReturn(0L);
                 when(job.isActive()).thenReturn(true);
-                when(job.getLastFailure()).thenReturn(new AtomicLong());
+                when(job.lastFailureMillis()).thenReturn(0L);
 
                 var env = mock(KiwiEnvironment.class);
                 when(env.currentTimeMillis())
@@ -196,11 +194,11 @@ class MonitoredJobHealthCheckTest {
 
         @Test
         void whenLastFailureIsWithinThreshold() {
-            when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+            when(job.lastSuccessMillis()).thenReturn(now);
             when(job.isActive()).thenReturn(true);
 
             var failureOutsideThreshold = now - 1;
-            when(job.getLastFailure()).thenReturn(new AtomicLong(failureOutsideThreshold));
+            when(job.lastFailureMillis()).thenReturn(failureOutsideThreshold);
 
             var healthCheck = MonitoredJobHealthCheck.builder()
                     .job(job)
@@ -215,14 +213,13 @@ class MonitoredJobHealthCheckTest {
 
         @Test
         void whenLastFailureContainsAnException() {
-            when(job.getLastSuccess()).thenReturn(new AtomicLong(now));
+            when(job.lastSuccessMillis()).thenReturn(now);
             when(job.isActive()).thenReturn(true);
 
             var failureOutsideThreshold = now - 1;
-            when(job.getLastFailure()).thenReturn(new AtomicLong(failureOutsideThreshold));
-            var jobExceptionInfoReference =
-                    new AtomicReference<>(JobExceptionInfo.from(new IOException("unexpected I/O disk error")));
-            when(job.getLastJobExceptionInfo()).thenReturn(jobExceptionInfoReference);
+            when(job.lastFailureMillis()).thenReturn(failureOutsideThreshold);
+            var jobExceptionInfo = JobExceptionInfo.from(new IOException("unexpected I/O disk error"));
+            when(job.lastJobExceptionInfo()).thenReturn(jobExceptionInfo);
 
             var healthCheck = MonitoredJobHealthCheck.builder()
                     .job(job)
@@ -231,15 +228,15 @@ class MonitoredJobHealthCheckTest {
 
             assertThatHealthCheck(healthCheck)
                     .isUnhealthy()
-                    .hasDetail("lastJobExceptionInfo", jobExceptionInfoReference);
+                    .hasDetail("lastJobExceptionInfo", jobExceptionInfo);
         }
 
         @Test
         void whenLastRunIsOutsideExpectedFrequency() {
             var lastSuccess = now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1;
-            when(job.getLastSuccess()).thenReturn(new AtomicLong(lastSuccess));
+            when(job.lastSuccessMillis()).thenReturn(lastSuccess);
             when(job.isActive()).thenReturn(true);
-            when(job.getLastFailure()).thenReturn(new AtomicLong());
+            when(job.lastFailureMillis()).thenReturn(0L);
 
             var env = mock(KiwiEnvironment.class);
             when(env.currentTimeMillis())
@@ -261,9 +258,9 @@ class MonitoredJobHealthCheckTest {
 
         @Test
         void whenExceptionIsThrown() {
-            when(job.getLastSuccess())
+            when(job.lastSuccessMillis())
                     .thenThrow(new RuntimeException("oops"))
-                    .thenReturn(new AtomicLong());
+                    .thenReturn(0L);
 
             var healthCheck = MonitoredJobHealthCheck.builder()
                     .job(job)
@@ -275,7 +272,7 @@ class MonitoredJobHealthCheckTest {
 
         @Test
         void whenExceptionIsThrownWhileProcessingException() {
-            when(job.getLastSuccess())
+            when(job.lastSuccessMillis())
                     .thenThrow(new RuntimeException("oops"));
 
             var healthCheck = MonitoredJobHealthCheck.builder()
