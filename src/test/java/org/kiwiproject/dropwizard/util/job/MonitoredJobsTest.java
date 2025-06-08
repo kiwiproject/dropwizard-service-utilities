@@ -250,7 +250,7 @@ class MonitoredJobsTest {
 
             private boolean executedMoreThanFiveMinutesAgo(MonitoredJob job) {
                 var now = System.currentTimeMillis();
-                var lastExecuted = job.getLastExecutionTime().get();
+                var lastExecuted = job.lastExecutionTimeMillis();
                 var millisSinceLastExecuted = now - lastExecuted;
                 return millisSinceLastExecuted > TimeUnit.MINUTES.toMillis(5);
             }
@@ -275,9 +275,9 @@ class MonitoredJobsTest {
 
                     await().atMost(Durations.TWO_SECONDS).until(() -> count.get() >= 1);
 
-                    assertThat(job.getLastSuccess()).hasValueGreaterThan(Instant.now().minusSeconds(2).toEpochMilli());
-                    assertThat(job.getLastFailure()).hasValue(0);
-                    assertThat(job.getFailureCount()).hasValue(0);
+                    assertThat(job.lastSuccessMillis()).isGreaterThan(Instant.now().minusSeconds(2).toEpochMilli());
+                    assertThat(job.lastFailureMillis()).isZero();
+                    assertThat(job.failureCount()).isZero();
 
                     assertHealthCheckWasRegistered(job);
                 });

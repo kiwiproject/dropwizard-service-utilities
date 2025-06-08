@@ -61,6 +61,7 @@ class MonitoredJobTest {
     @Nested
     class Run {
 
+        @SuppressWarnings("removal")
         @Test
         void shouldRunSyncWithoutErrorWhenActive() {
             var environment = mock(KiwiEnvironment.class);
@@ -82,13 +83,19 @@ class MonitoredJobTest {
             assertAll(
                     () -> assertThat(taskRunCount.get()).isOne(),
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
+                    () -> assertThat(job.lastExecutionTimeMillis()).isOne(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.lastFailureMillis()).isZero(),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
-                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
+                    () -> assertThat(job.failureCount()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
+                    () -> assertThat(job.lastJobExceptionInfo()).isNull()
             );
         }
 
+        @SuppressWarnings("removal")
         @Test
         void shouldRunAsyncWithoutErrorWhenActiveAndTimeoutIsSet() {
             var environment = mock(KiwiEnvironment.class);
@@ -112,13 +119,19 @@ class MonitoredJobTest {
             assertAll(
                     () -> assertThat(taskRunCount.get()).isOne(),
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
+                    () -> assertThat(job.lastExecutionTimeMillis()).isOne(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.lastFailureMillis()).isZero(),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
-                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
+                    () -> assertThat(job.failureCount()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
+                    () -> assertThat(job.lastJobExceptionInfo()).isNull()
             );
         }
 
+        @SuppressWarnings("removal")
         @Test
         void shouldSkipExecutionWhenDecisionFunctionReturnsFalse() {
             var environment = mock(KiwiEnvironment.class);
@@ -139,13 +152,19 @@ class MonitoredJobTest {
             assertAll(
                     () -> assertThat(taskRunCount.get()).isZero(),
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime),
+                    () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
+                    () -> assertThat(job.lastFailureMillis()).isZero(),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
-                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null)
+                    () -> assertThat(job.failureCount()).isZero(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
+                    () -> assertThat(job.lastJobExceptionInfo()).isNull()
             );
         }
 
+        @SuppressWarnings("removal")
         @Test
         void shouldTrackErrorWhenTaskFails() {
             var environment = mock(KiwiEnvironment.class);
@@ -164,13 +183,19 @@ class MonitoredJobTest {
 
             assertAll(
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
+                    () -> assertThat(job.lastSuccessMillis()).isZero(),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.lastFailureMillis()).isEqualTo(mockedTime + 1),
                     () -> assertThat(job.getFailureCount().get()).isOne(),
-                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException()))
+                    () -> assertThat(job.failureCount()).isOne(),
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException())),
+                    () -> assertThat(job.lastJobExceptionInfo()).isEqualTo(JobExceptionInfo.from(newSampleException()))
             );
         }
 
+        @SuppressWarnings("removal")
         @Test
         void shouldHandleErrorWhenTaskFailsAndHandlerSet() {
             var environment = mock(KiwiEnvironment.class);
@@ -198,11 +223,16 @@ class MonitoredJobTest {
 
             assertAll(
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
+                    () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
+                    () -> assertThat(job.lastSuccessMillis()).isZero(),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.lastFailureMillis()).isEqualTo(mockedTime + 1),
                     () -> assertThat(job.getFailureCount().get()).isOne(),
+                    () -> assertThat(job.failureCount()).isOne(),
                     () -> assertThat(taskHandledCount.get()).isOne(),
-                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException()))
+                    () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException())),
+                    () -> assertThat(job.lastJobExceptionInfo()).isEqualTo(JobExceptionInfo.from(newSampleException()))
             );
         }
 
