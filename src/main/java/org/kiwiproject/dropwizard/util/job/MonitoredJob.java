@@ -20,6 +20,7 @@ import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.base.KiwiThrowables;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -133,7 +134,8 @@ public class MonitoredJob implements CatchingRunnable {
     private final AtomicLong failureCount = new AtomicLong();
 
     /**
-     * Millis since the epoch when the job was last executed. Will be zero if the job has never run.
+     * The duration in milliseconds of the job's last <em>successful</em> execution.
+     * Will be zero if the job has never run or never succeeded.
      */
     @Getter(onMethod_ = {
             @Deprecated(since = "4.1.0", forRemoval = true),
@@ -250,12 +252,32 @@ public class MonitoredJob implements CatchingRunnable {
     }
 
     /**
+     * Returns the instant when the job was last successful. Will be the epoch (1970-01-01T00:00:00Z)
+     * if the job has never run or never succeeded.
+     *
+     * @return instant when the job was last successful, or the epoch
+     */
+    public Instant lastSuccess() {
+        return Instant.ofEpochMilli(lastSuccessMillis());
+    }
+
+    /**
      * Millis since the epoch when the job last failed. Will be zero if the job has never run or never failed.
      *
      * @return millis since the epoch when the job last failed, or zero
      */
     public long lastFailureMillis() {
         return lastFailure.get();
+    }
+
+    /**
+     * Returns the instant when the job last failed. Will be the epoch (1970-01-01T00:00:00Z)
+     * if the job has never run or never failed.
+     *
+     * @return instant when the job last failed, or the epoch
+     */
+    public Instant lastFailure() {
+        return Instant.ofEpochMilli(lastFailureMillis());
     }
 
     /**
@@ -268,12 +290,23 @@ public class MonitoredJob implements CatchingRunnable {
     }
 
     /**
-     * Millis since the epoch when the job was last executed. Will be zero if the job has never run.
+     * The duration in milliseconds of the job's last <em>successful</em> execution.
+     * Will be zero if the job has never run or never succeeded.
      *
-     * @return millis since the epoch when the job was last executed, or zero
+     * @return duration of the job's last successful execution in milliseconds, or zero
      */
     public long lastExecutionTimeMillis() {
         return lastExecutionTime.get();
+    }
+
+    /**
+     * The duration of the job's last <em>successful</em> execution.
+     * Will be the zero if the job has never run or never succeeded.
+     *
+     * @return duration of the job's last successful execution, or zero
+     */
+    public Duration lastExecutionTime() {
+        return Duration.ofMillis(lastExecutionTimeMillis());
     }
 
     /**

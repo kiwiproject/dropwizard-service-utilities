@@ -17,6 +17,7 @@ import org.kiwiproject.test.junit.jupiter.ClearBoxTest;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,10 +85,13 @@ class MonitoredJobTest {
                     () -> assertThat(taskRunCount.get()).isOne(),
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
                     () -> assertThat(job.lastExecutionTimeMillis()).isOne(),
+                    () -> assertThat(job.lastExecutionTime()).isEqualTo(Duration.ofMillis(1)),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.lastSuccess()).isEqualTo(Instant.ofEpochMilli(mockedTime + 2)),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
                     () -> assertThat(job.lastFailureMillis()).isZero(),
+                    () -> assertThat(job.lastFailure()).isEqualTo(Instant.EPOCH),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
                     () -> assertThat(job.failureCount()).isZero(),
                     () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
@@ -120,10 +124,13 @@ class MonitoredJobTest {
                     () -> assertThat(taskRunCount.get()).isOne(),
                     () -> assertThat(job.getLastExecutionTime().get()).isOne(),
                     () -> assertThat(job.lastExecutionTimeMillis()).isOne(),
+                    () -> assertThat(job.lastExecutionTime()).isEqualTo(Duration.ofMillis(1)),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime + 2),
                     () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime + 2),
+                    () -> assertThat(job.lastSuccess()).isEqualTo(Instant.ofEpochMilli(mockedTime + 2)),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
                     () -> assertThat(job.lastFailureMillis()).isZero(),
+                    () -> assertThat(job.lastFailure()).isEqualTo(Instant.EPOCH),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
                     () -> assertThat(job.failureCount()).isZero(),
                     () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
@@ -153,10 +160,13 @@ class MonitoredJobTest {
                     () -> assertThat(taskRunCount.get()).isZero(),
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
                     () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
+                    () -> assertThat(job.lastExecutionTime()).isEqualTo(Duration.ZERO),
                     () -> assertThat(job.getLastSuccess().get()).isEqualTo(mockedTime),
                     () -> assertThat(job.lastSuccessMillis()).isEqualTo(mockedTime),
+                    () -> assertThat(job.lastSuccess()).isEqualTo(Instant.ofEpochMilli(mockedTime)),
                     () -> assertThat(job.getLastFailure().get()).isZero(),
                     () -> assertThat(job.lastFailureMillis()).isZero(),
+                    () -> assertThat(job.lastFailure()).isEqualTo(Instant.EPOCH),
                     () -> assertThat(job.getFailureCount().get()).isZero(),
                     () -> assertThat(job.failureCount()).isZero(),
                     () -> assertThat(job.getLastJobExceptionInfo()).hasValue(null),
@@ -184,10 +194,13 @@ class MonitoredJobTest {
             assertAll(
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
                     () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
+                    () -> assertThat(job.lastExecutionTime()).isEqualTo(Duration.ZERO),
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
                     () -> assertThat(job.lastSuccessMillis()).isZero(),
+                    () -> assertThat(job.lastSuccess()).isEqualTo(Instant.EPOCH),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
                     () -> assertThat(job.lastFailureMillis()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.lastFailure()).isEqualTo(Instant.ofEpochMilli(mockedTime + 1)),
                     () -> assertThat(job.getFailureCount().get()).isOne(),
                     () -> assertThat(job.failureCount()).isOne(),
                     () -> assertThat(job.getLastJobExceptionInfo()).hasValue(JobExceptionInfo.from(newSampleException())),
@@ -224,10 +237,13 @@ class MonitoredJobTest {
             assertAll(
                     () -> assertThat(job.getLastExecutionTime().get()).isZero(),
                     () -> assertThat(job.lastExecutionTimeMillis()).isZero(),
+                    () -> assertThat(job.lastExecutionTime()).isEqualTo(Duration.ZERO),
                     () -> assertThat(job.getLastSuccess().get()).isZero(),
                     () -> assertThat(job.lastSuccessMillis()).isZero(),
+                    () -> assertThat(job.lastSuccess()).isEqualTo(Instant.EPOCH),
                     () -> assertThat(job.getLastFailure().get()).isEqualTo(mockedTime + 1),
                     () -> assertThat(job.lastFailureMillis()).isEqualTo(mockedTime + 1),
+                    () -> assertThat(job.lastFailure()).isEqualTo(Instant.ofEpochMilli(mockedTime + 1)),
                     () -> assertThat(job.getFailureCount().get()).isOne(),
                     () -> assertThat(job.failureCount()).isOne(),
                     () -> assertThat(taskHandledCount.get()).isOne(),
