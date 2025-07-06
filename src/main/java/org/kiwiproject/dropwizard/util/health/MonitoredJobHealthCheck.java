@@ -90,15 +90,15 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     static final Duration DEFAULT_WARNING_DURATION = Duration.minutes(15);
 
     private final MonitoredJob job;
-    private final long expectedFrequency;
+    private final long expectedFrequencyMilliseconds;
     private final Duration errorWarningDuration;
     private final String errorWarningDurationString;
-    private final long errorWarningMilliseconds;
+    private final long errorWarningDurationMilliseconds;
     private final double thresholdFactor;
-    private final long lowerTimeBound;
+    private final long lowerTimeBoundTimestampMillis;
     private final KiwiEnvironment kiwiEnvironment;
-    private final long warningThreshold;
-    private final String warningThresholdString;
+    private final long warningThresholdDurationMilliseconds;
+    private final String warningThresholdDurationString;
 
     @Builder
     private MonitoredJobHealthCheck(MonitoredJob job,
@@ -109,38 +109,40 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                                     KiwiEnvironment environment) {
 
         this.job = requireNotNull(job, "job is required");
-        this.expectedFrequency = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
+        this.expectedFrequencyMilliseconds = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
         this.errorWarningDuration = isNull(errorWarningDuration) ? DEFAULT_WARNING_DURATION : errorWarningDuration;
         this.errorWarningDurationString = formatDropwizardDurationWords(this.errorWarningDuration);
-        this.errorWarningMilliseconds = this.errorWarningDuration.toMilliseconds();
+        this.errorWarningDurationMilliseconds = this.errorWarningDuration.toMilliseconds();
         this.thresholdFactor = isNull(thresholdFactor) ? DEFAULT_THRESHOLD_FACTOR : thresholdFactor;
         this.kiwiEnvironment = isNull(environment) ? new DefaultEnvironment() : environment;
-        this.lowerTimeBound = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
-        this.warningThreshold = calculateWarningThreshold();
-        this.warningThresholdString = formatMillisecondDurationWords(this.warningThreshold);
+        this.lowerTimeBoundTimestampMillis = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
+        this.warningThresholdDurationMilliseconds = calculateWarningThreshold(expectedFrequencyMilliseconds, this.thresholdFactor);
+        this.warningThresholdDurationString = formatMillisecondDurationWords(this.warningThresholdDurationMilliseconds);
     }
 
     @Override
     protected Result check() {
         try {
-            var lastRun = job.lastSuccessMillis();
+            var lastSuccess = job.lastSuccessMillis();
             if (!job.isActive()) {
-                return buildHealthyResult(f("Job is inactive. (last run: {})", instantToStringOrNever(lastRun)));
+                return buildHealthyResult(f("Job is inactive. (last run: {})", instantToStringOrNever(lastSuccess)));
             }
 
             var now = kiwiEnvironment.currentTimeMillis();
             var lastFailure = job.lastFailureMillis();
-            if ((now - lastFailure) < errorWarningMilliseconds) {
+            var timeSinceLastFailure = now - lastFailure;
+            if (timeSinceLastFailure < errorWarningDurationMilliseconds) {
                 return buildUnhealthyResult(f("An error has occurred at: {}, which is within the threshold of: {}",
                         instantToStringOrNever(lastFailure), errorWarningDurationString));
             }
 
-            if ((now - getTimeOrServerStart(lastRun)) > warningThreshold) {
+            var timeSinceLastSuccess = now - getTimeOrServerStart(lastSuccess);
+            if (timeSinceLastSuccess > warningThresholdDurationMilliseconds) {
                 return buildUnhealthyResult(f("Last successful execution was: {}, which is older than the threshold of: {}",
-                        instantToStringOrNever(lastRun), warningThresholdString));
+                        instantToStringOrNever(lastSuccess), warningThresholdDurationString));
             }
 
-            return buildHealthyResult(f("Last successful execution was: {}", instantToStringOrNever(lastRun)));
+            return buildHealthyResult(f("Last successful execution was: {}", instantToStringOrNever(lastSuccess)));
         } catch (Exception e) {
             LOG.error("Encountered Exception: ", e);
             return handleException(e);
@@ -168,30 +170,32 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("lastJobExceptionInfo", job.lastJobExceptionInfo())
                 .withDetail("lastSuccess", job.lastSuccessMillis())
                 .withDetail("lastExecutionTimeMs", job.lastExecutionTimeMillis())
-                .withDetail("expectedFrequencyMs", expectedFrequency)
-                .withDetail("warningThresholdMs", warningThreshold)
-                .withDetail("errorWarningDurationMs", errorWarningMilliseconds);
+                .withDetail("expectedFrequencyMs", expectedFrequencyMilliseconds)
+                .withDetail("warningThresholdMs", warningThresholdDurationMilliseconds)
+                .withDetail("errorWarningDurationMs", errorWarningDurationMilliseconds);
     }
 
     private static void checkValidHealthArgumentCombination(boolean healthy, Exception error) {
         checkArgument(!healthy || isNull(error), "If healthy, error must be null!");
     }
 
-    private long calculateWarningThreshold() {
-        return Math.max((long) (expectedFrequency * thresholdFactor),
-                MINIMUM_WARNING_THRESHOLD.toMilliseconds());
+    private static long calculateWarningThreshold(long expectedFrequencyMilliseconds, double thresholdFactor) {
+        return (long) Math.max(
+                expectedFrequencyMilliseconds * thresholdFactor,
+                MINIMUM_WARNING_THRESHOLD.toMilliseconds()
+        );
     }
 
-    private static String instantToStringOrNever(long epochMs) {
-        return epochMs != 0 ? Instant.ofEpochMilli(epochMs).toString() : "never";
+    private static String instantToStringOrNever(long epochMillis) {
+        return epochMillis != 0 ? Instant.ofEpochMilli(epochMillis).toString() : "never";
     }
 
     private Result buildUnhealthyResult(String message) {
         return resultBuilderWith(message, false).build();
     }
 
-    private long getTimeOrServerStart(long lastRunMs) {
-        return Math.max(lastRunMs, lowerTimeBound);
+    private long getTimeOrServerStart(long lastSuccessMillis) {
+        return Math.max(lastSuccessMillis, lowerTimeBoundTimestampMillis);
     }
 
     private Result handleException(Exception e) {
