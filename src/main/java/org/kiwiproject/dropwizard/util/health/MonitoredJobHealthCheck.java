@@ -116,7 +116,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         this.thresholdFactor = isNull(thresholdFactor) ? DEFAULT_THRESHOLD_FACTOR : thresholdFactor;
         this.kiwiEnvironment = isNull(environment) ? new DefaultEnvironment() : environment;
         this.lowerTimeBound = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
-        this.warningThreshold = getWarningThreshold();
+        this.warningThreshold = calculateWarningThreshold();
         this.warningThresholdString = formatMillisecondDurationWords(this.warningThreshold);
     }
 
@@ -169,7 +169,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("lastSuccess", job.lastSuccessMillis())
                 .withDetail("lastExecutionTimeMs", job.lastExecutionTimeMillis())
                 .withDetail("expectedFrequencyMs", expectedFrequency)
-                .withDetail("warningThresholdMs", getWarningThreshold())
+                .withDetail("warningThresholdMs", warningThreshold)
                 .withDetail("errorWarningDurationMs", errorWarningMilliseconds);
     }
 
@@ -177,7 +177,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         checkArgument(!healthy || isNull(error), "If healthy, error must be null!");
     }
 
-    private long getWarningThreshold() {
+    private long calculateWarningThreshold() {
         return Math.max((long) (expectedFrequency * thresholdFactor),
                 MINIMUM_WARNING_THRESHOLD.toMilliseconds());
     }
