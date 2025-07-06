@@ -62,7 +62,7 @@ class MonitoredJobHealthCheckTest {
             assertThat(healthCheck.getErrorWarningDuration()).isEqualTo(MonitoredJobHealthCheck.DEFAULT_WARNING_DURATION);
             assertThat(healthCheck.getThresholdFactor()).isEqualTo(MonitoredJobHealthCheck.DEFAULT_THRESHOLD_FACTOR);
             assertThat(healthCheck.getKiwiEnvironment()).isNotNull();
-            assertThat(healthCheck.getLowerTimeBound()).isPositive();
+            assertThat(healthCheck.getLowerTimeBoundTimestampMillis()).isPositive();
         }
     }
 
