@@ -162,17 +162,21 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         var resultBuilder = isNull(error) ? newResultBuilder(healthy)
                 : newUnhealthyResultBuilder(error);
 
+        var lastFailureMillis = job.lastFailureMillis();
+        var lastSuccessMillis = job.lastSuccessMillis();
+        var lastExecutionTimeMillis = job.lastExecutionTimeMillis();
+
         return resultBuilder
                 .withMessage(message)
                 .withDetail("jobName", job.getName())
                 .withDetail("totalErrors", job.failureCount())
-                .withDetail("lastFailureTimestamp", job.lastFailureMillis())
-                .withDetail("lastFailureTime", instantToStringOrNever(job.lastFailureMillis()))
+                .withDetail("lastFailureTimestamp", lastFailureMillis)
+                .withDetail("lastFailureTime", instantToStringOrNever(lastFailureMillis))
                 .withDetail("lastJobExceptionInfo", job.lastJobExceptionInfo())
-                .withDetail("lastSuccessTimestamp", job.lastSuccessMillis())
-                .withDetail("lastSuccessTime", instantToStringOrNever(job.lastSuccessMillis()))
-                .withDetail("lastSuccessfulExecutionDurationMs", job.lastExecutionTimeMillis())
-                .withDetail("lastSuccessfulExecutionDuration", formatMillisecondDurationWords(job.lastExecutionTimeMillis()))
+                .withDetail("lastSuccessTimestamp", lastSuccessMillis)
+                .withDetail("lastSuccessTime", instantToStringOrNever(lastSuccessMillis))
+                .withDetail("lastSuccessfulExecutionDurationMs", lastExecutionTimeMillis)
+                .withDetail("lastSuccessfulExecutionDuration", formatMillisecondDurationWords(lastExecutionTimeMillis))
                 .withDetail("expectedJobFrequencyMs", expectedFrequencyMilliseconds)
                 .withDetail("expectedJobFrequency", formatMillisecondDurationWords(expectedFrequencyMilliseconds))
                 .withDetail("warningThresholdDurationMs", warningThresholdDurationMilliseconds)
