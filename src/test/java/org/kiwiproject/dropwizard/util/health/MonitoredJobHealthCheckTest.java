@@ -183,9 +183,21 @@ class MonitoredJobHealthCheckTest {
             assertThatHealthCheck(healthCheck)
                     .isHealthy()
                     .hasMessage(messageTemplate, args)
-                    .hasDetailsContainingKeys("jobName", "totalErrors", "lastFailure", "lastSuccess",
-                            "lastExecutionTimeMs", "expectedFrequencyMs", "errorWarningDurationMs")
-                    .hasDetail("warningThresholdMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds());
+                    .hasDetailsContainingKeys("jobName",
+                            "totalErrors",
+                            "lastFailureTimestamp",
+                            "lastFailureTime",
+                            "lastSuccessTimestamp",
+                            "lastSuccessTime",
+                            "lastSuccessfulExecutionDurationMs",
+                            "lastSuccessfulExecutionDuration",
+                            "expectedJobFrequencyMs",
+                            "expectedJobFrequency",
+                            "recentErrorWarningDurationMs",
+                            "recentErrorWarningDuration"
+                    )
+                    .hasDetail("warningThresholdDurationMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds())
+                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
         }
     }
 
@@ -292,13 +304,20 @@ class MonitoredJobHealthCheckTest {
                     .hasDetailsContainingKeys(
                             "jobName",
                             "totalErrors",
-                            "lastFailure",
+                            "lastFailureTimestamp",
+                            "lastFailureTime",
                             "lastJobExceptionInfo",
-                            "lastSuccess",
-                            "lastExecutionTimeMs",
-                            "expectedFrequencyMs",
-                            "errorWarningDurationMs")
-                    .hasDetail("warningThresholdMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds());
+                            "lastSuccessTimestamp",
+                            "lastSuccessTime",
+                            "lastSuccessfulExecutionDurationMs",
+                            "lastSuccessfulExecutionDuration",
+                            "expectedJobFrequencyMs",
+                            "expectedJobFrequency",
+                            "recentErrorWarningDurationMs",
+                            "recentErrorWarningDuration"
+                    )
+                    .hasDetail("warningThresholdDurationMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds())
+                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
         }
     }
 }
