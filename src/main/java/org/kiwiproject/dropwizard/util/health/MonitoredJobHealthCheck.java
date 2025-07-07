@@ -91,6 +91,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
 
     private final MonitoredJob job;
     private final long expectedFrequencyMilliseconds;
+    private final String expectedFrequencyString;
     private final Duration errorWarningDuration;
     private final String errorWarningDurationString;
     private final long errorWarningDurationMilliseconds;
@@ -110,6 +111,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
 
         this.job = requireNotNull(job, "job is required");
         this.expectedFrequencyMilliseconds = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
+        this.expectedFrequencyString = formatMillisecondDurationWords(this.expectedFrequencyMilliseconds);
         this.errorWarningDuration = isNull(errorWarningDuration) ? DEFAULT_WARNING_DURATION : errorWarningDuration;
         this.errorWarningDurationString = formatDropwizardDurationWords(this.errorWarningDuration);
         this.errorWarningDurationMilliseconds = this.errorWarningDuration.toMilliseconds();
@@ -178,7 +180,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("lastSuccessfulExecutionDurationMs", lastExecutionTimeMillis)
                 .withDetail("lastSuccessfulExecutionDuration", formatMillisecondDurationWords(lastExecutionTimeMillis))
                 .withDetail("expectedJobFrequencyMs", expectedFrequencyMilliseconds)
-                .withDetail("expectedJobFrequency", formatMillisecondDurationWords(expectedFrequencyMilliseconds))
+                .withDetail("expectedJobFrequency", expectedFrequencyString)
                 .withDetail("warningThresholdDurationMs", warningThresholdDurationMilliseconds)
                 .withDetail("warningThresholdDuration", warningThresholdDurationString)
                 .withDetail("recentErrorWarningDurationMs", errorWarningDurationMilliseconds)
