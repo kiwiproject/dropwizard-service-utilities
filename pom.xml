@@ -40,7 +40,6 @@
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>3.11.0</kiwi-test.version>
-        <mockwebserver.version>5.1.0</mockwebserver.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>kiwiproject_dropwizard-service-utilities</sonar.projectKey>
@@ -200,7 +199,6 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
-            <version>${mockwebserver.version}</version>
             <scope>test</scope>
         </dependency>
 
