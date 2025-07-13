@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>3.0.26</version>
+        <version>3.0.27</version>
     </parent>
 
     <artifactId>dropwizard-service-utilities</artifactId>
@@ -31,7 +31,7 @@
         <!-- Versions for required dependencies -->
         <dropwizard-curator.version>2.1.9</dropwizard-curator.version>
         <kiwi.version>4.11.1</kiwi.version>
-        <kiwi-bom.version>2.0.26</kiwi-bom.version>
+        <kiwi-bom.version>2.0.27</kiwi-bom.version>
         <metrics-healthchecks-severity.version>2.1.1</metrics-healthchecks-severity.version>
         <service-discovery-client.version>2.1.7</service-discovery-client.version>
 
