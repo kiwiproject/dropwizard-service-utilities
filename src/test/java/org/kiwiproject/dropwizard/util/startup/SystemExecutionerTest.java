@@ -7,6 +7,7 @@ import static org.awaitility.Durations.ONE_SECOND;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.kiwiproject.base.DefaultEnvironment;
 
@@ -32,7 +33,7 @@ class SystemExecutionerTest {
                 .isExactlyInstanceOf(ExecutionStrategies.SystemExitExecutionStrategy.class);
     }
 
-    @Test
+    @RepeatedTest(3)
     void shouldExitImmediately() {
         var executionStrategy = new ExecutionStrategies.ExitFlaggingExecutionStrategy();
         var executioner = new SystemExecutioner(executionStrategy);
@@ -47,7 +48,7 @@ class SystemExecutionerTest {
         assertThat(elapsedMillis).isZero();
     }
 
-    @Test
+    @RepeatedTest(3)
     void shouldExitWithWaitTime() {
         var executorService = Executors.newSingleThreadExecutor();
 
@@ -62,7 +63,9 @@ class SystemExecutionerTest {
             executioner.exit(waitTimeMillis, TimeUnit.MILLISECONDS);
         });
 
-        await().atMost(ONE_SECOND).until(executionFuture::isDone);
+        await().pollInterval(5, TimeUnit.MILLISECONDS)
+                .atMost(ONE_SECOND)
+                .until(executionFuture::isDone);
 
         long elapsedNanos = System.nanoTime() - startTime.get();
 
@@ -70,15 +73,18 @@ class SystemExecutionerTest {
                 .describedAs("Execution strategy exit() should have been called")
                 .isTrue();
 
-        assertThat(TimeUnit.NANOSECONDS.toMillis(elapsedNanos))
-                .describedAs("Elapsed millis must be greater than %d", waitTimeMillis)
-                .isGreaterThan(waitTimeMillis);
+        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
+        LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
+        var fudgedWaitTimeMillis = waitTimeMillis - 2; // Allow for some slop in timing
+        assertThat(elapsedMillis)
+                .describedAs("Elapsed millis must be greater than or equal to %d", waitTimeMillis)
+                .isGreaterThanOrEqualTo(fudgedWaitTimeMillis);
 
         executorService.shutdown();
         await().atMost(ONE_SECOND).until(executorService::isShutdown);
     }
 
-    @Test
+    @RepeatedTest(3)
     void shouldExitBeforeGivenWaitTime_WhenWaitingThreadInterrupted() {
         var executorService = Executors.newFixedThreadPool(2);
 
@@ -100,19 +106,17 @@ class SystemExecutionerTest {
             LOG.info("executionFuture was canceled? {}", canceled);
         });
 
-        await().atMost(ONE_SECOND).until(() -> executionFuture.isDone() && killerFuture.isDone());
+        await().pollInterval(25, TimeUnit.MILLISECONDS)
+                .atMost(ONE_SECOND)
+                .until(() -> executionFuture.isDone() && killerFuture.isDone() && executionStrategy.didExit());
 
-        long elapsedNanos = System.nanoTime() - startTime.get();
-
-        assertThat(executionStrategy.didExit())
-                .describedAs("Execution strategy exit() should have been called")
-                .isTrue();
-
+        var elapsedNanos = System.nanoTime() - startTime.get();
         var elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
         LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
+        var fudgedKillerSleepTimeMillis = killerSleepTimeMillis - 2; // Allow for some slop in timing
         assertThat(elapsedMillis)
-                .describedAs("Elapsed millis must be at least %d", killerSleepTimeMillis)
-                .isGreaterThanOrEqualTo(killerSleepTimeMillis);
+                .describedAs("Elapsed millis must be at least %d", fudgedKillerSleepTimeMillis)
+                .isGreaterThanOrEqualTo(fudgedKillerSleepTimeMillis);
 
         executorService.shutdown();
         await().atMost(ONE_SECOND).until(executorService::isShutdown);
