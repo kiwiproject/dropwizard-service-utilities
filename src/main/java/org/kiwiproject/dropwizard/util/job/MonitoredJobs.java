@@ -1,5 +1,6 @@
 package org.kiwiproject.dropwizard.util.job;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.isNull;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.checkArgumentNotBlank;
@@ -16,8 +17,10 @@ import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -32,8 +35,15 @@ import java.util.function.Predicate;
 @UtilityClass
 public class MonitoredJobs {
 
+    /**
+     * The job names that have been registered.
+     *
+     * @implNote When using the no-args constructor, {@link ConcurrentSkipListSet} maintains a
+     * natural sort order on its elements, so we don't need to perform any explicit sorting
+     * when returning the job names.
+     */
     @VisibleForTesting
-    static final Set<String> JOBS = new HashSet<>();
+    static final SortedSet<String> JOBS = new ConcurrentSkipListSet<>();
 
     /**
      * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck}, and schedule the job on the given
@@ -44,6 +54,7 @@ public class MonitoredJobs {
      * @param schedule the schedule for the job
      * @param runnable the task that will be run inside the Monitored Job
      * @return the new {@link MonitoredJob}
+     * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env, String name, JobSchedule schedule, Runnable runnable) {
         return registerJob(env, name, schedule, runnable, null);
@@ -59,6 +70,7 @@ public class MonitoredJobs {
      * @param runnable   the task that will be run inside the Monitored Job
      * @param decisionFn the function that will decide if the job should run
      * @return the new {@link MonitoredJob}
+     * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env,
                                            String name,
@@ -81,6 +93,7 @@ public class MonitoredJobs {
      * @param decisionFn the function that will decide if the job should run
      * @param executor   the scheduled executor to use to schedule the job
      * @return the new {@link MonitoredJob}
+     * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env,
                                            String name,
@@ -106,6 +119,7 @@ public class MonitoredJobs {
      * @param job      a {@link MonitoredJob} to schedule and monitor
      * @param schedule the schedule for the job
      * @return the given {@link MonitoredJob}
+     * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env, MonitoredJob job, JobSchedule schedule) {
         var executor = newScheduledExecutor(env, job.getName());
@@ -121,6 +135,7 @@ public class MonitoredJobs {
      * @param schedule the schedule for the job.
      * @param executor the scheduled executor to use to schedule the job.
      * @return the given {@link MonitoredJob}.
+     * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env,
                                            MonitoredJob job,
@@ -150,8 +165,14 @@ public class MonitoredJobs {
         checkArgumentNotNull(schedule.getInitialDelay(),
                 "Job '{}' must specify a non-null initial delay", name);
 
+        checkArgument(schedule.getInitialDelay().toNanoseconds() >= 0,
+                "Job '%s' must specify a non-negative initial delay", name);
+
         checkArgumentNotNull(schedule.getIntervalDelay(),
                 "Job '{}' must specify a non-null interval delay", name);
+
+        checkArgument(schedule.getIntervalDelay().toNanoseconds() > 0,
+                "Job '%s' must specify a positive interval delay", name);
     }
 
     private static void registerHealthCheck(Environment env,
@@ -178,6 +199,36 @@ public class MonitoredJobs {
                 schedule.getInitialDelay().toNanoseconds(),
                 schedule.getIntervalDelay().toNanoseconds(),
                 TimeUnit.NANOSECONDS);
+    }
+
+    /**
+     * Clears all registered job names.
+     *
+     * @return the (sorted) job names that were registered before clearing them
+     * @implNote Internally, this class maintains a static {@code Set} that contains the job
+     * names that were registered via the {@code registerJob} methods to prevent jobs with
+     * the same name being registered. This method provides a way to clear out the internal
+     * job name {@code Set}, and is intended mainly for use in tests that may call one or
+     * more of the {@code registerJob} methods multiple times across individual tests. This
+     * is also why it is annotated with {@link VisibleForTesting} to make it clear that it
+     * is not intended for usage in production code.
+     */
+    @VisibleForTesting
+    public SortedSet<String> clearRegisteredJobNames() {
+        var names = registeredJobNames();
+        JOBS.clear();
+        return names;
+    }
+
+    /**
+     * Provides the ability to get the job names that have been registered via the {@code registerJob} methods.
+     * <p>
+     * The returned job names are sorted.
+     *
+     * @return an unmodifiable set containing the registered job names
+     */
+    public SortedSet<String> registeredJobNames() {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(JOBS));
     }
 
     /**
