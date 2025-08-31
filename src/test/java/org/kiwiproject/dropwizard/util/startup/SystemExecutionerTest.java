@@ -74,7 +74,7 @@ class SystemExecutionerTest {
                 .isTrue();
 
         long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
-        LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
+        logElapsed(elapsedNanos, elapsedMillis);
         var fudgedWaitTimeMillis = waitTimeMillis - 2; // Allow for some slop in timing
         assertThat(elapsedMillis)
                 .describedAs("Elapsed millis must be greater than or equal to %d", waitTimeMillis)
@@ -112,7 +112,7 @@ class SystemExecutionerTest {
 
         var elapsedNanos = System.nanoTime() - startTime.get();
         var elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
-        LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
+        logElapsed(elapsedNanos, elapsedMillis);
         var fudgedKillerSleepTimeMillis = killerSleepTimeMillis - 2; // Allow for some slop in timing
         assertThat(elapsedMillis)
                 .describedAs("Elapsed millis must be at least %d", fudgedKillerSleepTimeMillis)
@@ -120,5 +120,9 @@ class SystemExecutionerTest {
 
         executorService.shutdown();
         await().atMost(ONE_SECOND).until(executorService::isShutdown);
+    }
+
+    private static void logElapsed(long elapsedNanos, long elapsedMillis) {
+        LOG.info("Actual elapsed time: {} nanoseconds ; {} milliseconds", elapsedNanos, elapsedMillis);
     }
 }
