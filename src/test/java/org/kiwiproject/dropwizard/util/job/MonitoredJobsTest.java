@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.util.concurrent.Runnables;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.setup.ScheduledExecutorServiceBuilder;
 import io.dropwizard.util.Duration;
@@ -77,7 +78,7 @@ class MonitoredJobsTest {
 
                 when(scheduledExecutorServiceBuilder.build()).thenReturn(mock(ScheduledExecutorService.class));
 
-                task = () -> System.out.println("hello");
+                task = Runnables.doNothing();
 
                 schedule = JobSchedule.builder()
                         .intervalDelay(Duration.minutes(5))
@@ -141,7 +142,7 @@ class MonitoredJobsTest {
             void whenIntervalDelayIsNotPositive(long intervalDelaySeconds) {
                 var jobName = "NotPositiveIntervalDelay";
 
-                var schedule = JobSchedule.ofIntervalDelay(Duration.seconds(intervalDelaySeconds));
+                schedule = JobSchedule.ofIntervalDelay(Duration.seconds(intervalDelaySeconds));
 
                 assertThatIllegalArgumentException()
                         .isThrownBy(() -> MonitoredJobs.registerJob(env, jobName,
@@ -216,7 +217,7 @@ class MonitoredJobsTest {
                         .intervalDelay(Duration.seconds(30))
                         .build();
 
-                task = () -> System.out.println("hello");
+                task = Runnables.doNothing();
                 executor = mock(ScheduledExecutorService.class);
 
                 var scheduledExecutorServiceBuilder = mock(ScheduledExecutorServiceBuilder.class);
@@ -359,7 +360,7 @@ class MonitoredJobsTest {
 
             when(scheduledExecutorServiceBuilder.build()).thenReturn(mock(ScheduledExecutorService.class));
 
-            task = () -> System.out.println("hello");
+            task = Runnables.doNothing();
 
             schedule = JobSchedule.builder()
                     .intervalDelay(Duration.minutes(5))
