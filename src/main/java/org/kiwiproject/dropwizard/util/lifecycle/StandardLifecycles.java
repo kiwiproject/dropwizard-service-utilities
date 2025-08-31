@@ -85,6 +85,7 @@ public class StandardLifecycles {
      * which returns {@link OptionalLong}, and this method makes it convenient to take the result of that method
      * and supply it directly to this method without converting it.
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static void addProcessIdLoggingLifecycleListener(OptionalLong processId, Environment environment) {
         if (processId.isPresent()) {
             addProcessIdLoggingLifecycleListener(processId.getAsLong(), environment);
