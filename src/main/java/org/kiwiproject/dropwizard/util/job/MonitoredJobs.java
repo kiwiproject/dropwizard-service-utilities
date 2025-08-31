@@ -36,8 +36,8 @@ public class MonitoredJobs {
     static final Set<String> JOBS = new HashSet<>();
 
     /**
-     * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
-     * {@link Environment}, with the given name, schedule and runnable.
+     * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck}, and schedule the job on the given
+     * {@link Environment}, with the given name, schedule, and runnable.
      *
      * @param env      the Dropwizard environment to register the health check and schedule the job.
      * @param name     the name of the job
