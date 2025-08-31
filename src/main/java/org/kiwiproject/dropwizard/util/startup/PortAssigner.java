@@ -36,8 +36,8 @@ import java.util.Optional;
  *     <li>The default {@link PortSecurity} is {@code SECURE}, because we should all be more secure</li>
  *     <li>{@link ServerFactory} is required, and must be an instance of {@link DefaultServerFactory}</li>
  *     <li>
- *         This class will setup at MOST one application port and one admin port.
- *         Currently you can NOT use this and have both secure and non-secure ports.
+ *         This class will set up at MOST one application port and one admin port.
+ *         Currently, you can NOT use this and have both secure and non-secure ports.
  *     </li>
  * </ul>
  * The reason a {@link ServerFactory} is the type accepted in the builder is that Dropwizard's {@code Configuration}
@@ -50,7 +50,7 @@ import java.util.Optional;
 public class PortAssigner {
 
     /**
-     * An enum that represents static or dynamic port assignment.
+     * An enum that represents either static or dynamic port assignment.
      */
     public enum PortAssignment {
         STATIC, DYNAMIC;
@@ -141,7 +141,7 @@ public class PortAssigner {
      * Support for explicit configuration of secure connectors while still assigning dynamics ports may
      * be implemented in the future if custom configuration is needed.
      * <p>
-     * <strong>WARNING</strong>: If you need to change specific properties of secure ports,
+     * <strong>WARNING</strong>: If you need to change specific properties of secure ports
      * or need more than one secure application and/or admin port, you can't use this
      * class, since it will replace all other ports!
      *

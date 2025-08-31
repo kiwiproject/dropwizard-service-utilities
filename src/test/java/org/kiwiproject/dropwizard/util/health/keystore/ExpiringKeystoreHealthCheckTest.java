@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 class ExpiringKeystoreHealthCheckTest {
 
-    // This formats dates to look like "Fri, 19 Mar 2021" or "Sun, 7 Jun 2020"
+    // Formats dates to look like "Fri, 19 Mar 2021" or "Sun, 7 Jun 2020"
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("EE, d LLL yyyy");
 
     @Nested
@@ -263,7 +263,7 @@ class ExpiringKeystoreHealthCheckTest {
                         exitCode -> LOG.info("keytool exited with code {}", exitCode),
                         () -> LOG.warn("keytool did not exit within timeout"));
 
-        // These are here so that if the keytool command fails we can see the output
+        // These are here so that if the keytool command fails, we can see the output
         LOG.debug("keytool stdout: [{}]", KiwiIO.readInputStreamOf(keystoreGenProcess));
         LOG.debug("keytool stderr: [{}]", KiwiIO.readErrorStreamOf(keystoreGenProcess));
 
