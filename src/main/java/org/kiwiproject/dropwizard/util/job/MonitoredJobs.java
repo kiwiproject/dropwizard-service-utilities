@@ -57,7 +57,7 @@ public class MonitoredJobs {
      * @param name       the name of the job
      * @param schedule   the schedule for the job
      * @param runnable   the task that will be run inside the Monitored Job
-     * @param decisionFn the function that will decide of the job should run
+     * @param decisionFn the function that will decide if the job should run
      * @return the new {@link MonitoredJob}
      */
     public static MonitoredJob registerJob(Environment env,
@@ -78,7 +78,7 @@ public class MonitoredJobs {
      * @param name       the name of the job
      * @param schedule   the schedule for the job
      * @param runnable   the task that will be run inside the Monitored Job
-     * @param decisionFn the function that will decide of the job should run
+     * @param decisionFn the function that will decide if the job should run
      * @param executor   the scheduled executor to use to schedule the job
      * @return the new {@link MonitoredJob}
      */

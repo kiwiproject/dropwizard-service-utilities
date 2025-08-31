@@ -28,8 +28,8 @@ public class StandardLifecycles {
     private static final String EMPTY_STRING = "";
 
     /**
-     * Logs the given server status. For example, you can use this to log the successful startup of a service in
-     * a consistent manner.
+     * Logs the given server status. For example, you can use this to log the successful startup
+     * of a service consistently across services.
      *
      * @param status the status of the server
      * @implNote This is logging at WARN level so that even in a production-like environment where logging levels
@@ -47,7 +47,7 @@ public class StandardLifecycles {
      *
      * @param registryService a pre-built {@link RegistryService} that will connect to a service discovery for
      *                        registration/un-registration
-     * @param serviceInfo     the metadata about the service (i.e. name, version, etc.)
+     * @param serviceInfo     the metadata about the service (i.e., name, version, etc.)
      * @param environment     the Dropwizard environment
      */
     public static void addRegistryLifecycleListeners(RegistryService registryService,
@@ -116,7 +116,7 @@ public class StandardLifecycles {
     /**
      * Adds a lifecycle listener to print out the status of the server with configured ports at startup.
      *
-     * @param serviceInfo the metadata about the service (i.e. name, version, etc.)
+     * @param serviceInfo the metadata about the service (i.e., name, version, etc.)
      * @param environment the Dropwizard environment
      */
     public static void addServiceRunningLifecycleListener(ServiceInfo serviceInfo, Environment environment) {

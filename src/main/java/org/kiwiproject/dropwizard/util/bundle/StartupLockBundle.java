@@ -21,7 +21,7 @@ import java.nio.file.Paths;
 /**
  * Dropwizard bundle that acquires a distributed ZooKeeper lock during application initialization.
  * <p>
- * This bundle should be registered before any other bundles that require exclusive acess when starting.
+ * This bundle should be registered before any other bundles that require exclusive access when starting.
  * In other words, using this bundle ensures that only one Dropwizard application on a server can start
  * while holding the lock.
  * <p>
