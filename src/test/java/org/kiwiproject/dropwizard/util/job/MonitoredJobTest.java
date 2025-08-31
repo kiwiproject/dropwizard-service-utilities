@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.util.concurrent.Runnables;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class MonitoredJobTest {
         void shouldSetDefaults() {
             var job = MonitoredJob.builder()
                     .name("Name and Task Job")
-                    .task(() -> System.out.println("Hello"))
+                    .task(Runnables.doNothing())
                     .build();
 
             assertAll(
