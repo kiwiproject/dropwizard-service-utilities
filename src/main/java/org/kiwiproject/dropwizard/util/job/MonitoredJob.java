@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.kiwiproject.base.CatchingRunnable;
 import org.kiwiproject.base.DefaultEnvironment;
-import org.kiwiproject.base.KiwiDeprecated;
 import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.base.KiwiThrowables;
 
@@ -109,49 +108,29 @@ public class MonitoredJob implements CatchingRunnable {
     /**
      * Millis since the epoch when the job was last successful. Will be zero if the job has never run or never succeeded.
      */
-    @Getter(onMethod_ = {
-            @Deprecated(since = "4.1.0", forRemoval = true),
-            @KiwiDeprecated(replacedBy = "#lastSuccessMillis()", removeAt = "5.0.0")
-    })
-    private final AtomicLong lastSuccess = new AtomicLong();
+    private final AtomicLong lastSuccessMillis = new AtomicLong();
 
     /**
      * Millis since the epoch when the job last failed. Will be zero if the job has never run or never failed.
      */
-    @Getter(onMethod_ = {
-            @Deprecated(since = "4.1.0", forRemoval = true),
-            @KiwiDeprecated(replacedBy = "#lastFailureMillis()", removeAt = "5.0.0")
-    })
-    private final AtomicLong lastFailure = new AtomicLong();
+    private final AtomicLong lastFailureMillis = new AtomicLong();
 
     /**
      * Number of times the job has failed. Will be zero if the job has never run or never failed.
      */
-    @Getter(onMethod_ = {
-            @Deprecated(since = "4.1.0", forRemoval = true),
-            @KiwiDeprecated(replacedBy = "#failureCount()", removeAt = "5.0.0")
-    })
     private final AtomicLong failureCount = new AtomicLong();
 
     /**
      * The duration in milliseconds of the job's last <em>successful</em> execution.
      * Will be zero if the job has never run or never succeeded.
      */
-    @Getter(onMethod_ = {
-            @Deprecated(since = "4.1.0", forRemoval = true),
-            @KiwiDeprecated(replacedBy = "#lastExecutionTimeMillis()", removeAt = "5.0.0")
-    })
-    private final AtomicLong lastExecutionTime = new AtomicLong();
+    private final AtomicLong lastExecutionTimeInMillis = new AtomicLong();
 
     /**
      * If the last job failure contained an exception, this will contain a {@link JobExceptionInfo}
      * instance containing information about it. It intentionally does not store the actual
      * Exception instance.
      */
-    @Getter(onMethod_ = {
-            @Deprecated(since = "4.1.0", forRemoval = true),
-            @KiwiDeprecated(replacedBy = "#lastJobExceptionInfo()", removeAt = "5.0.0")
-    })
     private final AtomicReference<JobExceptionInfo> lastJobExceptionInfo = new AtomicReference<>();
 
     @Builder
@@ -182,13 +161,13 @@ public class MonitoredJob implements CatchingRunnable {
                 task.run();
             }
 
-            lastExecutionTime.set(environment.currentTimeMillis() - startTime);
+            lastExecutionTimeInMillis.set(environment.currentTimeMillis() - startTime);
             LOG.debug("Completed job: {}", name);
         } else {
             LOG.trace("Not active, skipping job: {}", name);
         }
 
-        lastSuccess.set(environment.currentTimeMillis());
+        lastSuccessMillis.set(environment.currentTimeMillis());
     }
 
     /**
@@ -213,7 +192,7 @@ public class MonitoredJob implements CatchingRunnable {
     public void handleExceptionSafely(Exception exception) {
         logExceptionInfo(exception, name);
 
-        lastFailure.set(environment.currentTimeMillis());
+        lastFailureMillis.set(environment.currentTimeMillis());
         failureCount.incrementAndGet();
 
         var exceptionInfo = JobExceptionInfo.from(exception);
@@ -248,7 +227,7 @@ public class MonitoredJob implements CatchingRunnable {
      * @return millis since the epoch when the job was last successful, or zero
      */
     public long lastSuccessMillis() {
-        return lastSuccess.get();
+        return lastSuccessMillis.get();
     }
 
     /**
@@ -267,7 +246,7 @@ public class MonitoredJob implements CatchingRunnable {
      * @return millis since the epoch when the job last failed, or zero
      */
     public long lastFailureMillis() {
-        return lastFailure.get();
+        return lastFailureMillis.get();
     }
 
     /**
@@ -296,7 +275,7 @@ public class MonitoredJob implements CatchingRunnable {
      * @return duration of the job's last successful execution in milliseconds, or zero
      */
     public long lastExecutionTimeMillis() {
-        return lastExecutionTime.get();
+        return lastExecutionTimeInMillis.get();
     }
 
     /**
