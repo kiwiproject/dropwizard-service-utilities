@@ -214,7 +214,7 @@ public class MonitoredJobs {
      * is not intended for usage in production code.
      */
     @VisibleForTesting
-    public SortedSet<String> clearRegisteredJobNames() {
+    public static SortedSet<String> clearRegisteredJobNames() {
         var names = registeredJobNames();
         JOBS.clear();
         return names;
@@ -227,7 +227,7 @@ public class MonitoredJobs {
      *
      * @return an unmodifiable set containing the registered job names
      */
-    public SortedSet<String> registeredJobNames() {
+    public static SortedSet<String> registeredJobNames() {
         return Collections.unmodifiableSortedSet(new TreeSet<>(JOBS));
     }
 
