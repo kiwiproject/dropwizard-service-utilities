@@ -29,14 +29,14 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard-curator.version>3.0.0</dropwizard-curator.version>
-        <kiwi.version>5.1.0</kiwi.version>
+        <dropwizard-curator.version>3.0.1</dropwizard-curator.version>
+        <kiwi.version>5.1.1</kiwi.version>
         <kiwi-bom.version>3.0.3</kiwi-bom.version>
-        <metrics-healthchecks-severity.version>3.0.0</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>3.0.0</service-discovery-client.version>
+        <metrics-healthchecks-severity.version>3.0.1</metrics-healthchecks-severity.version>
+        <service-discovery-client.version>3.0.1</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
-        <registry-aware-jersey-client.version>3.0.0</registry-aware-jersey-client.version>
+        <registry-aware-jersey-client.version>3.0.1</registry-aware-jersey-client.version>
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>4.0.0</kiwi-test.version>
