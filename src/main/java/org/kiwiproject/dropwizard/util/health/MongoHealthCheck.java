@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * does not block the health check thread indefinitely.
  *
  * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">mongo ping command</a>
- * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/csot/">CSOT</a>
+ * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/connection/specify-connection-options/csot/">CSOT</a>
  */
 @Slf4j
 public class MongoHealthCheck extends HealthCheck {
