@@ -1,5 +1,6 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
@@ -11,12 +12,20 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
 
+import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Health check that attempts to issue a 'ping' command to a Mongo database.
+ * <p>
+ * A configurable timeout (default: {@link #DEFAULT_TIMEOUT}) is applied to each ping
+ * via the MongoDB driver's Client-Side Operations Timeout (CSOT). This bounds the
+ * entire operation, including server selection, so that a completely unreachable cluster
+ * does not block the health check thread indefinitely.
  *
  * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">mongo ping command</a>
+ * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/csot/">CSOT</a>
  */
 @Slf4j
 public class MongoHealthCheck extends HealthCheck {
@@ -29,12 +38,40 @@ public class MongoHealthCheck extends HealthCheck {
     @SuppressWarnings("unused")
     public static final String DEFAULT_NAME = "Mongo";
 
+    /**
+     * The default timeout applied to each ping command.
+     */
+    public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
+
     private final MongoDatabase database;
     private final String dbName;
 
+    /**
+     * Creates a new instance that uses {@link #DEFAULT_TIMEOUT} for each ping.
+     *
+     * @param database the Mongo database to ping
+     */
     public MongoHealthCheck(MongoDatabase database) {
-        this.database = database;
+        this(database, DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Creates a new instance with a custom timeout for each ping.
+     * <p>
+     * The timeout is applied via the MongoDB driver's Client-Side Operations Timeout
+     * (CSOT) and covers the full operation including server selection. When Mongo is
+     * completely unreachable the health check will return unhealthy after at most
+     * {@code timeout} rather than blocking for the driver's default
+     * {@code serverSelectionTimeoutMS} (30 seconds).
+     *
+     * @param database the Mongo database to ping
+     * @param timeout  maximum time to wait for the ping to complete; must be positive
+     */
+    public MongoHealthCheck(MongoDatabase database, Duration timeout) {
+        requireNotNull(database, "database must not be null");
+        requireNotNull(timeout, "timeout must not be null");
         this.dbName = database.getName();
+        this.database = database.withTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     /**

@@ -1,9 +1,11 @@
 package org.kiwiproject.dropwizard.util.health;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.kiwiproject.base.KiwiStrings.f;
 import static org.kiwiproject.test.assertj.dropwizard.metrics.HealthCheckResultAssertions.assertThatHealthCheck;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,8 +24,10 @@ import org.kiwiproject.metrics.health.HealthStatus;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.OngoingStubbing;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @DisplayName("MongoHealthCheck")
 class MongoHealthCheckTest {
@@ -33,6 +37,38 @@ class MongoHealthCheckTest {
     private static final String ERROR_MESSAGE_PROPERTY = "errmsg";
     private static final String CODE_PROPERTY = "code";
     private static final String CODE_NAME_PROPERTY = "codeName";
+
+    @Nested
+    class Constructors {
+
+        @Test
+        void defaultConstructorUsesDefaultTimeout() {
+            var database = setupMockMongoDatabase();
+            new MongoHealthCheck(database);
+            verify(database).withTimeout(MongoHealthCheck.DEFAULT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Test
+        void customTimeoutConstructorAppliesTimeout() {
+            var database = setupMockMongoDatabase();
+            var timeout = Duration.ofSeconds(10);
+            new MongoHealthCheck(database, timeout);
+            verify(database).withTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Test
+        void throwsWhenDatabaseIsNull() {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> new MongoHealthCheck(null));
+        }
+
+        @Test
+        void throwsWhenTimeoutIsNull() {
+            var database = setupMockMongoDatabase();
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> new MongoHealthCheck(database, null));
+        }
+    }
 
     @Nested
     class IsHealthy {
@@ -103,6 +139,7 @@ class MongoHealthCheckTest {
     private static MongoDatabase setupMockMongoDatabase() {
         var mockDatabase = mock(MongoDatabase.class);
         when(mockDatabase.getName()).thenReturn(DB_NAME);
+        when(mockDatabase.withTimeout(anyLong(), any(TimeUnit.class))).thenReturn(mockDatabase);
         return mockDatabase;
     }
 
