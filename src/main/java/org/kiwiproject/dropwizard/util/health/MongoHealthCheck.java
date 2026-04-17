@@ -3,9 +3,9 @@ package org.kiwiproject.dropwizard.util.health;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
-import static org.kiwiproject.time.KiwiDurations.isPositive;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
+import static org.kiwiproject.time.KiwiDurations.isPositive;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.mongodb.client.MongoDatabase;
