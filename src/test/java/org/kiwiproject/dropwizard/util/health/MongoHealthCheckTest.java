@@ -59,14 +59,33 @@ class MongoHealthCheckTest {
         @Test
         void throwsWhenDatabaseIsNull() {
             assertThatIllegalArgumentException()
-                    .isThrownBy(() -> new MongoHealthCheck(null));
+                    .isThrownBy(() -> new MongoHealthCheck(null))
+                    .withMessage("database must not be null");
         }
 
         @Test
         void throwsWhenTimeoutIsNull() {
             var database = setupMockMongoDatabase();
             assertThatIllegalArgumentException()
-                    .isThrownBy(() -> new MongoHealthCheck(database, null));
+                    .isThrownBy(() -> new MongoHealthCheck(database, null))
+                    .withMessage("timeout must not be null");
+        }
+
+        @Test
+        void throwsWhenTimeoutIsZero() {
+            var database = setupMockMongoDatabase();
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> new MongoHealthCheck(database, Duration.ZERO))
+                    .withMessage("timeout must be positive, but was: %s", Duration.ZERO);
+        }
+
+        @Test
+        void throwsWhenTimeoutIsNegative() {
+            var database = setupMockMongoDatabase();
+            var timeout = Duration.ofSeconds(-1);
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> new MongoHealthCheck(database, timeout))
+                    .withMessage("timeout must be positive, but was: %s", timeout);
         }
     }
 

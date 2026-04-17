@@ -1,7 +1,9 @@
 package org.kiwiproject.dropwizard.util.health;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import static org.kiwiproject.base.KiwiStrings.f;
+import static org.kiwiproject.time.KiwiDurations.isPositive;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newResultBuilder;
 import static org.kiwiproject.metrics.health.HealthCheckResults.newUnhealthyResult;
 
@@ -70,6 +72,7 @@ public class MongoHealthCheck extends HealthCheck {
     public MongoHealthCheck(MongoDatabase database, Duration timeout) {
         requireNotNull(database, "database must not be null");
         requireNotNull(timeout, "timeout must not be null");
+        checkArgument(isPositive(timeout), "timeout must be positive, but was: %s", timeout);
         this.dbName = database.getName();
         this.database = database.withTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
     }
