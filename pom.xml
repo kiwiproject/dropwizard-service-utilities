@@ -31,6 +31,7 @@
         <!-- Versions for required dependencies -->
         <dropwizard-curator.version>3.0.2</dropwizard-curator.version>
         <kiwi.version>5.2.0</kiwi.version>
+        <kiwi-beta.version>3.0.2</kiwi-beta.version>
         <kiwi-bom.version>3.1.0</kiwi-bom.version>
         <metrics-healthchecks-severity.version>3.0.2</metrics-healthchecks-severity.version>
         <service-discovery-client.version>3.0.2</service-discovery-client.version>
@@ -67,6 +68,12 @@
                 <groupId>org.kiwiproject</groupId>
                 <artifactId>kiwi</artifactId>
                 <version>${kiwi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>kiwi-beta</artifactId>
+                <version>${kiwi-beta.version}</version>
             </dependency>
 
             <dependency>
@@ -120,6 +127,11 @@
         <dependency>
             <groupId>org.kiwiproject</groupId>
             <artifactId>kiwi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kiwiproject</groupId>
+            <artifactId>kiwi-beta</artifactId>
         </dependency>
 
         <dependency>
