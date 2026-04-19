@@ -172,7 +172,7 @@ class ExecuteJobTaskTest {
         }
 
         private String outputText() {
-            return stringWriter.toString();
+            return stringWriter.toString().trim();
         }
 
         @Nested
@@ -188,7 +188,7 @@ class ExecuteJobTaskTest {
 
                 assertAll(
                         () -> assertThat(jobRan.get()).isFalse(),
-                        () -> assertThat(outputText()).contains("already running"),
+                        () -> assertThat(outputText()).isEqualTo("Task for Test Job is already running. Skipping."),
                         () -> assertThat(task.running.get()).isTrue()
                 );
             }
@@ -211,7 +211,7 @@ class ExecuteJobTaskTest {
                 task.execute(Map.of(), output);
 
                 assertAll(
-                        () -> assertThat(outputText()).contains("Not executing"),
+                        () -> assertThat(outputText()).isEqualTo("Not executing Test Job (canRun returned false)"),
                         () -> assertThat(task.running.get()).isFalse()
                 );
             }
@@ -264,7 +264,7 @@ class ExecuteJobTaskTest {
 
                 assertAll(
                         () -> assertThat(jobRan.get()).isTrue(),
-                        () -> assertThat(outputText()).contains("Successfully executed"),
+                        () -> assertThat(outputText()).startsWith("Successfully executed Test Job in "),
                         () -> assertThat(task.running.get()).isFalse()
                 );
             }
@@ -279,7 +279,7 @@ class ExecuteJobTaskTest {
 
                 assertAll(
                         () -> assertThat(jobRan.get()).isTrue(),
-                        () -> assertThat(outputText()).contains("Successfully executed")
+                        () -> assertThat(outputText()).startsWith("Successfully executed Test Job in ")
                 );
             }
 
@@ -289,7 +289,7 @@ class ExecuteJobTaskTest {
 
                 task.execute(Map.of(), output);
 
-                assertThat(outputText()).contains("in background");
+                assertThat(outputText()).startsWith("Started executing Test Job in background (asyncId: ");
             }
 
             @Test
@@ -298,7 +298,7 @@ class ExecuteJobTaskTest {
 
                 task.execute(Map.of("sync", List.of("false")), output);
 
-                assertThat(outputText()).contains("in background");
+                assertThat(outputText()).startsWith("Started executing Test Job in background (asyncId: ");
             }
 
             @Test
@@ -324,7 +324,7 @@ class ExecuteJobTaskTest {
 
                 assertAll(
                         () -> assertThat(jobRan.get()).isTrue(),
-                        () -> assertThat(outputText()).contains("in background").contains("asyncId"),
+                        () -> assertThat(outputText()).startsWith("Started executing Test Job in background (asyncId: "),
                         () -> assertThat(task.running.get()).isFalse()
                 );
             }
@@ -337,7 +337,7 @@ class ExecuteJobTaskTest {
                         .doesNotThrowAnyException();
 
                 assertAll(
-                        () -> assertThat(outputText()).contains("in background"),
+                        () -> assertThat(outputText()).startsWith("Started executing Test Job in background (asyncId: "),
                         () -> assertThat(task.running.get()).isFalse()
                 );
             }
