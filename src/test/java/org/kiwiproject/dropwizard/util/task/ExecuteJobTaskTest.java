@@ -284,6 +284,20 @@ class ExecuteJobTaskTest {
             }
 
             @Test
+            void shouldThrowJobExceptionAndResetRunning() {
+                var ex = new RuntimeException("job failed");
+                var task = buildTask(() -> { throw ex; });
+
+                assertThatThrownBy(() -> task.execute(Map.of("sync", List.of("true")), output))
+                        .isSameAs(ex);
+                assertThat(task.running.get()).isFalse();
+            }
+        }
+
+        @Nested
+        class Asynchronous {
+
+            @Test
             void shouldDefaultToAsyncWhenSyncParamIsAbsent() throws Exception {
                 var task = buildTask(() -> {});
 
@@ -300,20 +314,6 @@ class ExecuteJobTaskTest {
 
                 assertThat(outputText()).startsWith("Started executing Test Job in background (asyncId: ");
             }
-
-            @Test
-            void shouldThrowJobExceptionAndResetRunning() {
-                var ex = new RuntimeException("job failed");
-                var task = buildTask(() -> { throw ex; });
-
-                assertThatThrownBy(() -> task.execute(Map.of("sync", List.of("true")), output))
-                        .isSameAs(ex);
-                assertThat(task.running.get()).isFalse();
-            }
-        }
-
-        @Nested
-        class Asynchronous {
 
             @Test
             void shouldExecuteJobAndPrintAsyncMessage() throws Exception {
