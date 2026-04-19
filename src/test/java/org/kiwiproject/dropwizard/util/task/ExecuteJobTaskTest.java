@@ -46,6 +46,16 @@ class ExecuteJobTaskTest {
         }
 
         @ClearBoxTest
+        void shouldDeriveTaskNameFromJobNameWithMultipleSpaces() {
+            assertThat(ExecuteJobTask.taskNameOrDefault(null, "Execute  My  Job")).isEqualTo("executeMyJob");
+        }
+
+        @ClearBoxTest
+        void shouldDeriveTaskNameFromJobNameWithLeadingAndTrailingSpaces() {
+            assertThat(ExecuteJobTask.taskNameOrDefault(null, "  Execute My Job  ")).isEqualTo("executeMyJob");
+        }
+
+        @ClearBoxTest
         void shouldThrowWhenTaskNameIsBlankAndJobNameIsBlank() {
             assertThatThrownBy(() -> ExecuteJobTask.taskNameOrDefault("  ", "  "))
                     .isInstanceOf(IllegalArgumentException.class);
