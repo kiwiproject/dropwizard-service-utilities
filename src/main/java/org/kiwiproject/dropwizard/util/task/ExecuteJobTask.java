@@ -54,6 +54,10 @@ import java.util.function.Supplier;
  * at {@code POST /tasks/dataSyncJob}.
  * <p>
  * Requires an {@link ExecuteJobTaskConfig}.
+ *
+ * @implNote Truthy value parsing is delegated to {@code BooleanUtils.toBoolean(String)} from
+ * Apache Commons Lang. The five values listed above are the documented contract; if the
+ * library's behavior changes, the implementation should be updated to preserve them.
  */
 @Slf4j
 public class ExecuteJobTask extends Task {
