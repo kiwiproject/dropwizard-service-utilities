@@ -42,7 +42,7 @@ public class ExecuteJobTaskConfig {
                          ExecutorService executorService) {
         this.canRun = isNull(canRun) ? () -> true : canRun;
         this.cannotRunExceptionProvider = isNull(cannotRunExceptionProvider) ? () -> null : cannotRunExceptionProvider;
-        this.executorService = requireNotNull(executorService);
+        this.executorService = requireNotNull(executorService, "executorService must not be null");
     }
 
     /**
