@@ -172,7 +172,7 @@ class ExecuteJobTaskTest {
         }
 
         private String outputText() {
-            return stringWriter.toString().trim();
+            return stringWriter.toString().strip();
         }
 
         @Nested
