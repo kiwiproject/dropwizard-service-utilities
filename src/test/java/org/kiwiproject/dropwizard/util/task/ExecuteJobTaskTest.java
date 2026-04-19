@@ -330,7 +330,7 @@ class ExecuteJobTaskTest {
             }
 
             @Test
-            void shouldNotThrowAndResetRunningWhenJobThrows() {
+            void shouldSwallowJobExceptionAndResetRunning() {
                 var task = buildTask(() -> { throw new RuntimeException("async job failed"); });
 
                 assertThatCode(() -> task.execute(Map.of(), output))
