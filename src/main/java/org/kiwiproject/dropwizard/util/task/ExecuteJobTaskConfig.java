@@ -13,7 +13,18 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
- * Configuration for {@link ExecuteJobTask}.
+ * Configuration for {@link ExecuteJobTask}, controlling whether and how the job executes.
+ * <p>
+ * The {@code canRun} supplier is consulted before each execution; it defaults to always
+ * returning {@code true}. The {@code cannotRunExceptionProvider} optionally supplies an
+ * exception to throw when {@code canRun} returns {@code false}; it defaults to returning
+ * {@code null}, meaning execution is silently skipped with a message written to the task
+ * output. The {@code executorService} is required and used for async execution; it should
+ * be externally managed (e.g., via Dropwizard's lifecycle).
+ * <p>
+ * Use {@link #canAlwaysRun(ExecutorService)} for the common case where the job should
+ * always run, or {@link #canRunWhen(BooleanSupplier, ExecutorService)} to supply a
+ * custom condition. Use the builder for full control over all three options.
  */
 @Getter
 @Accessors(fluent = true)
