@@ -28,10 +28,16 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * A set of utilities to assist in setting up MonitoredJobs with health checks.
+ * A set of utilities to assist in setting up {@link MonitoredJob} instances with associated
+ * {@link MonitoredJobHealthCheck} health checks.
  * <p>
- * There are convenience static factory methods to create and register {@link MonitoredJob} instances. If none of
- * them suits your requirements, use the {@link #builder()} for control over job creation and registration.
+ * There are convenience static factory methods to create and register {@link MonitoredJob} instances
+ * using default health check configuration. If none of them suits your requirements, or if you need
+ * to customize health check parameters such as {@code errorWarningDuration}, {@code thresholdFactor},
+ * or {@code suppressWarningThreshold}, use the {@link #builder()} instead.
+ * 
+ * @see MonitoredJob
+ * @see MonitoredJobHealthCheck
  */
 @Slf4j
 @UtilityClass
@@ -51,7 +57,7 @@ public class MonitoredJobs {
      * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck}, and schedule the job on the given
      * {@link Environment}, with the given name, schedule, and runnable.
      *
-     * @param env      the Dropwizard environment to register the health check and schedule the job.
+     * @param env      the Dropwizard environment to register the health check and schedule the job
      * @param name     the name of the job
      * @param schedule the schedule for the job
      * @param runnable the task that will be run inside the Monitored Job
@@ -66,7 +72,7 @@ public class MonitoredJobs {
      * Create a new {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the given name, schedule, runnable and decision function.
      *
-     * @param env        the Dropwizard environment to register the health check and schedule the job.
+     * @param env        the Dropwizard environment to register the health check and schedule the job
      * @param name       the name of the job
      * @param schedule   the schedule for the job
      * @param runnable   the task that will be run inside the Monitored Job
@@ -88,7 +94,7 @@ public class MonitoredJobs {
      * {@link Environment}, with the given name, schedule, runnable, decision function and
      * {@link ScheduledExecutorService}.
      *
-     * @param env        the Dropwizard environment to register the health check and schedule the job.
+     * @param env        the Dropwizard environment to register the health check and schedule the job
      * @param name       the name of the job
      * @param schedule   the schedule for the job
      * @param runnable   the task that will be run inside the Monitored Job
@@ -132,11 +138,11 @@ public class MonitoredJobs {
      * Using a given {@link MonitoredJob}, set up the {@link MonitoredJobHealthCheck} and schedule the job on the given
      * {@link Environment}, with the job's name, the given schedule and the given job.
      *
-     * @param env      the Dropwizard environment to register the health check and schedule the job.
-     * @param job      a {@link MonitoredJob} to schedule and monitor.
-     * @param schedule the schedule for the job.
-     * @param executor the scheduled executor to use to schedule the job.
-     * @return the given {@link MonitoredJob}.
+     * @param env      the Dropwizard environment to register the health check and schedule the job
+     * @param job      a {@link MonitoredJob} to schedule and monitor
+     * @param schedule the schedule for the job
+     * @param executor the scheduled executor to use to schedule the job
+     * @return the given {@link MonitoredJob}
      * @throws IllegalArgumentException if a job with {@code name} has already been registered
      */
     public static MonitoredJob registerJob(Environment env,
@@ -160,6 +166,12 @@ public class MonitoredJobs {
         return job;
     }
 
+    /**
+     * Validates that the job name has not already been registered, and that the given
+     * {@link JobSchedule} has a non-null, non-negative initial delay and a positive interval delay.
+     *
+     * @throws IllegalArgumentException if any validation check fails
+     */
     private static void validateJob(String name, JobSchedule schedule) {
         checkArgument(!JOBS.contains(name), IllegalArgumentException.class,
                 "Jobs cannot be registered more than once with the same name: {}", name);
@@ -177,6 +189,12 @@ public class MonitoredJobs {
                 "Job '%s' must specify a positive interval delay", name);
     }
 
+    /**
+     * Creates and registers a {@link MonitoredJobHealthCheck} for the given job in the Dropwizard
+     * {@link Environment}. The {@code errorWarningDuration}, {@code thresholdFactor}, and
+     * {@code suppressWarningThreshold} parameters are optional; when {@code null}, the corresponding
+     * defaults defined in {@link MonitoredJobHealthCheck} are used.
+     */
     private static void registerHealthCheck(Environment env,
                                             String name,
                                             JobSchedule schedule,
@@ -198,6 +216,10 @@ public class MonitoredJobs {
         env.healthChecks().register(f("Job: {}", name), healthCheck);
     }
 
+    /**
+     * Schedules the given {@link MonitoredJob} on the provided {@link ScheduledExecutorService}
+     * using the initial delay and interval delay from the given {@link JobSchedule}.
+     */
     private static void scheduleJob(ScheduledExecutorService executor, JobSchedule schedule, MonitoredJob job) {
         LOG.debug("Scheduling job: {} to start after initial delay: {} and run every: {}",
                 job.getName(), schedule.getInitialDelay(), schedule.getIntervalDelay());
@@ -240,7 +262,8 @@ public class MonitoredJobs {
     }
 
     /**
-     * Builder to allow for customizing all aspects of a {@link MonitoredJob} and then registering it.
+     * Returns a new {@link Builder} for creating and registering a {@link MonitoredJob} along with
+     * its associated {@link MonitoredJobHealthCheck}.
      *
      * @return a new builder instance
      */
@@ -249,7 +272,14 @@ public class MonitoredJobs {
     }
 
     /**
-     * Builder for creating and registering {@link MonitoredJob} instances.
+     * Builder for creating and registering {@link MonitoredJob} instances along with their associated
+     * {@link MonitoredJobHealthCheck}.
+     * <p>
+     * Required parameters: {@code task}, {@code name}, {@code environment}, and {@code schedule}.
+     * All other parameters are optional and will use defaults if not provided.
+     * <p>
+     * Call {@link #registerJob()} to complete registration, which creates the {@link MonitoredJob},
+     * registers the health check, and schedules the job for execution.
      */
     public static class Builder {
 
@@ -266,65 +296,168 @@ public class MonitoredJobs {
         private Double thresholdFactor;
         private Supplier<Boolean> suppressWarningThreshold;
 
+        /**
+         * Sets the task (runnable) that will be executed by the {@link MonitoredJob}.
+         *
+         * @param task the task to run
+         * @return this builder
+         */
         public Builder task(Runnable task) {
             this.task = task;
             return this;
         }
 
+        /**
+         * Sets an optional {@link JobErrorHandler} to handle errors that occur during
+         * job execution. If not provided, errors are handled by the default error 
+         * handling behavior of {@link MonitoredJob}.
+         *
+         * @param errorHandler the error handler to use
+         * @return this builder
+         */
         public Builder errorHandler(JobErrorHandler errorHandler) {
             this.errorHandler = errorHandler;
             return this;
         }
 
+        /**
+         * Sets the timeout for the job execution as a Dropwizard
+         * {@link io.dropwizard.util.Duration}.
+         * <p>
+         * This is a convenience overload that converts to a Java
+         * {@link Duration} and calls {@link #timeout(Duration)}.
+         *
+         * @param timeout the timeout duration
+         * @return this builder
+         */
         public Builder timeout(io.dropwizard.util.Duration timeout) {
             return timeout(timeout.toJavaDuration());
         }
 
+        /**
+         * Sets the timeout for the job execution as a {@link Duration}.
+         *
+         * @param timeout the timeout duration
+         * @return this builder
+         */
         public Builder timeout(Duration timeout) {
             this.timeout = timeout;
             return this;
         }
 
+        /**
+         * Sets the name of the job. Must be non-blank and unique across all registered
+         * jobs.
+         *
+         * @param name the job name
+         * @return this builder
+         */
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Sets an optional decision function that determines whether the job should
+         * execute on a given invocation. If not provided, the job always executes.
+         *
+         * @param decisionFunction the predicate to evaluate before each job execution
+         * @return this builder
+         */
         public Builder decisionFunction(Predicate<MonitoredJob> decisionFunction) {
             this.decisionFunction = decisionFunction;
             return this;
         }
 
+        /**
+         * Sets the {@link KiwiEnvironment} to use for time-related operations within
+         * the {@link MonitoredJob}. If not provided, a {@link org.kiwiproject.base.DefaultEnvironment}
+         * is used.
+         *
+         * @param kiwiEnvironment the environment to use
+         * @return this builder
+         * @apiNote This is intended primarily for testing, to allow control over time-related behavior.
+         */
         public Builder kiwiEnvironment(KiwiEnvironment kiwiEnvironment) {
             this.kiwiEnvironment = kiwiEnvironment;
             return this;
         }
 
+        /**
+         * Sets the Dropwizard {@link Environment} used to register the health check and
+         * schedule the job. Required.
+         *
+         * @param environment the Dropwizard environment
+         * @return this builder
+         */
         public Builder environment(Environment environment) {
             this.environment = environment;
             return this;
         }
 
+        /**
+         * Sets the {@link JobSchedule} that controls the initial delay and interval
+         * between job executions. Required.
+         *
+         * @param schedule the job schedule
+         * @return this builder
+         */
         public Builder schedule(JobSchedule schedule) {
             this.schedule = schedule;
             return this;
         }
 
+        /**
+         * Sets the {@link ScheduledExecutorService} to use for scheduling the job. If
+         * not provided, a new executor is created via the Dropwizard {@link Environment}.
+         *
+         * @param executor the executor to use
+         * @return this builder
+         */
         public Builder executor(ScheduledExecutorService executor) {
             this.executor = executor;
             return this;
         }
 
+        /**
+         * Sets the duration within which a recent job error will cause the
+         * {@link MonitoredJobHealthCheck} to report unhealthy. If not provided,
+         * the default of {@link MonitoredJobHealthCheck#DEFAULT_WARNING_DURATION}
+         * is used.
+         *
+         * @param errorWarningDuration the error warning duration
+         * @return this builder
+         */
         public Builder errorWarningDuration(io.dropwizard.util.Duration errorWarningDuration) {
             this.errorWarningDuration = errorWarningDuration;
             return this;
         }
 
+        /**
+         * Sets the factor applied to the expected job frequency to determine the
+         * warning threshold duration in the {@link MonitoredJobHealthCheck}. If not
+         * provided, the default of {@link MonitoredJobHealthCheck#DEFAULT_THRESHOLD_FACTOR} 
+         * is used.
+         *
+         * @param thresholdFactor the threshold factor
+         * @return this builder
+         */
         public Builder thresholdFactor(Double thresholdFactor) {
             this.thresholdFactor = thresholdFactor;
             return this;
         }
 
+        /**
+         * Sets an optional supplier that returns {@code true} when the warning
+         * threshold in the {@link MonitoredJobHealthCheck} should be suppressed, 
+         * causing the health check to report healthy even if the time since the
+         * last successful execution exceeds the warning threshold. If not provided,
+         * the warning threshold is never suppressed.
+         *
+         * @param suppressWarningThreshold the supplier to evaluate when the warning
+         *                                 threshold is exceeded
+         * @return this builder
+         */
         public Builder suppressWarningThreshold(Supplier<Boolean> suppressWarningThreshold) {
             this.suppressWarningThreshold = suppressWarningThreshold;
             return this;
