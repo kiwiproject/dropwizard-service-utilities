@@ -292,6 +292,19 @@ class MonitoredJobsTest {
                 assertAndVerifyJob(job);
             }
 
+            @Test
+            void whenUsingBuilderWithSuppressWarningThreshold() {
+                var job = MonitoredJobs.builder()
+                        .name("ValidJob")
+                        .task(task)
+                        .environment(env)
+                        .schedule(schedule)
+                        .suppressWarningThreshold(() -> true)
+                        .registerJob();
+
+                assertAndVerifyJob(job);
+            }
+
             private boolean executedMoreThanFiveMinutesAgo(MonitoredJob job) {
                 var now = System.currentTimeMillis();
                 var lastExecuted = job.lastExecutionTimeMillis();
