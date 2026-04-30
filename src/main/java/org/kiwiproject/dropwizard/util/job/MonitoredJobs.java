@@ -153,7 +153,7 @@ public class MonitoredJobs {
 
         validateJob(jobName, schedule);
 
-        registerHealthCheck(env, jobName, schedule, job, null);
+        registerHealthCheck(env, jobName, schedule, job, null, null, null);
         scheduleJob(executor, schedule, job);
 
         JOBS.add(jobName);
@@ -181,6 +181,8 @@ public class MonitoredJobs {
                                             String name,
                                             JobSchedule schedule,
                                             MonitoredJob job,
+                                            io.dropwizard.util.@Nullable Duration errorWarningDuration,
+                                            @Nullable Double thresholdFactor,
                                             @Nullable Supplier<Boolean> suppressWarningThreshold) {
 
         LOG.debug("Creating and registering health check for job: {}", name);
@@ -188,6 +190,8 @@ public class MonitoredJobs {
         var healthCheck = MonitoredJobHealthCheck.builder()
                 .job(job)
                 .expectedFrequency(schedule.getIntervalDelay())
+                .errorWarningDuration(errorWarningDuration)
+                .thresholdFactor(thresholdFactor)
                 .suppressWarningThreshold(suppressWarningThreshold)
                 .build();
 
@@ -258,6 +262,8 @@ public class MonitoredJobs {
         private Environment environment;
         private JobSchedule schedule;
         private ScheduledExecutorService executor;
+        private io.dropwizard.util.Duration errorWarningDuration;
+        private Double thresholdFactor;
         private Supplier<Boolean> suppressWarningThreshold;
 
         public Builder task(Runnable task) {
@@ -309,6 +315,16 @@ public class MonitoredJobs {
             return this;
         }
 
+        public Builder errorWarningDuration(io.dropwizard.util.Duration errorWarningDuration) {
+            this.errorWarningDuration = errorWarningDuration;
+            return this;
+        }
+
+        public Builder thresholdFactor(Double thresholdFactor) {
+            this.thresholdFactor = thresholdFactor;
+            return this;
+        }
+
         public Builder suppressWarningThreshold(Supplier<Boolean> suppressWarningThreshold) {
             this.suppressWarningThreshold = suppressWarningThreshold;
             return this;
@@ -323,7 +339,6 @@ public class MonitoredJobs {
          *
          * @return the new job instance
          * @throws IllegalArgumentException if the task, name, environment, or schedule has not been specified
-         * @see #registerJob(Environment, MonitoredJob, JobSchedule, ScheduledExecutorService)
          */
         public MonitoredJob registerJob() {
             checkArgumentNotNull(task, "task is required");
@@ -343,7 +358,7 @@ public class MonitoredJobs {
             var localExecutor = isNull(this.executor) ? newScheduledExecutor(environment, name) : this.executor;
 
             validateJob(name, schedule);
-            registerHealthCheck(environment, name, schedule, job, suppressWarningThreshold);
+            registerHealthCheck(environment, name, schedule, job, errorWarningDuration, thresholdFactor, suppressWarningThreshold);
             scheduleJob(localExecutor, schedule, job);
 
             JOBS.add(name);
