@@ -293,12 +293,53 @@ class MonitoredJobsTest {
             }
 
             @Test
+            void whenUsingBuilderWithErrorWarningDuration() {
+                var job = MonitoredJobs.builder()
+                        .name("ValidJob")
+                        .task(task)
+                        .environment(env)
+                        .schedule(schedule)
+                        .errorWarningDuration(Duration.minutes(30))
+                        .registerJob();
+
+                assertAndVerifyJob(job);
+            }
+
+            @Test
+            void whenUsingBuilderWithThresholdFactor() {
+                var job = MonitoredJobs.builder()
+                        .name("ValidJob")
+                        .task(task)
+                        .environment(env)
+                        .schedule(schedule)
+                        .thresholdFactor(3.0)
+                        .registerJob();
+
+                assertAndVerifyJob(job);
+            }
+
+            @Test
             void whenUsingBuilderWithSuppressWarningThreshold() {
                 var job = MonitoredJobs.builder()
                         .name("ValidJob")
                         .task(task)
                         .environment(env)
                         .schedule(schedule)
+                        .suppressWarningThreshold(() -> true)
+                        .registerJob();
+
+                assertAndVerifyJob(job);
+            }
+
+            @Test
+            void whenUsingBuilderWithAllHealthCheckOptions() {
+                var job = MonitoredJobs.builder()
+                        .name("ValidJob")
+                        .task(task)
+                        .environment(env)
+                        .schedule(schedule)
+                        .errorWarningDuration(Duration.minutes(30))
+                        .thresholdFactor(3.0)
                         .suppressWarningThreshold(() -> true)
                         .registerJob();
 
