@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.core.setup.Environment;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.dropwizard.util.config.JobSchedule;
 import org.kiwiproject.dropwizard.util.health.MonitoredJobHealthCheck;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A set of utilities to assist in setting up MonitoredJobs with health checks.
@@ -151,7 +153,7 @@ public class MonitoredJobs {
 
         validateJob(jobName, schedule);
 
-        registerHealthCheck(env, jobName, schedule, job);
+        registerHealthCheck(env, jobName, schedule, job, null);
         scheduleJob(executor, schedule, job);
 
         JOBS.add(jobName);
@@ -178,13 +180,15 @@ public class MonitoredJobs {
     private static void registerHealthCheck(Environment env,
                                             String name,
                                             JobSchedule schedule,
-                                            MonitoredJob job) {
+                                            MonitoredJob job,
+                                            @Nullable Supplier<Boolean> suppressWarningThreshold) {
 
         LOG.debug("Creating and registering health check for job: {}", name);
 
         var healthCheck = MonitoredJobHealthCheck.builder()
                 .job(job)
                 .expectedFrequency(schedule.getIntervalDelay())
+                .suppressWarningThreshold(suppressWarningThreshold)
                 .build();
 
         env.healthChecks().register(f("Job: {}", name), healthCheck);
@@ -254,6 +258,7 @@ public class MonitoredJobs {
         private Environment environment;
         private JobSchedule schedule;
         private ScheduledExecutorService executor;
+        private Supplier<Boolean> suppressWarningThreshold;
 
         public Builder task(Runnable task) {
             this.task = task;
@@ -304,6 +309,11 @@ public class MonitoredJobs {
             return this;
         }
 
+        public Builder suppressWarningThreshold(Supplier<Boolean> suppressWarningThreshold) {
+            this.suppressWarningThreshold = suppressWarningThreshold;
+            return this;
+        }
+
         /**
          * This is the terminal operation that builds a new {@link MonitoredJob} instance and registers it.
          * <p>
@@ -329,9 +339,15 @@ public class MonitoredJobs {
                     .decisionFunction(decisionFunction)
                     .environment(kiwiEnvironment)
                     .build();
+            
             var localExecutor = isNull(this.executor) ? newScheduledExecutor(environment, name) : this.executor;
 
-            return MonitoredJobs.registerJob(environment, job, schedule, localExecutor);
+            validateJob(name, schedule);
+            registerHealthCheck(environment, name, schedule, job, suppressWarningThreshold);
+            scheduleJob(localExecutor, schedule, job);
+
+            JOBS.add(name);
+            return job;
         }
     }
 
