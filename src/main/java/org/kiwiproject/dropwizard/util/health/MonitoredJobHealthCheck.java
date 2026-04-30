@@ -174,7 +174,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
             var message = f("Last successful execution was: {}", instantToStringOrNever(lastSuccess));
             return buildHealthyResult(message);
         } catch (Exception e) {
-            LOG.error("Encountered Exception: ", e);
+            LOG.error("Encountered Exception checking job [{}]", job.getName(), e);
             return handleException(e);
         }
     }
