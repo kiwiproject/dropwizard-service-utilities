@@ -64,6 +64,17 @@ class MonitoredJobHealthCheckTest {
             assertThat(healthCheck.getKiwiEnvironment()).isNotNull();
             assertThat(healthCheck.getLowerTimeBoundTimestampMillis()).isPositive();
         }
+
+        @Test
+        void shouldDefaultSuppressWarningThresholdToNeverSuppress() {
+            var healthCheck = MonitoredJobHealthCheck.builder()
+                    .job(job)
+                    .expectedFrequency(Duration.seconds(1))
+                    .build();
+
+            assertThat(healthCheck.getSuppressWarningThreshold()).isNotNull();
+            assertThat(healthCheck.getSuppressWarningThreshold().get()).isFalse();
+        }
     }
 
     @Nested
@@ -179,6 +190,74 @@ class MonitoredJobHealthCheckTest {
             }
         }
 
+        @Nested
+        class WhenWarningThresholdIsSuppressed {
+
+            @Test
+            void andThresholdHasBeenExceeded() {
+                var lastSuccess = now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1;
+                when(job.lastSuccessMillis()).thenReturn(lastSuccess);
+                when(job.isActive()).thenReturn(true);
+                when(job.lastFailureMillis()).thenReturn(0L);
+
+                var env = mock(KiwiEnvironment.class);
+                when(env.currentTimeMillis())
+                        .thenReturn(now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1)
+                        .thenReturn(now);
+
+                var healthCheck = MonitoredJobHealthCheck.builder()
+                        .job(job)
+                        .expectedFrequency(Duration.seconds(1))
+                        .environment(env)
+                        .suppressWarningThreshold(() -> true)
+                        .build();
+
+                assertThatHealthCheck(healthCheck)
+                        .isHealthy()
+                        .hasMessage("Last successful execution was: {} (warning threshold of {} is suppressed)",
+                                Instant.ofEpochMilli(lastSuccess).toString(),
+                                formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD))
+                        .hasDetailsContainingKeys("jobName",
+                                "totalErrors",
+                                "lastFailureTimestamp",
+                                "lastFailureTime",
+                                "lastSuccessTimestamp",
+                                "lastSuccessTime",
+                                "lastSuccessfulExecutionDurationMs",
+                                "lastSuccessfulExecutionDuration",
+                                "expectedJobFrequencyMs",
+                                "expectedJobFrequency",
+                                "recentErrorWarningDurationMs",
+                                "recentErrorWarningDuration"
+                        )
+                        .hasDetail("warningThresholdDurationMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds())
+                        .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD))
+                        .hasDetail("warningThresholdSuppressed", true);
+            }
+
+            @Test
+            void andThresholdHasNotBeenExceeded() {
+                when(job.lastSuccessMillis()).thenReturn(now);
+                when(job.isActive()).thenReturn(true);
+                when(job.lastFailureMillis()).thenReturn(0L);
+
+                var env = mock(KiwiEnvironment.class);
+                when(env.currentTimeMillis()).thenReturn(now);
+
+                var healthCheck = MonitoredJobHealthCheck.builder()
+                        .job(job)
+                        .expectedFrequency(Duration.seconds(1))
+                        .environment(env)
+                        .suppressWarningThreshold(() -> true)
+                        .build();
+
+                assertThatHealthCheck(healthCheck)
+                        .isHealthy()
+                        .hasMessage("Last successful execution was: {}", Instant.ofEpochMilli(now).toString())
+                        .hasDetail("warningThresholdSuppressed", false);
+            }
+        }
+
         private void assertHealthyHealthCheck(MonitoredJobHealthCheck healthCheck, String messageTemplate, Object... args) {
             assertThatHealthCheck(healthCheck)
                     .isHealthy()
@@ -197,7 +276,8 @@ class MonitoredJobHealthCheckTest {
                             "recentErrorWarningDuration"
                     )
                     .hasDetail("warningThresholdDurationMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds())
-                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
+                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD))
+                    .hasDetail("warningThresholdSuppressed", false);
         }
     }
 
@@ -269,6 +349,31 @@ class MonitoredJobHealthCheckTest {
         }
 
         @Test
+        void whenLastRunIsOutsideExpectedFrequencyAndExplicitSuppressionReturnsFalse() {
+            var lastSuccess = now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1;
+            when(job.lastSuccessMillis()).thenReturn(lastSuccess);
+            when(job.isActive()).thenReturn(true);
+            when(job.lastFailureMillis()).thenReturn(0L);
+
+            var env = mock(KiwiEnvironment.class);
+            when(env.currentTimeMillis())
+                    .thenReturn(now - MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds() - 1)
+                    .thenReturn(now);
+
+            var healthCheck = MonitoredJobHealthCheck.builder()
+                    .job(job)
+                    .expectedFrequency(Duration.seconds(1))
+                    .environment(env)
+                    .suppressWarningThreshold(() -> false)
+                    .build();
+
+            assertUnhealthyHealthCheck(healthCheck,
+                    "Last successful execution was: {}, which is older than the threshold of: {}",
+                    Instant.ofEpochMilli(lastSuccess).toString(),
+                    formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
+        }
+
+        @Test
         void whenExceptionIsThrown() {
             when(job.lastSuccessMillis())
                     .thenThrow(new RuntimeException("oops"))
@@ -317,7 +422,8 @@ class MonitoredJobHealthCheckTest {
                             "recentErrorWarningDuration"
                     )
                     .hasDetail("warningThresholdDurationMs", MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD.toMilliseconds())
-                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD));
+                    .hasDetail("warningThresholdDuration", formatDropwizardDurationWords(MonitoredJobHealthCheck.MINIMUM_WARNING_THRESHOLD))
+                    .hasDetail("warningThresholdSuppressed", false);
         }
     }
 }

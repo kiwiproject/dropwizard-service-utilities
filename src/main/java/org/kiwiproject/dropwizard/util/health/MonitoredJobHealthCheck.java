@@ -22,6 +22,7 @@ import org.kiwiproject.base.KiwiEnvironment;
 import org.kiwiproject.dropwizard.util.job.MonitoredJob;
 
 import java.time.Instant;
+import java.util.function.Supplier;
 
 /**
  * Health check that monitors a {@link MonitoredJob} to ensure that it is running on schedule and not encountering
@@ -74,6 +75,17 @@ import java.time.Instant;
  *         <td>A {@link DefaultEnvironment}</td>
  *         <td>The {@link KiwiEnvironment} to use for looking up the current time.</td>
  *     </tr>
+ *     <tr>
+ *         <td>{@code suppressWarningThreshold}</td>
+ *         <td>A supplier that always returns {@code false} (never suppress)</td>
+ *         <td>
+ *             An optional {@link Supplier} that returns {@code true} when the warning threshold should be
+ *             suppressed, causing the health check to report healthy even if the time since the last successful
+ *             execution exceeds the warning threshold. Useful when a job is expected to run longer than usual
+ *             due to known conditions, such as a large deployment. If not provided, the warning threshold is
+ *             never suppressed.
+ *         </td>
+ *     </tr>
  * </table>
  */
 @Slf4j
@@ -100,6 +112,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     private final KiwiEnvironment kiwiEnvironment;
     private final long warningThresholdDurationMilliseconds;
     private final String warningThresholdDurationString;
+    private final Supplier<Boolean> suppressWarningThreshold;
 
     @Builder
     private MonitoredJobHealthCheck(MonitoredJob job,
@@ -107,7 +120,8 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                                     Duration errorWarningDuration,
                                     Double thresholdFactor,
                                     Long lowerTimeBound,
-                                    KiwiEnvironment environment) {
+                                    KiwiEnvironment environment,
+                                    Supplier<Boolean> suppressWarningThreshold) {
 
         this.job = requireNotNull(job, "job is required");
         this.expectedFrequencyMilliseconds = requireNotNull(expectedFrequency, "expectedFrequency is required").toMilliseconds();
@@ -120,6 +134,9 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         this.lowerTimeBoundTimestampMillis = isNull(lowerTimeBound) ? kiwiEnvironment.currentTimeMillis() : lowerTimeBound;
         this.warningThresholdDurationMilliseconds = calculateWarningThreshold(expectedFrequencyMilliseconds, this.thresholdFactor);
         this.warningThresholdDurationString = formatMillisecondDurationWords(this.warningThresholdDurationMilliseconds);
+        this.suppressWarningThreshold = isNull(suppressWarningThreshold)
+                ? () -> false
+                : suppressWarningThreshold;
     }
 
     @Override
@@ -127,7 +144,8 @@ public class MonitoredJobHealthCheck extends HealthCheck {
         try {
             var lastSuccess = job.lastSuccessMillis();
             if (!job.isActive()) {
-                return buildHealthyResult(f("Job is inactive. (last run: {})", instantToStringOrNever(lastSuccess)));
+                var message = f("Job is inactive. (last run: {})", instantToStringOrNever(lastSuccess));
+                return buildHealthyResult(message);
             }
 
             var now = kiwiEnvironment.currentTimeMillis();
@@ -140,11 +158,21 @@ public class MonitoredJobHealthCheck extends HealthCheck {
 
             var timeSinceLastSuccess = now - getTimeOrServerStart(lastSuccess);
             if (timeSinceLastSuccess > warningThresholdDurationMilliseconds) {
+                var warningThresholdSuppressed = Boolean.TRUE.equals(suppressWarningThreshold.get());
+                if (warningThresholdSuppressed) {
+                    LOG.debug("Job [{}] has exceeded warning threshold of {} but suppression is active",
+                            job.getName(), warningThresholdDurationString);
+                    var message = f("Last successful execution was: {} (warning threshold of {} is suppressed)",
+                            instantToStringOrNever(lastSuccess), warningThresholdDurationString);
+                    return buildHealthyResult(message, true);
+                }
+
                 return buildUnhealthyResult(f("Last successful execution was: {}, which is older than the threshold of: {}",
                         instantToStringOrNever(lastSuccess), warningThresholdDurationString));
             }
 
-            return buildHealthyResult(f("Last successful execution was: {}", instantToStringOrNever(lastSuccess)));
+            var message = f("Last successful execution was: {}", instantToStringOrNever(lastSuccess));
+            return buildHealthyResult(message);
         } catch (Exception e) {
             LOG.error("Encountered Exception: ", e);
             return handleException(e);
@@ -152,14 +180,23 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     }
 
     private Result buildHealthyResult(String message) {
-        return resultBuilderWith(message, true).build();
+        return buildHealthyResult(message, false);
     }
 
-    private ResultBuilder resultBuilderWith(String message, boolean healthy) {
-        return resultBuilderWith(message, healthy, null);
+    private Result buildHealthyResult(String message, boolean warningThresholdSuppressed) {
+        return resultBuilderWith(message, true, warningThresholdSuppressed).build();
     }
 
-    private ResultBuilder resultBuilderWith(String message, boolean healthy, Exception error) {
+    private ResultBuilder resultBuilderWith(String message,
+                                            boolean healthy,
+                                            boolean warningThresholdSuppressed) {
+        return resultBuilderWith(message, healthy, warningThresholdSuppressed, null);
+    }
+
+    private ResultBuilder resultBuilderWith(String message,
+                                            boolean healthy,
+                                            boolean warningThresholdSuppressed,
+                                            Exception error) {
         checkValidHealthArgumentCombination(healthy, error);
         var resultBuilder = isNull(error) ? newResultBuilder(healthy)
                 : newUnhealthyResultBuilder(error);
@@ -184,7 +221,8 @@ public class MonitoredJobHealthCheck extends HealthCheck {
                 .withDetail("warningThresholdDurationMs", warningThresholdDurationMilliseconds)
                 .withDetail("warningThresholdDuration", warningThresholdDurationString)
                 .withDetail("recentErrorWarningDurationMs", errorWarningDurationMilliseconds)
-                .withDetail("recentErrorWarningDuration", errorWarningDurationString);
+                .withDetail("recentErrorWarningDuration", errorWarningDurationString)
+                .withDetail("warningThresholdSuppressed", warningThresholdSuppressed);
     }
 
     private static void checkValidHealthArgumentCombination(boolean healthy, Exception error) {
@@ -203,7 +241,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     }
 
     private Result buildUnhealthyResult(String message) {
-        return resultBuilderWith(message, false).build();
+        return resultBuilderWith(message, false, false).build();
     }
 
     private long getTimeOrServerStart(long lastSuccessMillis) {
@@ -213,7 +251,7 @@ public class MonitoredJobHealthCheck extends HealthCheck {
     private Result handleException(Exception e) {
         try {
             LOG.trace("Handling {} exception with message: {}", e.getClass().getName(), e.getMessage());
-            return resultBuilderWith("Encountered failure performing health check", false, e).build();
+            return resultBuilderWith("Encountered failure performing health check", false, false, e).build();
         } catch (Exception unexpectedException) {
             LOG.error("Encountered exception creating error result: ", unexpectedException);
             return newUnhealthyResult(unexpectedException);
