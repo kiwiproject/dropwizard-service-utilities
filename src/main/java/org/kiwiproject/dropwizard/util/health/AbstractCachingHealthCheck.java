@@ -99,6 +99,7 @@ public abstract class AbstractCachingHealthCheck extends HealthCheck {
      * @return the result of the health check
      * @throws Exception if the health check encounters an unexpected error
      */
+    @SuppressWarnings("java:S112")  // throws Exception mirrors HealthCheck#check() in the metrics library
     protected abstract Result doCheck() throws Exception;
 
     /**
