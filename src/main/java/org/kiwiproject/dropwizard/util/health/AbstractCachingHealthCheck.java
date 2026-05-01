@@ -31,11 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public abstract class AbstractCachingHealthCheck extends HealthCheck {
 
-    /**
-     * The default cache expiration duration (5 minutes).
-     */
-    public static final Duration DEFAULT_CACHE_EXPIRATION_DURATION = Duration.ofMinutes(5);
-
     record TimestampedResult(long epochMillis, Result result) {
     }
 

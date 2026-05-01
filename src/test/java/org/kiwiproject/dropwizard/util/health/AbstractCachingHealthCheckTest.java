@@ -160,7 +160,7 @@ class AbstractCachingHealthCheckTest {
 
         @Test
         void shouldAlwaysInvokeDoCheck() {
-            var healthCheck = new HappyHealthCheck(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION, false);
+            var healthCheck = new HappyHealthCheck(Duration.ofMinutes(5), false);
 
             assertThatHealthCheck(healthCheck).isHealthy().hasMessage("Everything is awesome! Count: 1");
             assertThatHealthCheck(healthCheck).isHealthy().hasMessage("Everything is awesome! Count: 2");
@@ -169,7 +169,7 @@ class AbstractCachingHealthCheckTest {
 
         @Test
         void shouldCatchExceptionsFromDoCheck_AndReturnUnhealthyResult() {
-            var healthCheck = new BadHealthCheck(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION, false);
+            var healthCheck = new BadHealthCheck(Duration.ofMinutes(5), false);
 
             var expectedMessage = f("{}#doCheck threw an exception. Exception: java.lang.RuntimeException, Message: Oops. Count: 1",
                     BadHealthCheck.class.getName());
