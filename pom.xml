@@ -155,7 +155,13 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Provided dependencies -->
+        <!-- Provided/optional dependencies -->
+
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!--
             NOTE:
