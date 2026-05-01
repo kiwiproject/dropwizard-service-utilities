@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public abstract class AbstractCachingHealthCheck extends HealthCheck {
 
-    record TimestampedResult(long epochMillis, Result result) {
+    private record TimestampedResult(long epochMillis, Result result) {
     }
 
     private final long cacheExpirationMillis;
