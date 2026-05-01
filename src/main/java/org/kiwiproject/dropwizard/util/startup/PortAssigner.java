@@ -175,11 +175,16 @@ public class PortAssigner {
     }
 
     private List<Port> assignSecureDynamicPorts() {
-        if (first(serverFactory.getApplicationConnectors()) instanceof HttpsConnectorFactory appConnector
-                && first(serverFactory.getAdminConnectors()) instanceof HttpsConnectorFactory adminConnector) {
+        var firstAppConnector = first(serverFactory.getApplicationConnectors());
+        var firstAdminConnector = first(serverFactory.getAdminConnectors());
+        if (firstAppConnector instanceof HttpsConnectorFactory appConnector
+                && firstAdminConnector instanceof HttpsConnectorFactory adminConnector) {
             LOG.debug("Found existing HTTPS app/admin connectors; overlaying TLS config and assigning dynamic ports");
             return overlaySecureDynamicPortsOnExistingConnectors(appConnector, adminConnector);
         }
+        LOG.warn("App and admin connectors are not both HTTPS (app: {}, admin: {}); replacing all connectors with new HTTPS ones",
+                firstAppConnector.getClass().getSimpleName(),
+                firstAdminConnector.getClass().getSimpleName());
         return assignSecureDynamicPortsToNewConnectors();
     }
 
