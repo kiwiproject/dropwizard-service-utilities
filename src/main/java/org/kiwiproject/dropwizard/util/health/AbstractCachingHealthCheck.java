@@ -25,6 +25,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * without requiring callers to wrap your check in a {@link CachingHealthCheck} decorator.
  * This is especially useful for library authors who control the HealthCheck implementation
  * but want to give users the option to enable or disable caching at construction time.
+ * <p>
+ * <strong>Note:</strong> This class does not provide single-flight caching. If multiple
+ * threads call {@link #check()} concurrently after the cache has expired, more than one
+ * thread may invoke {@link #doCheck()}. The last write wins. If exactly-once recomputation
+ * is required, subclasses must handle that themselves.
  *
  * @see CachingHealthCheck
  */

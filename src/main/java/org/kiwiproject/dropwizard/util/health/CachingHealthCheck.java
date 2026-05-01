@@ -25,6 +25,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * Use this if a HealthCheck is expensive to compute, and you want to minimize
  * the execution cost. For example, a HealthCheck that makes network calls might
  * be a good candidate for caching if health checks are executed frequently.
+ * <p>
+ * <strong>Note:</strong> This class does not provide single-flight caching. If multiple
+ * threads call {@link #check()} concurrently after the cache has expired, more than one
+ * thread may execute the wrapped HealthCheck. The last write wins. If exactly-once
+ * recomputation is required, wrap the HealthCheck with appropriate synchronization before
+ * passing it to this class.
  *
  * @see AbstractCachingHealthCheck
  */
