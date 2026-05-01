@@ -136,16 +136,30 @@ public class PortAssigner {
      * If an application is using multiple connectors, it's best to avoid using this class
      * unless you only want the first ones dynamically assigned.
      * <p>
-     * When using {@link PortSecurity#SECURE HTTPS}, the current implementation <strong>replaces</strong> the
-     * application and admin connector factories, which overrides any explicit configuration.
-     * Support for explicit configuration of secure connectors while still assigning dynamics ports may
-     * be implemented in the future if custom configuration is needed.
-     * <p>
-     * <strong>WARNING</strong>: If you need to change specific properties of secure ports
-     * or need more than one secure application and/or admin port, you can't use this
-     * class, since it will replace all other ports!
+     * When using {@link PortSecurity#SECURE HTTPS}, the behavior depends on whether explicit
+     * HTTPS connectors are already configured in the server factory:
+     * <ul>
+     *     <li>
+     *         If the first application <em>and</em> admin connectors are already
+     *         {@link HttpsConnectorFactory} instances (e.g., configured in YAML as
+     *         {@code type: https}), dynamic ports are assigned and TLS properties from the
+     *         {@link TlsContextConfiguration} are overlaid onto the existing connectors.
+     *         All other connector properties (e.g., {@code idleTimeout}, {@code outputBufferSize})
+     *         are preserved from the existing YAML configuration.
+     *     </li>
+     *     <li>
+     *         Otherwise, new {@link HttpsConnectorFactory} instances are created from scratch
+     *         using the {@link TlsContextConfiguration}, replacing any existing connectors.
+     *         This is the default behavior when no explicit server configuration is defined in YAML.
+     *     </li>
+     * </ul>
      *
      * @return the list of ports in the ServerFactory after assigning dynamic ports
+     * @implNote Both the application and admin connectors must be {@link HttpsConnectorFactory}
+     * instances for the overlay path to be taken. If only one is {@code https}, we create new
+     * connectors rather than a partial overlay. We are in {@link PortSecurity#SECURE} mode, and
+     * a partial overlay would produce inconsistent behavior; one connector instance preserved
+     * from YAML while the other is created from scratch.
      */
     public List<Port> assignDynamicPorts() {
         if (portAssignment == PortAssignment.STATIC) {
@@ -154,10 +168,40 @@ public class PortAssigner {
         }
 
         if (portSecurity == PortSecurity.SECURE) {
-            return assignSecureDynamicPortsToNewConnectors();
+            return assignSecureDynamicPorts();
         } else {
             return assignDynamicPortsToExistingConnectors();
         }
+    }
+
+    private List<Port> assignSecureDynamicPorts() {
+        if (first(serverFactory.getApplicationConnectors()) instanceof HttpsConnectorFactory appConnector
+                && first(serverFactory.getAdminConnectors()) instanceof HttpsConnectorFactory adminConnector) {
+            LOG.debug("Found existing HTTPS app/admin connectors; overlaying TLS config and assigning dynamic ports");
+            return overlaySecureDynamicPortsOnExistingConnectors(appConnector, adminConnector);
+        }
+        return assignSecureDynamicPortsToNewConnectors();
+    }
+
+    private List<Port> overlaySecureDynamicPortsOnExistingConnectors(HttpsConnectorFactory appConnector,
+                                                                      HttpsConnectorFactory adminConnector) {
+        var servicePorts = freePortFinder.find(allowablePortRange);
+
+        var appPort = servicePorts.applicationPort();
+        appConnector.setPort(appPort);
+        applyTlsConfiguration(appConnector, tlsConfiguration);
+
+        var adminPort = servicePorts.adminPort();
+        adminConnector.setPort(adminPort);
+        applyTlsConfiguration(adminConnector, tlsConfiguration);
+
+        LOG.info("Assigned application port as {} and admin port as {} to existing HTTPS connectors",
+                appPort, adminPort);
+
+        return List.of(
+            Port.of(appPort, PortType.APPLICATION, Port.Security.SECURE),
+            Port.of(adminPort, PortType.ADMIN, Port.Security.SECURE)
+        );
     }
 
     private List<Port> assignSecureDynamicPortsToNewConnectors() {
@@ -181,23 +225,25 @@ public class PortAssigner {
 
     private HttpsConnectorFactory newHttpsConnectorFactory(int port) {
         var https = new HttpsConnectorFactory();
-
         https.setPort(port);
-        https.setKeyStorePath(tlsConfiguration.getKeyStorePath());
-        https.setKeyStorePassword(tlsConfiguration.getKeyStorePassword());
-        https.setKeyStoreType(tlsConfiguration.getKeyStoreType());
-        https.setKeyStoreProvider(tlsConfiguration.getKeyStoreProvider());
-        https.setTrustStorePath(tlsConfiguration.getTrustStorePath());
-        https.setTrustStorePassword(tlsConfiguration.getTrustStorePassword());
-        https.setTrustStoreType(tlsConfiguration.getTrustStoreType());
-        https.setTrustStoreProvider(tlsConfiguration.getTrustStoreProvider());
-        https.setJceProvider(tlsConfiguration.getProvider());
-        https.setCertAlias(tlsConfiguration.getCertAlias());
-        https.setSupportedProtocols(tlsConfiguration.getSupportedProtocols());
-        https.setSupportedCipherSuites(tlsConfiguration.getSupportedCiphers());
-        https.setDisableSniHostCheck(tlsConfiguration.isDisableSniHostCheck());
-
+        applyTlsConfiguration(https, tlsConfiguration);
         return https;
+    }
+
+    private static void applyTlsConfiguration(HttpsConnectorFactory https, TlsContextConfiguration tls) {
+        https.setKeyStorePath(tls.getKeyStorePath());
+        https.setKeyStorePassword(tls.getKeyStorePassword());
+        https.setKeyStoreType(tls.getKeyStoreType());
+        https.setKeyStoreProvider(tls.getKeyStoreProvider());
+        https.setTrustStorePath(tls.getTrustStorePath());
+        https.setTrustStorePassword(tls.getTrustStorePassword());
+        https.setTrustStoreType(tls.getTrustStoreType());
+        https.setTrustStoreProvider(tls.getTrustStoreProvider());
+        https.setJceProvider(tls.getProvider());
+        https.setCertAlias(tls.getCertAlias());
+        https.setSupportedProtocols(tls.getSupportedProtocols());
+        https.setSupportedCipherSuites(tls.getSupportedCiphers());
+        https.setDisableSniHostCheck(tls.isDisableSniHostCheck());
     }
 
     private List<Port> assignDynamicPortsToExistingConnectors() {

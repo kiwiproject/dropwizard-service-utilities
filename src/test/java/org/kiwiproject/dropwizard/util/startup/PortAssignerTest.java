@@ -20,6 +20,7 @@ import io.dropwizard.core.server.SimpleServerFactory;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.HttpsConnectorFactory;
+import io.dropwizard.util.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -359,6 +360,157 @@ class PortAssignerTest {
                     () -> assertThat(httpsConnectorFactory.getSupportedCipherSuites()).isEqualTo(tlsConfig.getSupportedCiphers()),
                     () -> assertThat(httpsConnectorFactory.isDisableSniHostCheck()).isEqualTo(tlsConfig.isDisableSniHostCheck())
             );
+        }
+
+        @Test
+        void shouldOverlayTlsOnExistingHttpsAppConnector_WhenSecureSpecifiedAndHttpsConnectorsConfigured() {
+            var appConnector = new HttpsConnectorFactory();
+            appConnector.setIdleTimeout(Duration.seconds(42));
+            var adminConnector = new HttpsConnectorFactory();
+
+            var factory = new DefaultServerFactory();
+            factory.setApplicationConnectors(List.of(appConnector));
+            factory.setAdminConnectors(List.of(adminConnector));
+
+            var tlsConfig = TlsContextConfiguration.builder()
+                    .keyStorePath("/data/etc/pki/acme-ks.jks")
+                    .keyStorePassword("R3ally-hArd-passw0rD")
+                    .trustStorePath("/data/etc/pki/acme-ts.jks")
+                    .supportedProtocols(List.of("TLSv1.2", "TLSv1.3"))
+                    .disableSniHostCheck(true)
+                    .build();
+
+            var minPortNumber = 9_000;
+            var maxPortNumber = 9_100;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .allowablePortRange(allowedRange)
+                    .build();
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(first(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+            assertThat(second(ports).getNumber()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(second(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+
+            var resultAppConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
+            assertThat(resultAppConnector).isSameAs(appConnector);
+            assertThat(resultAppConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(resultAppConnector.getIdleTimeout()).isEqualTo(Duration.seconds(42));
+            assertSecureConnectorProperties(resultAppConnector, tlsConfig);
+        }
+
+        @Test
+        void shouldOverlayTlsOnExistingHttpsAdminConnector_WhenSecureSpecifiedAndHttpsConnectorsConfigured() {
+            var appConnector = new HttpsConnectorFactory();
+            var adminConnector = new HttpsConnectorFactory();
+            adminConnector.setIdleTimeout(Duration.seconds(42));
+
+            var factory = new DefaultServerFactory();
+            factory.setApplicationConnectors(List.of(appConnector));
+            factory.setAdminConnectors(List.of(adminConnector));
+
+            var tlsConfig = TlsContextConfiguration.builder()
+                    .keyStorePath("/data/etc/pki/acme-ks.jks")
+                    .keyStorePassword("R3ally-hArd-passw0rD")
+                    .trustStorePath("/data/etc/pki/acme-ts.jks")
+                    .supportedProtocols(List.of("TLSv1.2", "TLSv1.3"))
+                    .disableSniHostCheck(true)
+                    .build();
+
+            var minPortNumber = 9_000;
+            var maxPortNumber = 9_100;
+            var allowedRange = new AllowablePortRange(minPortNumber, maxPortNumber);
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .allowablePortRange(allowedRange)
+                    .build();
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(first(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+            assertThat(second(ports).getNumber()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(second(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+
+            var resultAdminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
+            assertThat(resultAdminConnector).isSameAs(adminConnector);
+            assertThat(resultAdminConnector.getPort()).isBetween(minPortNumber, maxPortNumber);
+            assertThat(resultAdminConnector.getIdleTimeout()).isEqualTo(Duration.seconds(42));
+            assertSecureConnectorProperties(resultAdminConnector, tlsConfig);
+        }
+
+        @Test
+        void shouldOverlayTlsOnExistingHttpsConnectors_AsZero_WhenPortRangeExcluded() {
+            var appConnector = new HttpsConnectorFactory();
+            var adminConnector = new HttpsConnectorFactory();
+
+            var factory = new DefaultServerFactory();
+            factory.setApplicationConnectors(List.of(appConnector));
+            factory.setAdminConnectors(List.of(adminConnector));
+
+            var tlsConfig = TlsContextConfiguration.builder()
+                    .keyStorePath("/data/etc/pki/acme-ks.jks")
+                    .keyStorePassword("R3ally-hArd-passw0rD")
+                    .trustStorePath("/data/etc/pki/acme-ts.jks")
+                    .build();
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .build();
+
+            var ports = assigner.assignDynamicPorts();
+
+            assertThat(first(ports).getNumber()).isZero();
+            assertThat(first(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+            assertThat(second(ports).getNumber()).isZero();
+            assertThat(second(ports).getSecure()).isEqualTo(Port.Security.SECURE);
+
+            assertThat(first(factory.getApplicationConnectors())).isSameAs(appConnector);
+            assertThat(appConnector.getPort()).isZero();
+
+            assertThat(first(factory.getAdminConnectors())).isSameAs(adminConnector);
+            assertThat(adminConnector.getPort()).isZero();
+        }
+
+        @Test
+        void shouldReplaceConnectors_WhenSecureSpecified_AndOnlyAppConnectorIsHttps() {
+            var appConnector = new HttpsConnectorFactory();
+            var adminConnector = new HttpConnectorFactory();
+
+            var factory = new DefaultServerFactory();
+            factory.setApplicationConnectors(List.of(appConnector));
+            factory.setAdminConnectors(List.of(adminConnector));
+
+            var tlsConfig = TlsContextConfiguration.builder().build();
+
+            var assigner = PortAssigner.builder()
+                    .portAssignment(DYNAMIC)
+                    .serverFactory(factory)
+                    .portSecurity(SECURE)
+                    .tlsConfiguration(tlsConfig)
+                    .build();
+
+            assigner.assignDynamicPorts();
+
+            var resultAppConnector = assertIsExactType(first(factory.getApplicationConnectors()), HttpsConnectorFactory.class);
+            assertThat(resultAppConnector).isNotSameAs(appConnector);
+
+            var resultAdminConnector = assertIsExactType(first(factory.getAdminConnectors()), HttpsConnectorFactory.class);
+            assertThat(resultAdminConnector).isNotSameAs(adminConnector);
         }
 
         @Test
