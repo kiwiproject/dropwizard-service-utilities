@@ -35,27 +35,11 @@ class AbstractCachingHealthCheckTest {
     class Construction {
 
         @Test
-        void shouldCreateWithDefaultCacheExpirationAndCachingEnabled() {
-            var healthCheck = new HappyHealthCheck();
-            assertThat(healthCheck.cacheExpiration())
-                    .isEqualTo(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION);
-            assertThat(healthCheck.isCachingEnabled()).isTrue();
-        }
-
-        @Test
-        void shouldCreateWithCustomCacheExpiration() {
+        void shouldCreateWithCustomExpirationAndCachingEnabled() {
             var twoMinutes = Duration.ofMinutes(2);
-            var healthCheck = new HappyHealthCheck(twoMinutes);
+            var healthCheck = new HappyHealthCheck(twoMinutes, true);
             assertThat(healthCheck.cacheExpiration()).isEqualTo(twoMinutes);
             assertThat(healthCheck.isCachingEnabled()).isTrue();
-        }
-
-        @Test
-        void shouldCreateWithCachingDisabled() {
-            var healthCheck = new HappyHealthCheck(false);
-            assertThat(healthCheck.cacheExpiration())
-                    .isEqualTo(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION);
-            assertThat(healthCheck.isCachingEnabled()).isFalse();
         }
 
         @Test
@@ -176,7 +160,7 @@ class AbstractCachingHealthCheckTest {
 
         @Test
         void shouldAlwaysInvokeDoCheck() {
-            var healthCheck = new HappyHealthCheck(false);
+            var healthCheck = new HappyHealthCheck(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION, false);
 
             assertThatHealthCheck(healthCheck).isHealthy().hasMessage("Everything is awesome! Count: 1");
             assertThatHealthCheck(healthCheck).isHealthy().hasMessage("Everything is awesome! Count: 2");
@@ -185,7 +169,7 @@ class AbstractCachingHealthCheckTest {
 
         @Test
         void shouldCatchExceptionsFromDoCheck_AndReturnUnhealthyResult() {
-            var healthCheck = new BadHealthCheck(false);
+            var healthCheck = new BadHealthCheck(AbstractCachingHealthCheck.DEFAULT_CACHE_EXPIRATION_DURATION, false);
 
             var expectedMessage = f("{}#doCheck threw an exception. Exception: java.lang.RuntimeException, Message: Oops. Count: 1",
                     BadHealthCheck.class.getName());
@@ -200,18 +184,6 @@ class AbstractCachingHealthCheckTest {
 
     static class HappyHealthCheck extends AbstractCachingHealthCheck {
         private final AtomicInteger count = new AtomicInteger();
-
-        HappyHealthCheck() {
-            super();
-        }
-
-        HappyHealthCheck(Duration cacheExpiration) {
-            super(cacheExpiration);
-        }
-
-        HappyHealthCheck(boolean cachingEnabled) {
-            super(cachingEnabled);
-        }
 
         HappyHealthCheck(Duration cacheExpiration, boolean cachingEnabled) {
             super(cacheExpiration, cachingEnabled);
@@ -230,8 +202,8 @@ class AbstractCachingHealthCheckTest {
     static class BadHealthCheck extends AbstractCachingHealthCheck {
         private final AtomicInteger count = new AtomicInteger();
 
-        BadHealthCheck(boolean cachingEnabled) {
-            super(cachingEnabled);
+        BadHealthCheck(Duration cacheExpiration, boolean cachingEnabled) {
+            super(cacheExpiration, cachingEnabled);
         }
 
         BadHealthCheck(Duration cacheExpiration, boolean cachingEnabled, KiwiEnvironment kiwiEnvironment) {

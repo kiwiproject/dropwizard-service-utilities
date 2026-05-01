@@ -45,34 +45,6 @@ public abstract class AbstractCachingHealthCheck extends HealthCheck {
     private final AtomicReference<TimestampedResult> lastResultReference;
 
     /**
-     * Create a new instance with caching enabled and the default cache expiration.
-     *
-     * @see #DEFAULT_CACHE_EXPIRATION_DURATION
-     */
-    protected AbstractCachingHealthCheck() {
-        this(DEFAULT_CACHE_EXPIRATION_DURATION, true);
-    }
-
-    /**
-     * Create a new instance with caching enabled and the given cache expiration.
-     *
-     * @param cacheExpiration the cache expiration period
-     */
-    protected AbstractCachingHealthCheck(Duration cacheExpiration) {
-        this(cacheExpiration, true);
-    }
-
-    /**
-     * Create a new instance with the default cache expiration.
-     *
-     * @param cachingEnabled whether caching is enabled
-     * @see #DEFAULT_CACHE_EXPIRATION_DURATION
-     */
-    protected AbstractCachingHealthCheck(boolean cachingEnabled) {
-        this(DEFAULT_CACHE_EXPIRATION_DURATION, cachingEnabled);
-    }
-
-    /**
      * Create a new instance.
      *
      * @param cacheExpiration the cache expiration period
