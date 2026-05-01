@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Use this if a HealthCheck is expensive to compute, and you want to minimize
  * the execution cost. For example, a HealthCheck that makes network calls might
  * be a good candidate for caching if health checks are executed frequently.
+ *
+ * @see AbstractCachingHealthCheck
  */
 @Slf4j
 public class CachingHealthCheck extends HealthCheck {
