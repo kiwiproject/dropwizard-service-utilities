@@ -149,19 +149,15 @@ public class StandardExceptionMappers {
     }
 
     /**
-     * Register exception mappers that replace the default Dropwizard JDBI3 exception mappers,
-     * which are normally registered by {@code JdbiExceptionsBundle} from {@code dropwizard-jdbi3}.
+     * Register exception mappers that replace the default Dropwizard JDBI3 exception mappers.
      * <p>
-     * These mappers replace the {@code LoggingSQLExceptionMapper} and {@code LoggingJdbiExceptionMapper}
-     * provided by {@code dropwizard-jdbi3}, using kiwi's
+     * These mappers serve the same role as the {@code LoggingSQLExceptionMapper} and
+     * {@code LoggingJdbiExceptionMapper} that {@code JdbiExceptionsBundle} from
+     * {@code dropwizard-jdbi3} would otherwise register, but use kiwi's
      * {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage} format in the response body.
      * <p>
      * This method is called automatically by {@link #register(Environment)} when JDBI3 is detected
      * on the classpath. It can also be called directly for more explicit control.
-     * <p>
-     * <strong>Ordering note:</strong> when calling this method directly alongside
-     * {@code JdbiExceptionsBundle}, ensure this is called after the bundle is added to the
-     * application so that these mappers take precedence over the bundle's defaults.
      *
      * @param jersey the {@link JerseyEnvironment}
      * @see LoggingSQLExceptionMapper
