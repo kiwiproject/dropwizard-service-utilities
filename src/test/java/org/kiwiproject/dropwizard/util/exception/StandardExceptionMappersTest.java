@@ -100,6 +100,23 @@ class StandardExceptionMappersTest {
         void shouldReturnTrue_WhenJdbi3IsOnClasspath() {
             assertThat(StandardExceptionMappers.isJdbi3Available()).isTrue();
         }
+
+        @Test
+        void shouldReturnFalse_WhenJdbi3ISNotOnClasspath() {
+            assertThat(StandardExceptionMappers.isJdbi3Available(jdbi3HidingClassLoader())).isFalse();
+        }
+
+        private static ClassLoader jdbi3HidingClassLoader() {
+            return new ClassLoader(StandardExceptionMappers.class.getClassLoader()) {
+                @Override
+                public Class<?> loadClass(String name) throws ClassNotFoundException {
+                    if (name.startsWith("org.jdbi")) {
+                        throw new ClassNotFoundException(name);
+                    }
+                    return super.loadClass(name);
+                }
+            };
+        }
     }
 
     @Nested

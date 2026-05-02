@@ -78,8 +78,13 @@ public class StandardExceptionMappers {
 
     @VisibleForTesting
     static boolean isJdbi3Available() {
+        return isJdbi3Available(StandardExceptionMappers.class.getClassLoader());
+    }
+
+    @VisibleForTesting
+    static boolean isJdbi3Available(ClassLoader classLoader) {
         try {
-            Class.forName("org.jdbi.v3.core.JdbiException", false, StandardExceptionMappers.class.getClassLoader());
+            Class.forName("org.jdbi.v3.core.JdbiException", false, classLoader);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
