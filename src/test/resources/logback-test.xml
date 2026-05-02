@@ -8,7 +8,21 @@
         </encoder>
     </appender>
 
+    <appender name="LoggingSQLExceptionMapperAppender"
+              class="org.kiwiproject.test.logback.InMemoryAppender"/>
+
+    <appender name="LoggingJdbiExceptionMapperAppender"
+              class="org.kiwiproject.test.logback.InMemoryAppender"/>
+
     <logger name="org.kiwiproject.dropwizard.util" level="TRACE"/>
+
+    <logger name="org.kiwiproject.dropwizard.util.exception.LoggingSQLExceptionMapper" level="ERROR">
+        <appender-ref ref="LoggingSQLExceptionMapperAppender"/>
+    </logger>
+
+    <logger name="org.kiwiproject.dropwizard.util.exception.LoggingJdbiExceptionMapper" level="ERROR">
+        <appender-ref ref="LoggingJdbiExceptionMapperAppender"/>
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

@@ -92,6 +92,13 @@ public class LoggingExceptionMapper<E extends Throwable> implements ExceptionMap
         return JaxrsExceptionMapper.buildResponse(new JaxrsException(formatErrorMessage(id), exception));
     }
 
+    /**
+     * Logs the exception at ERROR level. Subclasses may override to customize logging behavior,
+     * for example to iterate through a chained exception type.
+     *
+     * @param id        the unique ID for this request, used in the log message via {@link #formatLogMessage(long)}
+     * @param exception the exception to log
+     */
     protected void logException(long id, E exception) {
         LOG.error(formatLogMessage(id), exception);
     }
