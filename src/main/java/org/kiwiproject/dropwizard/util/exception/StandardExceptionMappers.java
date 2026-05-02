@@ -54,7 +54,8 @@ public class StandardExceptionMappers {
      * Registers a "standard" set of exception mappers.
      * <p>
      * These include the exception mappers from kiwi as well as the replacement
-     * Dropwizard exception mappers.
+     * Dropwizard exception mappers. If the JDBI3 library ({@code org.jdbi.v3.core.JdbiException})
+     * is detected on the classpath, the JDBI3 replacement exception mappers are also registered.
      * <p>
      * Unlike {@link #register(ServerFactory, Environment)}, this method does <em>not</em>
      * disable the default Dropwizard exception mappers registered by
@@ -64,11 +65,30 @@ public class StandardExceptionMappers {
      * @param environment the Dropwizard environment
      * @see #registerKiwiExceptionMappers(Environment)
      * @see #registerKiwiExceptionMappers(JerseyEnvironment)
+     * @see #registerJdbi3ExceptionMappers(JerseyEnvironment)
      * @see <a href="https://www.dropwizard.io/en/stable/manual/core.html#overriding-default-exception-mappers">Overriding Default Exception Mappers</a>
      */
     public static void register(Environment environment) {
         registerKiwiExceptionMappers(environment);
         registerReplacementDropwizardExceptionMappers(environment);
+        if (isJdbi3Available()) {
+            registerJdbi3ExceptionMappers(environment.jersey());
+        }
+    }
+
+    @VisibleForTesting
+    static boolean isJdbi3Available() {
+        return isJdbi3Available(StandardExceptionMappers.class.getClassLoader());
+    }
+
+    @VisibleForTesting
+    static boolean isJdbi3Available(ClassLoader classLoader) {
+        try {
+            Class.forName("org.jdbi.v3.core.JdbiException", false, classLoader);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     /**
@@ -131,6 +151,26 @@ public class StandardExceptionMappers {
         jersey.register(new LoggingExceptionMapper<>() {
         });
         jersey.register(new RuntimeJsonExceptionMapper());
+    }
+
+    /**
+     * Register exception mappers that replace the default Dropwizard JDBI3 exception mappers.
+     * <p>
+     * These mappers serve the same role as the {@code LoggingSQLExceptionMapper} and
+     * {@code LoggingJdbiExceptionMapper} that {@code JdbiExceptionsBundle} from
+     * {@code dropwizard-jdbi3} would otherwise register, but use kiwi's
+     * {@link org.kiwiproject.jaxrs.exception.ErrorMessage ErrorMessage} format in the response body.
+     * <p>
+     * This method is called automatically by {@link #register(Environment)} when JDBI3 is detected
+     * on the classpath. It can also be called directly for more explicit control.
+     *
+     * @param jersey the {@link JerseyEnvironment}
+     * @see LoggingSQLExceptionMapper
+     * @see LoggingJdbiExceptionMapper
+     */
+    public static void registerJdbi3ExceptionMappers(JerseyEnvironment jersey) {
+        jersey.register(new LoggingSQLExceptionMapper());
+        jersey.register(new LoggingJdbiExceptionMapper());
     }
 
     /**
