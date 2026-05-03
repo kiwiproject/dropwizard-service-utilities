@@ -3,12 +3,27 @@ package org.kiwiproject.dropwizard.util.startup;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.kiwiproject.base.KiwiDeprecated;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Factory for {@link ExecutionStrategy} instances.
+ *
+ * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.ExecutionStrategies}
+ * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet;
+ * migration will be possible once kiwi 5.4.0 is available. Note that the kiwi implementations
+ * reflect the API changes in
+ * {@code org.kiwiproject.base.system.ExecutionStrategy}.
  */
+@Deprecated(since = "5.3.0", forRemoval = true)
+@KiwiDeprecated(
+        since = "5.3.0",
+        removeAt = "6.0.0",
+        replacedBy = "org.kiwiproject.base.system.ExecutionStrategies",
+        reference = "#673"
+)
+@SuppressWarnings({ "removal", "java:S1133", "DeprecatedIsStillUsed" })
 @UtilityClass
 public class ExecutionStrategies {
 

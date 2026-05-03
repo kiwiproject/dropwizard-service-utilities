@@ -5,6 +5,7 @@ import static org.kiwiproject.base.KiwiPreconditions.requireNotNull;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kiwiproject.base.DefaultEnvironment;
+import org.kiwiproject.base.KiwiDeprecated;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +21,22 @@ import java.util.concurrent.TimeUnit;
  * {@link System#exit(int)} to terminate the JVM. You can supply your own {@link ExecutionStrategy} as well, for
  * example {@link ExecutionStrategies.NoOpExecutionStrategy} is useful in unit tests (so it doesn't actually terminate
  * the JVM).
+ *
+ * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.SystemExecutioner}
+ * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet;
+ * migration will be possible once kiwi 5.4.0 is available. Note that the kiwi version has a
+ * different API: exit methods require an
+ * explicit exit code, and the timed exit uses {@link java.time.Duration} instead of
+ * {@link java.util.concurrent.TimeUnit}.
  */
+@Deprecated(since = "5.3.0", forRemoval = true)
+@KiwiDeprecated(
+        since = "5.3.0",
+        removeAt = "6.0.0",
+        replacedBy = "org.kiwiproject.base.system.SystemExecutioner",
+        reference = "#673"
+)
+@SuppressWarnings("removal")
 @Slf4j
 public class SystemExecutioner {
 

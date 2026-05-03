@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+@SuppressWarnings("removal")
 @DisplayName("SystemExecutioner")
 @Slf4j
 class SystemExecutionerTest {
