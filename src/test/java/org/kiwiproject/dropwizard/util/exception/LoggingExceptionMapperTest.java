@@ -23,6 +23,11 @@ class LoggingExceptionMapperTest {
     private final LoggingExceptionMapper mapper = new LoggingExceptionMapper<>() {
     };
 
+    @Test
+    void shouldExposeFormatLogMessage_ForSubclasses() {
+        assertThat(mapper.formatLogMessage(0x1aL)).isEqualTo("Error handling a request: 000000000000001a");
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     void shouldProcess_AnyNonMappedException() {

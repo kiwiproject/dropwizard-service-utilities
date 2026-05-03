@@ -6,8 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -16,6 +17,7 @@ import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.core.server.SimpleServerFactory;
 import io.dropwizard.core.setup.Environment;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -57,14 +59,63 @@ class StandardExceptionMappersTest {
             verify(jersey).register(isA(JaxrsExceptionMapper.class));
             verify(jersey).register(isA(RuntimeJsonExceptionMapper.class));
 
-            verify(jersey).register(any(LoggingExceptionMapper.class));
+            // The base (anonymous) LoggingExceptionMapper, not SQL or JDBI subclasses
+            verify(jersey).register(argThat((Object m) ->
+                    m instanceof LoggingExceptionMapper &&
+                    !(m instanceof LoggingSQLExceptionMapper) &&
+                    !(m instanceof LoggingJdbiExceptionMapper)));
             verify(jersey).register(isA(JsonProcessingExceptionMapper.class));
             verify(jersey).register(isA(EmptyOptionalExceptionMapper.class));
             verify(jersey).register(isA(EarlyEofExceptionMapper.class));
             verify(jersey).register(isA(ConstraintViolationExceptionMapper.class));
             verify(jersey).register(isA(JerseyViolationExceptionMapper.class));
 
+            // JDBI3 is on the test classpath, so these mappers are also registered
+            verify(jersey).register(isA(LoggingSQLExceptionMapper.class));
+            verify(jersey).register(isA(LoggingJdbiExceptionMapper.class));
+
             verifyNoMoreInteractions(jersey);
+        }
+    }
+
+    @Nested
+    class RegisterJdbi3ExceptionMappers {
+
+        @Test
+        void shouldRegisterSQLAndJdbiExceptionMappers() {
+            var jersey = mock(JerseyEnvironment.class);
+
+            StandardExceptionMappers.registerJdbi3ExceptionMappers(jersey);
+
+            verify(jersey).register(isA(LoggingSQLExceptionMapper.class));
+            verify(jersey).register(isA(LoggingJdbiExceptionMapper.class));
+            verifyNoMoreInteractions(jersey);
+        }
+    }
+
+    @Nested
+    class IsJdbi3Available {
+
+        @Test
+        void shouldReturnTrue_WhenJdbi3IsOnClasspath() {
+            assertThat(StandardExceptionMappers.isJdbi3Available()).isTrue();
+        }
+
+        @Test
+        void shouldReturnFalse_WhenJdbi3ISNotOnClasspath() {
+            assertThat(StandardExceptionMappers.isJdbi3Available(jdbi3HidingClassLoader())).isFalse();
+        }
+
+        private static ClassLoader jdbi3HidingClassLoader() {
+            return new ClassLoader(StandardExceptionMappers.class.getClassLoader()) {
+                @Override
+                public Class<?> loadClass(String name) throws ClassNotFoundException {
+                    if (name.startsWith("org.jdbi")) {
+                        throw new ClassNotFoundException(name);
+                    }
+                    return super.loadClass(name);
+                }
+            };
         }
     }
 
