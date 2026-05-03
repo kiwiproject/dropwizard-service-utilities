@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("removal")
 @DisplayName("ExecutionStrategies")
 @Slf4j
 class ExecutionStrategiesTest {
