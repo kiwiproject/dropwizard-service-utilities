@@ -6,8 +6,9 @@ import org.kiwiproject.base.KiwiDeprecated;
  * Defines a strategy used in {@link SystemExecutioner} to terminate the JVM.
  *
  * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.ExecutionStrategy}
- * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet — this
- * is an advance warning. Note that the kiwi version declares only {@code exit(int exitCode)},
+ * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet;
+ * migration will be possible once kiwi 5.4.0 is available. Note that the kiwi version declares
+ * only {@code exit(int exitCode)},
  * requiring an explicit exit code rather than relying on a default.
  */
 @Deprecated(since = "5.3.0", forRemoval = true)

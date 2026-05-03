@@ -23,8 +23,9 @@ import java.util.concurrent.TimeUnit;
  * the JVM).
  *
  * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.SystemExecutioner}
- * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet — this
- * is an advance warning. Note that the kiwi version has a different API: exit methods require an
+ * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet;
+ * migration will be possible once kiwi 5.4.0 is available. Note that the kiwi version has a
+ * different API: exit methods require an
  * explicit exit code, and the timed exit uses {@link java.time.Duration} instead of
  * {@link java.util.concurrent.TimeUnit}.
  */
