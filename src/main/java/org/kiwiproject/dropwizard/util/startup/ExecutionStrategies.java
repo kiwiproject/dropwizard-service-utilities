@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         replacedBy = "org.kiwiproject.base.system.ExecutionStrategies",
         reference = "#673"
 )
+@SuppressWarnings("removal")
 @UtilityClass
 public class ExecutionStrategies {
 

@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
         replacedBy = "org.kiwiproject.base.system.SystemExecutioner",
         reference = "#673"
 )
+@SuppressWarnings("removal")
 @Slf4j
 public class SystemExecutioner {
 
