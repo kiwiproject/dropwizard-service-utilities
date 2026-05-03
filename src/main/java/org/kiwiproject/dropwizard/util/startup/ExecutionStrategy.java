@@ -17,6 +17,7 @@ import org.kiwiproject.base.KiwiDeprecated;
         replacedBy = "org.kiwiproject.base.system.ExecutionStrategy",
         reference = "#673"
 )
+@SuppressWarnings("java:S1133")
 public interface ExecutionStrategy {
 
     /**
