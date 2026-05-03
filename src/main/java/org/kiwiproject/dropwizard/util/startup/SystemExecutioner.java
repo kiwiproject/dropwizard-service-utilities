@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * example {@link ExecutionStrategies.NoOpExecutionStrategy} is useful in unit tests (so it doesn't actually terminate
  * the JVM).
  *
- * @deprecated This class is moving to kiwi as {@link org.kiwiproject.base.system.SystemExecutioner}
+ * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.SystemExecutioner}
  * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet — this
  * is an advance warning. Note that the kiwi version has a different API: exit methods require an
  * explicit exit code, and the timed exit uses {@link java.time.Duration} instead of

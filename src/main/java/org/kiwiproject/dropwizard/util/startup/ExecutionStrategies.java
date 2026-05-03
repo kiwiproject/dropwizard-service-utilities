@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Factory for {@link ExecutionStrategy} instances.
  *
- * @deprecated This class is moving to kiwi as {@link org.kiwiproject.base.system.ExecutionStrategies}
+ * @deprecated This class is moving to kiwi as {@code org.kiwiproject.base.system.ExecutionStrategies}
  * in kiwi 5.4.0 and will be removed from this library in 6.0.0. No action is required yet — this
  * is an advance warning. Note that the kiwi implementations reflect the API changes in
- * {@link org.kiwiproject.base.system.ExecutionStrategy}.
+ * {@code org.kiwiproject.base.system.ExecutionStrategy}.
  */
 @Deprecated(since = "5.3.0", forRemoval = true)
 @KiwiDeprecated(
