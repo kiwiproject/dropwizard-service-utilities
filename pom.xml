@@ -29,18 +29,18 @@
 
     <properties>
         <!-- Versions for required dependencies -->
-        <dropwizard-curator.version>3.0.2</dropwizard-curator.version>
-        <kiwi.version>5.3.1</kiwi.version>
-        <kiwi-beta.version>3.0.2</kiwi-beta.version>
-        <kiwi-bom.version>3.2.0</kiwi-bom.version>
-        <metrics-healthchecks-severity.version>3.0.2</metrics-healthchecks-severity.version>
-        <service-discovery-client.version>3.0.2</service-discovery-client.version>
+        <dropwizard-curator.version>3.0.3</dropwizard-curator.version>
+        <kiwi.version>5.4.0</kiwi.version>
+        <kiwi-beta.version>3.1.0</kiwi-beta.version>
+        <kiwi-bom.version>3.3.0</kiwi-bom.version>
+        <metrics-healthchecks-severity.version>3.1.0</metrics-healthchecks-severity.version>
+        <service-discovery-client.version>3.1.0</service-discovery-client.version>
 
         <!-- Versions for provided dependencies -->
-        <registry-aware-jersey-client.version>3.0.2</registry-aware-jersey-client.version>
+        <registry-aware-jersey-client.version>3.1.0</registry-aware-jersey-client.version>
 
         <!-- Versions for test dependencies -->
-        <kiwi-test.version>4.1.0</kiwi-test.version>
+        <kiwi-test.version>4.2.0</kiwi-test.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>kiwiproject_dropwizard-service-utilities</sonar.projectKey>
